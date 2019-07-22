@@ -1,0 +1,22 @@
+version: 2
+jobs:
+  build:
+    working_directory: ~/budgit
+    docker:
+      - image: circleci/node:7.10
+      # - image: mongo:3.4.4
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - v1-dependencies-{{ checksum "package.json" }}
+            # fallback to using the latest cache if no exact match is found
+            - v1-dependencies-
+      - run: yarn install
+      - save_cache:
+        paths:
+          - node_modules
+        key: v1-dependencies-{{ checksum "package.json" }}
+      - run:
+          name: Unit Tests
+          command: yarn test:unit
