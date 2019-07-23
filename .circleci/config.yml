@@ -3,7 +3,7 @@ jobs:
   build:
     working_directory: ~/budgit
     docker:
-      - image: circleci/node:7.10
+      - image: circleci/node:12
       # - image: mongo:3.4.4
     steps:
       - checkout
