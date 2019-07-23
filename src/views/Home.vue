@@ -1,10 +1,12 @@
 <template>
   <div class="home">
-    <input v-model="itemInput">
-    <button @click="newItem(itemInput)">Create</button>
-    <ul>
-      <li v-for="item in items" :key="item.id">{{ item.get("name") }}</li>
-    </ul>
+    <el-input v-model="itemInput"/>
+    <el-button @click="newItem(itemInput)">Create</el-button>
+    <el-table :data="items">
+      <el-table-column prop="name" label="Name" />
+      <el-table-column prop="created" label="Created" />
+      <el-table-column prop="updated" label="Updated" />
+    </el-table>
   </div>
 </template>
 
@@ -12,20 +14,19 @@
 import { Component, Vue } from 'vue-property-decorator';
 import Parse from 'parse';
 
+import Item from '@/models/Item';
+
 Parse.initialize('jk-budgit');
 Parse.serverURL = `${process.env.VUE_APP_BASE_URL}/parse`;
 
 @Component({})
 export default class Home extends Vue {
   public itemInput: string = '';
-  public items: Parse.Object[] = [];
+  public items: Item[] = [];
 
   public async newItem(itemName: string) {
-    const Item = Parse.Object.extend('Item');
     const item = new Item();
-
-    item.set('name', itemName);
-    item.set('createdAt', new Date());
+    item.name = itemName;
 
     try {
       const newItem = await item.save();
@@ -37,7 +38,7 @@ export default class Home extends Vue {
   public async mounted() {
     const query = new Parse.Query('Item');
 
-    this.items = await query.find();
+    this.items = (await query.find()) as Item[];
 
     const subscription = await query.subscribe();
     subscription.on('create', (object) => {
