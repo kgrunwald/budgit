@@ -1,33 +1,49 @@
 <template>
   <div class="home">
-    <div>{{ count }}</div>
-    <button @click="handleClick">Increment</button>
-    <input v-model="countInput">
-    <button @click="setCount(countInput)">Reset</button>
+    <input v-model="itemInput">
+    <button @click="newItem(itemInput)">Create</button>
+    <ul>
+      <li v-for="item in items" :key="item.id">{{ item.get("name") }}</li>
+    </ul>
   </div>
 </template>
 
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
+import Parse from 'parse';
+
+Parse.initialize('myAppId', 'mySecretKey');
+Parse.serverURL = '/parse';
+Parse.liveQueryServerURL = 'ws://localhost:3000/parse';
 
 @Component({})
 export default class Home extends Vue {
-  public count: number = 0;
-  public countInput: string = '';
+  public itemInput: string = '';
+  public items: Parse.Object[] = [];
 
-  public handleClick() {
-    this.getData();
-    this.count++;
+  public async newItem(itemName: string) {
+    const Item = Parse.Object.extend('Item');
+    const item = new Item();
+
+    item.set('name', itemName);
+    item.set('createdAt', new Date());
+
+    try {
+      const newItem = await item.save();
+    } catch (e) {
+      alert(e.message);
+    }
   }
 
-  public setCount(newCount: string) {
-    this.count = parseInt(newCount, 10);
-  }
+  public async mounted() {
+    const query = new Parse.Query('Item');
 
-  private async getData() {
-    const res = await fetch('/api/test');
-    const body = await res.json();
-    this.count = body.result;
+    this.items = await query.find();
+
+    const subscription = await query.subscribe();
+    subscription.on('create', (object) => {
+      this.items.push(object);
+    });
   }
 }
 </script>

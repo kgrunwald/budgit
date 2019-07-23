@@ -19,6 +19,7 @@
   "dependencies": {
     "core-js": "^2.6.5",
     "express": "^4.17.1",
+    "parse-server": "^3.6.0",
     "vue": "^2.6.10",
     "vue-class-component": "^7.0.2",
     "vue-property-decorator": "^8.1.0",
@@ -29,6 +30,7 @@
   "devDependencies": {
     "@types/express": "^4.17.0",
     "@types/jest": "^23.1.4",
+    "@types/parse": "^2.2.7",
     "@vue/cli-plugin-babel": "^3.9.0",
     "@vue/cli-plugin-e2e-cypress": "^3.9.0",
     "@vue/cli-plugin-typescript": "^3.9.0",
@@ -47,18 +49,18 @@
   },
   "nodemonConfig": {
     "ignore": [
-        "**/*.test.ts",
-        "**/*.spec.ts",
-        ".git",
-        "src/**",
-        "node_modules"
-      ],
-      "watch": [
-        "server"
-      ],
-      "exec": "ts-node -P ./server/tsconfig.json ./server/index.ts",
-      "ext": "ts"
-  },    
+      "**/*.test.ts",
+      "**/*.spec.ts",
+      ".git",
+      "src/**",
+      "node_modules"
+    ],
+    "watch": [
+      "server"
+    ],
+    "exec": "ts-node -P ./server/tsconfig.json ./server/index.ts",
+    "ext": "ts"
+  },
   "gitHooks": {
     "pre-commit": "lint-staged"
   },
