@@ -1,8 +1,10 @@
 import express from 'express';
 import winston from 'winston';
+import http from 'http';
 import { resolve, join } from 'path';
 import configureAPI from './configure';
 
+// tslint:disable-next-line
 const ParseServer = require('parse-server').ParseServer;
 
 const { PORT = 3000} = process.env;
@@ -36,23 +38,21 @@ const parse = new ParseServer({
 });
 app.use('/parse', parse);
 
+configureAPI(app);
 
-configureAPI(app)
+const publicPath = resolve(__dirname, '../');
+const staticConf = { maxAge: '1y', etag: false };
 
-const publicPath = resolve(__dirname, '../')
-const staticConf = { maxAge: '1y', etag: false }
-
-app.use(express.static(publicPath, staticConf))
+app.use(express.static(publicPath, staticConf));
 // app.use('/', history())
 
 app.get('*', (req, res) => {
     res.sendFile(join(__dirname + '/../index.html'));
 });
 
-const httpServer = require('http').createServer(app);
+const httpServer = http.createServer(app);
 httpServer.listen(PORT, () => {
-    console.log(`StaticServer running on ${SERVER_URL.replace('/parse','/')}`);
+    logger.info(`StaticServer running on ${SERVER_URL.replace('/parse', '/')}`);
 });
 
-// This will enable the Live Query real-time server
-ParseServer.createLiveQueryServer(httpServer)
+ParseServer.createLiveQueryServer(httpServer);

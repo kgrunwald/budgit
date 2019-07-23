@@ -4,12 +4,17 @@
     "module": "commonjs",
     "strict": true,
     "esModuleInterop": true,
-    "outDir": "../dist/server/"
+    "outDir": "../../dist/server/"
   },
   "include": [
-    "./**ts"
+    "./**ts", "./index.ts"
   ],
   "files": [
     "./index.ts"
-  ]
+  ],
+  "paths": {
+    "@/*": [
+      "../*"
+    ]
+  },
 }
