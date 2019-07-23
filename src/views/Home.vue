@@ -12,7 +12,7 @@
 import { Component, Vue } from 'vue-property-decorator';
 import Parse from 'parse';
 
-Parse.initialize('myAppId', 'mySecretKey');
+Parse.initialize('jk-budgit');
 Parse.serverURL = '/parse';
 Parse.liveQueryServerURL = 'ws://localhost:3000/parse';
 

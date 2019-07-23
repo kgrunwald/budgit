@@ -28,7 +28,7 @@ app.use((req, res, next) => {
 
 const parse = new ParseServer({
     databaseURI: process.env.MONGODB_URI || 'mongodb://localhost:27017/dev',
-    appId: process.env.APP_ID || 'myAppId',
+    appId: 'jk-budgit',
     masterKey: process.env.MASTER_KEY || 'myMasterKey',
     liveQuery: {
         classNames: ['Item'], // List of classes to support for query subscriptions
