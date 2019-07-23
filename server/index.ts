@@ -1,6 +1,7 @@
 import express from 'express';
 import winston from 'winston';
-import * as path from 'path';
+import { resolve, join } from 'path';
+import configureAPI from './configure';
 
 const { PORT = 3000} = process.env;
 const logger = winston.createLogger({
@@ -16,12 +17,21 @@ const logger = winston.createLogger({
 
 const app = express();
 
-// Serve static files from the React app
-app.use(express.static(path.join(__dirname, '../')));
+app.use((req, res, next) => {
+    logger.info(`Request on path: ${req.path}`);
+    next();
+})
+
+configureAPI(app)
+
+const publicPath = resolve(__dirname, '../')
+const staticConf = { maxAge: '1y', etag: false }
+
+app.use(express.static(publicPath, staticConf))
+// app.use('/', history())
+
 app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname + '/../index.html'));
+    res.sendFile(join(__dirname + '/../index.html'));
 });
 
-app.listen(PORT);
-
-logger.info(`Listening on port ${PORT}`);
+app.listen(PORT, () => logger.info(`App running on port ${PORT}!`))

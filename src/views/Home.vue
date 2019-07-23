@@ -16,11 +16,18 @@ export default class Home extends Vue {
   public countInput: string = '';
 
   public handleClick() {
+    this.getData();
     this.count++;
   }
 
   public setCount(newCount: string) {
     this.count = parseInt(newCount, 10);
+  }
+
+  private async getData() {
+    const res = await fetch('/api/test');
+    const body = await res.json();
+    this.count = body.result;
   }
 }
 </script>

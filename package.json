@@ -7,9 +7,10 @@
   },
   "scripts": {
     "serve": "vue-cli-service serve",
-    "build": "vue-cli-service build && cd server && tsc",
+    "start:client": "yarn serve",
+    "start:server": "nodemon",
+    "build": "vue-cli-service build && tsc -p server",
     "clean": "rm -rf dist",
-    "start": "node dist/server/index.js",
     "lint": "vue-cli-service lint",
     "test:e2e": "vue-cli-service test:e2e",
     "test:unit": "vue-cli-service test:unit"
@@ -36,11 +37,27 @@
     "babel-core": "7.0.0-bridge.0",
     "lint-staged": "^8.1.5",
     "node-sass": "^4.9.0",
+    "nodemon": "^1.19.1",
     "sass-loader": "^7.1.0",
     "ts-jest": "^23.0.0",
+    "ts-node": "^8.3.0",
     "typescript": "^3.4.3",
     "vue-template-compiler": "^2.6.10"
   },
+  "nodemonConfig": {
+    "ignore": [
+        "**/*.test.ts",
+        "**/*.spec.ts",
+        ".git",
+        "src/**",
+        "node_modules"
+      ],
+      "watch": [
+        "server"
+      ],
+      "exec": "ts-node -P ./server/tsconfig.json ./server/index.ts",
+      "ext": "ts"
+  },    
   "gitHooks": {
     "pre-commit": "lint-staged"
   },
