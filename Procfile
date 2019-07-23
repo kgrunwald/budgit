@@ -1,1 +1,1 @@
-web: budgit
+web: yarn start
