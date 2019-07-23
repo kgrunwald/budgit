@@ -13,8 +13,7 @@ import { Component, Vue } from 'vue-property-decorator';
 import Parse from 'parse';
 
 Parse.initialize('jk-budgit');
-Parse.serverURL = '/parse';
-Parse.liveQueryServerURL = 'ws://localhost:3000/parse';
+Parse.serverURL = `${process.env.VUE_APP_BASE_URL}/parse`;
 
 @Component({})
 export default class Home extends Vue {
