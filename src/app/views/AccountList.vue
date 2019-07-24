@@ -19,7 +19,7 @@
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
 import Account from '@/models/Account';
-import NewAccount from './NewAccount';
+import NewAccount from './NewAccount.vue';
 
 @Component({
     components: {

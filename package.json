@@ -63,11 +63,10 @@
       "**/*.test.ts",
       "**/*.spec.ts",
       ".git",
-      "src/**",
       "node_modules"
     ],
     "watch": [
-      "src/server"
+      "./src/server/*"
     ],
     "exec": "ts-node -P ./src/server/tsconfig.json ./src/server/index.ts",
     "ext": "ts"

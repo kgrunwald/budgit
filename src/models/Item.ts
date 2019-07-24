@@ -1,24 +1,30 @@
-import Parse from 'parse';
+/* tslint:disable */
+if (typeof window !== 'undefined') {
+    var Parse = require('parse');
+} else {
+    var Parse = require('parse/node');
+}
+/* tslint:enable */
 
 class Item extends Parse.Object {
     constructor() {
         super('Item');
     }
 
-    get name(): string {
-        return this.get('name');
+    get accessToken(): string {
+        return this.get('accessToken');
     }
 
-    set name(name: string) {
-        this.set('name', name);
+    set accessToken(token: string) {
+        this.set('accessToken', token);
     }
 
-    get created(): string {
-        return this.createdAt.toISOString();
+    get itemId(): string {
+        return this.get('itemId');
     }
 
-    get updated(): string {
-        return this.updatedAt.toISOString();
+    set itemId(id: string) {
+        this.set('itemId', id);
     }
 }
 

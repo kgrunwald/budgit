@@ -1,9 +1,9 @@
 <template>
     <section>
         <plaid-link
-            env="sandbox"
-            publicKey="793eb3e2dca7c9ffb3fea089e86f85"
-            clientName="Test App"
+            :env="PLAID_ENVIRONMENT"
+            :publicKey="PLAID_PUBLIC_KEY"
+            clientName="Budgit"
             product="transactions"
             v-bind="{ onSuccess }">
             <template slot="button" slot-scope="props">
@@ -23,9 +23,14 @@ import PlaidLink from 'vue-plaid-link'
   components: { PlaidLink },
 })
 export default class NewAccount extends Vue {
+    PLAID_PUBLIC_KEY = process.env.VUE_APP_PLAID_PUBLIC_KEY;
+    PLAID_ENVIRONMENT = process.env.VUE_APP_PLAID_ENV;
     async onSuccess(token) {
-          const resp = await fetch('/get_access_token', {method: 'post', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({public_token: token})})
-          console.log(resp);
+          const resp = await fetch('/get_access_token', {
+              method: 'post', 
+              headers: {'Content-Type': 'application/json'},
+               body: JSON.stringify({public_token: token})
+            })
     }
 }
 </script>

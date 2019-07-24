@@ -1,13 +1,16 @@
 import plaid from 'plaid';
 import { Router, Request, Response } from 'express';
+import logger from '../logger';
+import Item from '../../models/Item';
 
-let ACCESS_TOKEN = null;
-let ITEM_ID = null;
+const CLIENT_ID = process.env.PLAID_CLIENT_ID || '';
+const PLAID_SECRET = process.env.PLAID_SECRET || '';
+const PUBLIC_KEY = process.env.PLAID_PUBLIC_KEY || '';
 
 const client = new plaid.Client(
-    process.env.PLAID_CLIENT_ID || '',
-    process.env.PLAID_SECRET || '',
-    process.env.PUBLIC_KEY || '',
+    CLIENT_ID,
+    PLAID_SECRET,
+    PUBLIC_KEY,    
     plaid.environments.sandbox,
     {version: '2019-05-29'},
 );
@@ -16,12 +19,16 @@ const plaidRouter = Router();
 
 plaidRouter.post('/get_access_token', async (req: Request, res: Response) => {
     try {
-        console.log(req.body.public_token)
+        logger.info('Got request for access token');
         const tokenResponse = await client.exchangePublicToken(req.body.public_token);
-        ACCESS_TOKEN = tokenResponse.access_token;
-        ITEM_ID = tokenResponse.item_id;
-        console.log('Access Token: ' + ACCESS_TOKEN);
-        console.log('Item ID: ' + ITEM_ID);
+        const item = new Item();
+        item.accessToken = tokenResponse.access_token;
+        item.itemId = tokenResponse.item_id;
+        await item.save();
+
+        logger.info('Got access token', item);
+        let trans = await client.getAllTransactions(item.accessToken, "2019-07-20", '2019-07-23')
+        logger.info(JSON.stringify(trans.transactions));
         res.json({'error': false});
     } catch (err) {
         res.status(500).json({ error: err.message });

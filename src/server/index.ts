@@ -1,38 +1,25 @@
 import express from 'express';
-import winston from 'winston';
 import dotenv from 'dotenv';
 import http from 'http';
-import fs from 'fs';
 import bodyParser from 'body-parser';
 import { resolve, join } from 'path';
-import configureAPI from './configure';
 
-dotenv.config({ path: resolve(__dirname, '../../')});
+dotenv.config({ path: resolve(__dirname, '../../', '.env')});
 if (process.env.NODE_ENV !== 'production') {
-    const envConfig = dotenv.parse(fs.readFileSync(join(__dirname + '/../../.env.local')));
-    for (const k in envConfig) {
-        if (envConfig.hasOwnProperty(k)) {
-            process.env[k] = envConfig[k];
-        }
-    }
+    dotenv.config({ path: resolve(__dirname, '../../', '.env.local')});
 }
+
+import initializeParseClient from './parse';
+initializeParseClient();
+
+import logger from './logger';
+import plaid from './plaid';
 
 // tslint:disable-next-line
 const ParseServer = require('parse-server').ParseServer;
 
-const { PORT = 3000} = process.env;
+const { PORT = 3000 } = process.env;
 const SERVER_URL = process.env.SERVER_URL || `http://localhost:${PORT}/parse`;
-
-const logger = winston.createLogger({
-    transports: [
-        new winston.transports.Console({
-            format: winston.format.combine(
-                winston.format.colorize(),
-                winston.format.simple(),
-            ),
-        }),
-    ],
-});
 
 const app = express();
 
@@ -44,22 +31,20 @@ app.use((req, res, next) => {
 
 const parse = new ParseServer({
     databaseURI: process.env.MONGODB_URI || 'mongodb://localhost:27017/dev',
-    appId: 'jk-budgit',
+    appId: process.env.PARSE_APP_ID || 'testAppId',
     masterKey: process.env.MASTER_KEY || 'myMasterKey',
     liveQuery: {
         classNames: ['Item'], // List of classes to support for query subscriptions
     },
+    serverURL: SERVER_URL,
 });
 app.use('/parse', parse);
-
-configureAPI(app);
+app.use(plaid);
 
 const publicPath = resolve(__dirname, '../');
 const staticConf = { maxAge: '1y', etag: false };
 
 app.use(express.static(publicPath, staticConf));
-// app.use('/', history())
-
 app.get('*', (req, res) => {
     res.sendFile(join(__dirname + '/../index.html'));
 });
