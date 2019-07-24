@@ -3,6 +3,7 @@ import winston from 'winston';
 import dotenv from 'dotenv';
 import http from 'http';
 import fs from 'fs';
+import bodyParser from 'body-parser';
 import { resolve, join } from 'path';
 import configureAPI from './configure';
 
@@ -35,6 +36,7 @@ const logger = winston.createLogger({
 
 const app = express();
 
+app.use(bodyParser.json());
 app.use((req, res, next) => {
     logger.info(`Request on path: ${req.path}`);
     next();

@@ -3,6 +3,7 @@
     <Navigation />
     <div class="page-container">
       <div class="account-list-container">
+        <NewAccount />
         <AccountList />
       </div>
       <div class="content-container">
@@ -21,12 +22,14 @@ import { Component, Vue } from 'vue-property-decorator';
 import Navigation from './views/Navigation';
 import AccountList from './views/AccountList';
 import Account from './views/Account';
+import NewAccount from './views/NewAccount';
 
 @Component({
   components: {
     Navigation,
     AccountList,
     Account,
+    NewAccount
   }
 })
 export default class App extends Vue {

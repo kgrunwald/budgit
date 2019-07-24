@@ -11666,6 +11666,11 @@ vue-loader@^15.7.0:
     vue-hot-reload-api "^2.3.0"
     vue-style-loader "^4.1.0"
 
+vue-plaid-link@^0.3.0:
+  version "0.3.0"
+  resolved "https://registry.yarnpkg.com/vue-plaid-link/-/vue-plaid-link-0.3.0.tgz#0fd8eea5da669efcd5717cdc672d9bf4a8f461c4"
+  integrity sha512-JRK3mhJQiZ/sS3/NH4EM5LSBF7IuITdtni9fpSkkWdRfC23Sn6Tb/KGnK14hYP2bh2sB2K8mA+jeagPinUgUhw==
+
 vue-property-decorator@^8.1.0:
   version "8.2.1"
   resolved "https://registry.yarnpkg.com/vue-property-decorator/-/vue-property-decorator-8.2.1.tgz#3791662033b20d20d098cb20e86fd23842982508"

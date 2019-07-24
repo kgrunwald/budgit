@@ -16,6 +16,7 @@ const plaidRouter = Router();
 
 plaidRouter.post('/get_access_token', async (req: Request, res: Response) => {
     try {
+        console.log(req.body.public_token)
         const tokenResponse = await client.exchangePublicToken(req.body.public_token);
         ACCESS_TOKEN = tokenResponse.access_token;
         ITEM_ID = tokenResponse.item_id;
@@ -23,7 +24,7 @@ plaidRouter.post('/get_access_token', async (req: Request, res: Response) => {
         console.log('Item ID: ' + ITEM_ID);
         res.json({'error': false});
     } catch (err) {
-        res.json({ error: err.message });
+        res.status(500).json({ error: err.message });
     }
 });
 
