@@ -61,7 +61,7 @@
       "node_modules"
     ],
     "watch": [
-      "server"
+      "src/server"
     ],
     "exec": "ts-node -P ./src/server/tsconfig.json ./src/server/index.ts",
     "ext": "ts"
