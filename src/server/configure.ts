@@ -1,8 +1,8 @@
 import express from 'express';
 import bodyParser from 'body-parser';
-import api from './api';
+import plaid from './plaid';
 
 export default (app: express.Application) => {
   app.use(bodyParser.json());
-  app.use('/api', api);
+  app.use(plaid);
 };
