@@ -20,6 +20,7 @@
     "bootstrap": "^4.3.1",
     "bootstrap-vue": "^2.0.0-rc.27",
     "core-js": "^2.6.5",
+    "dotenv": "^8.0.0",
     "express": "^4.17.1",
     "parse-server": "^3.6.0",
     "plaid": "^4.2.0",
@@ -31,6 +32,7 @@
     "winston": "^3.2.1"
   },
   "devDependencies": {
+    "@types/dotenv": "^6.1.1",
     "@types/express": "^4.17.0",
     "@types/jest": "^23.1.4",
     "@types/parse": "^2.2.7",
@@ -61,7 +63,7 @@
     "watch": [
       "server"
     ],
-    "exec": "ts-node -P ./server/tsconfig.json ./server/index.ts",
+    "exec": "ts-node -P ./src/server/tsconfig.json ./src/server/index.ts",
     "ext": "ts"
   },
   "gitHooks": {

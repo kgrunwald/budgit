@@ -1,8 +1,20 @@
 import express from 'express';
 import winston from 'winston';
+import dotenv from 'dotenv';
 import http from 'http';
+import fs from 'fs';
 import { resolve, join } from 'path';
 import configureAPI from './configure';
+
+dotenv.config({ path: resolve(__dirname, '../../')});
+if (process.env.NODE_ENV !== 'production') {
+    const envConfig = dotenv.parse(fs.readFileSync(join(__dirname + '/../../.env.local')));
+    for (const k in envConfig) {
+        if (envConfig.hasOwnProperty(k)) {
+            process.env[k] = envConfig[k];
+        }
+    }
+}
 
 // tslint:disable-next-line
 const ParseServer = require('parse-server').ParseServer;
