@@ -1,12 +1,12 @@
 import Vue from 'vue';
-import Element from 'element-ui';
-import 'element-ui/lib/theme-chalk/index.css';
+import BootstrapVue from 'bootstrap-vue';
+import './app/styles/custom.scss';
 
 import App from './app/App.vue';
 import router from './app/router';
 import store from './app/store';
 
-Vue.use(Element);
+Vue.use(BootstrapVue);
 Vue.config.productionTip = false;
 
 new Vue({

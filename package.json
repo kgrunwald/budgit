@@ -17,10 +17,12 @@
     "test:unit": "vue-cli-service test:unit"
   },
   "dependencies": {
+    "bootstrap": "^4.3.1",
+    "bootstrap-vue": "^2.0.0-rc.27",
     "core-js": "^2.6.5",
-    "element-ui": "^2.10.1",
     "express": "^4.17.1",
     "parse-server": "^3.6.0",
+    "plaid": "^4.2.0",
     "vue": "^2.6.10",
     "vue-class-component": "^7.0.2",
     "vue-property-decorator": "^8.1.0",
