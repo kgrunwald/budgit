@@ -7,10 +7,14 @@
     "outDir": "../../dist/server/"
   },
   "include": [
-    "./**ts", "./index.ts"
+    "./**.ts"
   ],
   "files": [
     "./index.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "../../node_modules",
   ],
   "paths": {
     "@/*": [

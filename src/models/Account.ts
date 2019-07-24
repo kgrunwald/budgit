@@ -1,6 +1,6 @@
 class Account {
-    public accountName: string;
-    public accountId: string;
+    public accountName: string = '';
+    public accountId: string = '';
 }
 
 export default Account;
