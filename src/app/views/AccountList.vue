@@ -1,5 +1,9 @@
 <template>
     <div class="account-list">
+        <div class="title">
+            <h3>Accounts</h3>
+            <NewAccount />
+        </div>
         <div 
             class="account-item" 
             :class="{ selected: selectedId === account.accountId }"
@@ -15,8 +19,13 @@
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
 import Account from '@/models/Account';
+import NewAccount from './NewAccount';
 
-@Component({})
+@Component({
+    components: {
+        NewAccount,
+    },
+})
 export default class AcountList extends Vue {
     public accounts: Account[] = [];
     public selectedId: string = '';
@@ -58,6 +67,13 @@ export default class AcountList extends Vue {
     &.selected {
         background-color: #eee;
     }
+}
+
+.title {
+    padding-left: 8px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
 }
 </style>
 

@@ -7,7 +7,9 @@
             product="transactions"
             v-bind="{ onSuccess }">
             <template slot="button" slot-scope="props">
-                <a @click="props.onClick">Custom Open Element</a>
+              <div class="icon">
+                <font-awesome-icon icon="plus-circle" @click="props.onClick" />
+              </div>
             </template>
         </plaid-link>
     </section>
@@ -27,3 +29,9 @@ export default class NewAccount extends Vue {
     }
 }
 </script>
+
+<style lang="scss" scoped>
+.icon {
+    padding: 10px 10px 10px 10px;
+}
+</style>
