@@ -70,7 +70,8 @@
       "node_modules"
     ],
     "watch": [
-      "./src/server/*"
+      "./src/server/*",
+      "./src/models/*"
     ],
     "exec": "ts-node -P ./src/server/tsconfig.json ./src/server/index.ts",
     "ext": "ts"

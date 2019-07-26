@@ -6,6 +6,9 @@ if (typeof window !== 'undefined') {
 }
 /* tslint:enable */
 
+import Item from './Item';
+import { Pointer } from 'parse';
+
 export class Account extends Parse.Object {
     constructor() {
         super('Account');
@@ -19,12 +22,12 @@ export class Account extends Parse.Object {
         this.set('accountId', id);
     }
 
-    get itemId(): string {
-        return this.get('itemId');
+    get item(): Item {
+        return this.get('item');
     }
 
-    set itemId(id: string) {
-        this.set('itemId', id);
+    set item(item: Item) {
+        this.set('item', item);
     }
 
     get availableBalance(): number {
