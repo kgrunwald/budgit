@@ -1,4 +1,5 @@
 import plaid from 'plaid';
+import Parse from 'parse/node';
 import { Router, Request, Response } from 'express';
 import logger from '../logger';
 import Item from '../../models/Item';
