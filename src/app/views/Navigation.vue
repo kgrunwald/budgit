@@ -16,7 +16,7 @@
                     <b-nav-item-dropdown right>
                         <template slot="button-content">Account</template>
                         <b-dropdown-item href="#">Profile</b-dropdown-item>
-                        <b-dropdown-item href="#">Sign Out</b-dropdown-item>
+                        <b-dropdown-item @click="signOut">Sign Out</b-dropdown-item>
                     </b-nav-item-dropdown>
                 </b-navbar-nav>
             </b-collapse>
@@ -27,10 +27,14 @@
 
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
+import Parse from 'parse';
 
 @Component({})
 export default class Navigation extends Vue {
-
+    public async signOut() {
+        await Parse.User.logOut();
+        this.$router.push('/login');
+    }
 }
 </script>
 

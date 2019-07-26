@@ -1,43 +1,52 @@
 <template>
-  <div class="home">
-    
+  <div>
+    <Navigation />
+    <div class="page-container">
+      <div class="account-list-container">
+        <AccountList />
+      </div>
+      <div class="content-container">
+        <Account />
+      </div>
+    </div>
   </div>
 </template>
 
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
-import Parse from 'parse';
+import Navigation from './Navigation.vue';
+import AccountList from './AccountList.vue';
+import Account from './Account.vue';
 
-import Item from '@/models/Item';
-
-// Parse.initialize('jk-budgit');
-// Parse.serverURL = `${process.env.VUE_APP_BASE_URL}/parse`;
-
-@Component({})
-export default class Home extends Vue {
-  // public itemInput: string = '';
-  // public items: Item[] = [];
-
-  // public async newItem(itemName: string) {
-  //   const item = new Item();
-  //   item.name = itemName;
-
-  //   try {
-  //     const newItem = await item.save();
-  //   } catch (e) {
-  //     alert(e.message);
-  //   }
-  // }
-
-  // public async mounted() {
-  //   const query = new Parse.Query('Item');
-
-  //   this.items = (await query.find()) as Item[];
-
-  //   const subscription = await query.subscribe();
-  //   subscription.on('create', (object) => {
-  //     this.items.push(object);
-  //   });
-  // }
+@Component({
+  components: {
+    Navigation,
+    AccountList,
+    Account,
+  },
+})
+export default class App extends Vue {
+  public mounted() {
+    this.$store.dispatch('loadAccounts');
+  }
 }
 </script>
+
+<style lang="scss" scoped>
+.page-container {
+  display: flex;
+  height: 100%;
+}
+
+.content-container {
+  width: 100%;
+}
+
+.account-list-container {
+  width: 15%;
+  height: 100%;
+  display: flex;
+  border-right: solid black 1px;
+}
+</style>
+

@@ -11,7 +11,7 @@
             :key="account.accountId"
             @click="accountClicked(account)"
         >
-            {{ account.accountName }}
+            {{ account.name }}
         </div>
     </div>
 </template>
@@ -27,22 +27,10 @@ import NewAccount from './NewAccount.vue';
     },
 })
 export default class AcountList extends Vue {
-    public accounts: Account[] = [];
     public selectedId: string = '';
 
-    public mounted() {
-        const checking = new Account();
-        checking.accountName = 'Alliant Checking';
-        checking.accountId = 'asflakjfldkf';
-
-        const savings = new Account();
-        savings.accountName = 'Alliant Savings';
-        savings.accountId = 'sfdfsdf';
-
-        this.accounts = [
-            checking,
-            savings,
-        ];
+    get accounts(): Account[] {
+        return this.$store.state.accounts;
     }
 
     public accountClicked(account: Account) {

@@ -1,15 +1,19 @@
 import Vue from 'vue';
 import BootstrapVue from 'bootstrap-vue';
 import { library } from '@fortawesome/fontawesome-svg-core';
-import { faPlusCircle } from '@fortawesome/free-solid-svg-icons';
+import { faPlusCircle, faUser, faLock } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import './app/styles/custom.scss';
 
+import Parse from 'parse';
 import App from './app/App.vue';
 import router from './app/router';
 import store from './app/store';
 
-library.add(faPlusCircle);
+Parse.initialize(process.env.VUE_APP_PARSE_APP_ID || '');
+Parse.serverURL = `${process.env.VUE_APP_BASE_URL}/parse`;
+
+library.add(faPlusCircle, faUser, faLock);
 
 Vue.use(BootstrapVue);
 Vue.config.productionTip = false;

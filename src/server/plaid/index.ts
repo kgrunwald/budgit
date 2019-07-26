@@ -2,6 +2,7 @@ import plaid from 'plaid';
 import { Router, Request, Response } from 'express';
 import logger from '../logger';
 import Item from '../../models/Item';
+import Account from '../../models/Account';
 
 const CLIENT_ID = process.env.PLAID_CLIENT_ID || '';
 const PLAID_SECRET = process.env.PLAID_SECRET || '';
@@ -19,20 +20,60 @@ const plaidRouter = Router();
 
 plaidRouter.post('/get_access_token', async (req: Request, res: Response) => {
     try {
-        logger.info('Got request for access token');
+        const user = await new Parse.Query(Parse.User).first({ sessionToken: req.signedCookies.token });
+        if (!user) {
+            res.status(404).json({message: 'user not found'});
+            return
+        }
+
+        logger.info('Got request for access token from: ' + user.getUsername());
         const tokenResponse = await client.exchangePublicToken(req.body.public_token);
+        
         const item = new Item();
         item.accessToken = tokenResponse.access_token;
         item.itemId = tokenResponse.item_id;
+        item.setACL(new Parse.ACL(user));
         await item.save();
 
-        logger.info('Got access token', item);
-        let trans = await client.getAllTransactions(item.accessToken, "2019-07-20", '2019-07-23')
-        logger.info(JSON.stringify(trans.transactions));
+        getAccounts(user, item.accessToken);
         res.json({'error': false});
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
+});
+
+async function getAccounts(user: Parse.User, accessToken: string): Promise<void> {
+    logger.info("Getting accounts for user " + user.getUsername());
+    const validTypes = ['depository', 'credit'];
+    const response = await client.getAccounts(accessToken);
+    response.accounts.forEach(async (account) => {
+        if (validTypes.includes(account.type || '')) {
+            logger.info("Saving account", account);
+
+            const model = new Account();
+            model.accountId = account.account_id;
+            model.availableBalance = account.balances.available || 0;
+            model.currentBalance = account.balances.current || 0;
+            model.name = account.name || '<no name>';
+            model.subType = account.subtype || '';
+            model.type = account.type || '';
+            
+            model.setACL(new Parse.ACL(user));
+            await model.save();
+        }
+    })
+}
+
+plaidRouter.post('/login', async (req: Request, res: Response) => {
+    const { username, password } = req.body;
+    const user = await Parse.User.logIn(username, password);
+    logger.info("User", user);
+    res.cookie('token', user.getSessionToken(), {
+        maxAge: 60 * 60 * 1000,
+        signed: true,
+        httpOnly: true
+    });
+    res.json(user);
 });
 
 export default plaidRouter;

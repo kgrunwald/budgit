@@ -1,6 +1,7 @@
 import express from 'express';
 import dotenv from 'dotenv';
 import http from 'http';
+import cookieParser from 'cookie-parser';
 import bodyParser from 'body-parser';
 import { resolve, join } from 'path';
 
@@ -10,34 +11,38 @@ if (process.env.NODE_ENV !== 'production') {
 }
 
 import initializeParseClient from './parse';
-initializeParseClient();
+
+// tslint:disable-next-line
+
+const { PORT = 3000, APP_ID = 'jk-budgit', MASTER_KEY = 'myMasterKey' } = process.env;
+const SERVER_URL = process.env.SERVER_URL || `http://localhost:${PORT}/parse`;
+
+initializeParseClient(APP_ID, MASTER_KEY, SERVER_URL);
 
 import logger from './logger';
 import plaid from './plaid';
-
-// tslint:disable-next-line
-const ParseServer = require('parse-server').ParseServer;
-
-const { PORT = 3000 } = process.env;
-const SERVER_URL = process.env.SERVER_URL || `http://localhost:${PORT}/parse`;
-
 const app = express();
 
+app.use(cookieParser(process.env.COOKIE_SECRET));
 app.use(bodyParser.json());
 app.use((req, res, next) => {
     logger.info(`Request on path: ${req.path}`);
     next();
 });
 
+const ParseServer = require('parse-server').ParseServer;
 const parse = new ParseServer({
     databaseURI: process.env.MONGODB_URI || 'mongodb://localhost:27017/dev',
-    appId: process.env.PARSE_APP_ID || 'testAppId',
-    masterKey: process.env.MASTER_KEY || 'myMasterKey',
+    appId: APP_ID,
+    masterKey: MASTER_KEY,
     liveQuery: {
         classNames: ['Item'], // List of classes to support for query subscriptions
     },
     serverURL: SERVER_URL,
+    expireInactiveSessions: true,
+    sessionLength: 60 * 60 * 1000,
 });
+
 app.use('/parse', parse);
 app.use(plaid);
 
