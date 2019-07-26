@@ -14,6 +14,7 @@
 
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
+import AccountModule from '@/app/store/AccountModule';
 import Navigation from './Navigation.vue';
 import AccountList from './AccountList.vue';
 import Account from './Account.vue';
@@ -27,7 +28,7 @@ import Account from './Account.vue';
 })
 export default class App extends Vue {
   public mounted() {
-    this.$store.dispatch('loadAccounts');
+    AccountModule.loadAccounts();
   }
 }
 </script>

@@ -11,14 +11,14 @@
             :key="account.accountId"
             @click="accountClicked(account)"
         >
-            X {{ account.name }}
+            {{ account.name }}
         </div>
     </div>
 </template>
 
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
-import { mapState } from 'vuex';
+import AccountModule from '@/app/store/AccountModule';
 import Account from '@/models/Account';
 import NewAccount from './NewAccount.vue';
 
@@ -26,16 +26,13 @@ import NewAccount from './NewAccount.vue';
     components: {
         NewAccount,
     },
-    computed: {
-        ...mapState(['accounts']),
-    },
 })
 export default class AcountList extends Vue {
     public selectedId: string = '';
 
-    // get accounts(): Account[] {
-    //     return this.$store.state.accounts;
-    // }
+    public get accounts(): Account[] {
+        return AccountModule.accounts;
+    }
 
     public accountClicked(account: Account) {
         this.selectedId = account.accountId;

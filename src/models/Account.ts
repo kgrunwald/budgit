@@ -6,8 +6,8 @@ if (typeof window !== 'undefined') {
 }
 /* tslint:enable */
 
-class Account extends Parse.Object {
-    constructor(...args: any[]) {
+export class Account extends Parse.Object {
+    constructor() {
         super('Account');
     }
 
