@@ -1,4 +1,4 @@
-import plaid from 'plaid';
+import plaid, { InstitutionWithInstitutionData } from 'plaid';
 import Parse from 'parse/node';
 import { Router, Request, Response } from 'express';
 import logger from '../logger';

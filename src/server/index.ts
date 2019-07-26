@@ -36,7 +36,7 @@ const parse = new ParseServer({
     appId: APP_ID,
     masterKey: MASTER_KEY,
     liveQuery: {
-        classNames: ['Item'], // List of classes to support for query subscriptions
+        classNames: ['Item', 'Account'],
     },
     serverURL: SERVER_URL,
     expireInactiveSessions: true,

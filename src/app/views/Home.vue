@@ -15,9 +15,11 @@
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
 import AccountModule from '@/app/store/AccountModule';
+import AccountSubscription from '@/app/store/Subscriber';
 import Navigation from './Navigation.vue';
 import AccountList from './AccountList.vue';
 import Account from './Account.vue';
+import AccountSubsciption from '@/app/store/Subscriber';
 
 @Component({
   components: {
@@ -27,8 +29,11 @@ import Account from './Account.vue';
   },
 })
 export default class App extends Vue {
-  public mounted() {
+  public async mounted() {
     AccountModule.loadAccounts();
+
+    const sub = new AccountSubsciption();
+    await sub.subscribe();
   }
 }
 </script>
