@@ -58,6 +58,22 @@ export class Account extends Parse.Object {
     set subType(type: string) {
         this.set('subType', type);
     }
+
+    get logo(): string {
+        return this.get('logo');
+    }
+
+    set logo(logo: string) {
+        this.set('logo', `data:image/png;base64, ${logo}`);
+    }
+
+    get color(): string {
+        return this.get('color');
+    }
+
+    set color(color: string) {
+        this.set('color', color);
+    }
 }
 
 Parse.Object.registerSubclass('Account', Account);

@@ -6,11 +6,15 @@
         </div>
         <div 
             class="account-item" 
+            :style="accountItemStyle(account.color)"
             :class="{ selected: selectedId === account.accountId }"
             v-for="account in accounts" 
             :key="account.accountId"
             @click="accountClicked(account)"
         >
+            <div class="bank-icon">
+                <b-img :src="account.logo" fluid alt="Responsive image"></b-img>
+            </div>
             {{ account.name }}
         </div>
     </div>
@@ -30,6 +34,12 @@ import NewAccount from './NewAccount.vue';
 export default class AcountList extends Vue {
     public selectedId: string = '';
 
+    public accountItemStyle(color: string) {
+        return {
+            '--account-item-color': color,
+        };
+    }
+
     public get accounts(): Account[] {
         return AccountModule.accounts;
     }
@@ -41,20 +51,44 @@ export default class AcountList extends Vue {
 </script>
 
 <style lang="scss" scoped>
+
 .account-list {
     width: 100%;
 }
 
+.bank-icon {
+    width: 30px;
+    height: 30px;
+    padding-right: 8px;
+}
+
 .account-item {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
     padding: 4px 8px;
     cursor: pointer;
+    position: relative;
 
-    &:hover {
-        background-color: #eee;
+    &:before{
+        display: block;
+        content: "";
+        position: absolute;
+        z-index: -1;
+        background: var(--account-item-color);;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        opacity: 0.5;
     }
 
-    &.selected {
-        background-color: #eee;
+    &:hover:before {
+        opacity: 1;
+    }
+
+    &.selected:before {
+        opacity: 1;
     }
 }
 

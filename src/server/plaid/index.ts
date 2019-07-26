@@ -51,6 +51,8 @@ async function getAccounts(user: Parse.User, accessToken: string): Promise<void>
         if (validTypes.includes(account.type || '')) {
             logger.info("Saving account", account);
 
+            const {institution} = await client.getInstitutionById<InstitutionWithInstitutionData>(response.item.institution_id, {include_optional_metadata: true})
+
             const model = new Account();
             model.accountId = account.account_id;
             model.availableBalance = account.balances.available || 0;
@@ -58,6 +60,8 @@ async function getAccounts(user: Parse.User, accessToken: string): Promise<void>
             model.name = account.name || '<no name>';
             model.subType = account.subtype || '';
             model.type = account.type || '';
+            model.color = institution.primary_color
+            model.logo = institution.logo
             
             model.setACL(new Parse.ACL(user));
             await model.save();

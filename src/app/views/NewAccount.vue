@@ -5,6 +5,7 @@
             :publicKey="PLAID_PUBLIC_KEY"
             clientName="Budgit"
             product="transactions"
+            :token="token"
             v-bind="{ onSuccess }">
             <template slot="button" slot-scope="props">
               <div class="icon">
@@ -21,6 +22,9 @@ import PlaidLink from 'vue-plaid-link';
 
 @Component({
   components: { PlaidLink },
+  props: {
+    token: String,
+  },
 })
 export default class NewAccount extends Vue {
     public PLAID_PUBLIC_KEY = process.env.VUE_APP_PLAID_PUBLIC_KEY;
