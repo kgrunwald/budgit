@@ -15,22 +15,22 @@
     </section>
 </template>
 
-<script>
+<script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
-import PlaidLink from 'vue-plaid-link'
+import PlaidLink from 'vue-plaid-link';
 
 @Component({
   components: { PlaidLink },
 })
 export default class NewAccount extends Vue {
-    PLAID_PUBLIC_KEY = process.env.VUE_APP_PLAID_PUBLIC_KEY;
-    PLAID_ENVIRONMENT = process.env.VUE_APP_PLAID_ENV;
-    async onSuccess(token) {
+    public PLAID_PUBLIC_KEY = process.env.VUE_APP_PLAID_PUBLIC_KEY;
+    public PLAID_ENVIRONMENT = process.env.VUE_APP_PLAID_ENV;
+    public async onSuccess(token: string) {
           const resp = await fetch('/get_access_token', {
-              method: 'post', 
+              method: 'post',
               headers: {'Content-Type': 'application/json'},
-               body: JSON.stringify({public_token: token})
-            })
+               body: JSON.stringify({public_token: token}),
+            });
     }
 }
 </script>
