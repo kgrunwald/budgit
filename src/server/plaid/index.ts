@@ -65,15 +65,23 @@ async function getAccounts(user: Parse.User, accessToken: string): Promise<void>
 }
 
 plaidRouter.post('/login', async (req: Request, res: Response) => {
-    const { username, password } = req.body;
-    const user = await Parse.User.logIn(username, password);
-    logger.info("User", user);
-    res.cookie('token', user.getSessionToken(), {
-        maxAge: 60 * 60 * 1000,
-        signed: true,
-        httpOnly: true
-    });
-    res.json(user);
+    try {
+        const { username, password } = req.body;
+        const user = await Parse.User.logIn(username, password);
+        logger.info("User", user);
+        res.cookie('token', user.getSessionToken(), {
+            maxAge: 60 * 60 * 1000,
+            signed: true,
+            httpOnly: true
+        });
+        res.json(user);
+    } catch (err) {
+        if (err.message === 'Invalid username/password.') {
+            res.status(401).json({ error: err.message });
+        } else {
+            res.status(500).json({ error: err.message });
+        }
+    }
 });
 
 export default plaidRouter;
