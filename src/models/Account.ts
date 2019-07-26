@@ -19,6 +19,14 @@ export class Account extends Parse.Object {
         this.set('accountId', id);
     }
 
+    get itemId(): string {
+        return this.get('itemId');
+    }
+
+    set itemId(id: string) {
+        this.set('itemId', id);
+    }
+
     get availableBalance(): number {
         return this.get('available');
     }

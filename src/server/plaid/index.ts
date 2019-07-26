@@ -55,6 +55,7 @@ async function getAccounts(user: Parse.User, accessToken: string): Promise<void>
 
             const model = new Account();
             model.accountId = account.account_id;
+            model.itemId = response.item.item_id
             model.availableBalance = account.balances.available || 0;
             model.currentBalance = account.balances.current || 0;
             model.name = account.name || '<no name>';
