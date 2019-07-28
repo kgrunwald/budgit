@@ -14,13 +14,8 @@
             :key="account.accountId"
             @click="accountClicked(account)"
         >
-<<<<<<< HEAD
             <div class="account-status" >
                 <font-awesome-icon v-if="account.name === 'Plaid CD'" icon="exclamation-circle"/>
-=======
-            <div class="bank-icon">
-                <b-img :src="account.logo" fluid alt="Responsive image"></b-img>
->>>>>>> 6c8537f3e3178de2e1c03dc8327a3785e5b5c74f
             </div>
             {{ account.name }}
         </div>
