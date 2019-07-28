@@ -36,28 +36,34 @@ plaidRouter.post('/get_access_token', async (req: Request, res: Response) => {
         item.setACL(new Parse.ACL(user));
         await item.save();
 
-        getAccounts(user, item.accessToken);
+        getAccounts(user, item);
         res.json({'error': false});
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
 });
 
-async function getAccounts(user: Parse.User, accessToken: string): Promise<void> {
+async function getAccounts(user: Parse.User, item: Item): Promise<void> {
     logger.info("Getting accounts for user " + user.getUsername());
     const validTypes = ['depository', 'credit'];
-    const response = await client.getAccounts(accessToken);
+    const response = await client.getAccounts(item.accessToken);
+    
     response.accounts.forEach(async (account) => {
         if (validTypes.includes(account.type || '')) {
             logger.info("Saving account", account);
 
+            const {institution} = await client.getInstitutionById<InstitutionWithInstitutionData>(response.item.institution_id, {include_optional_metadata: true})
+
             const model = new Account();
             model.accountId = account.account_id;
+            model.item = item
             model.availableBalance = account.balances.available || 0;
             model.currentBalance = account.balances.current || 0;
             model.name = account.name || '<no name>';
             model.subType = account.subtype || '';
             model.type = account.type || '';
+            model.color = institution.primary_color
+            model.logo = institution.logo
             
             model.setACL(new Parse.ACL(user));
             await model.save();

@@ -6,6 +6,9 @@ if (typeof window !== 'undefined') {
 }
 /* tslint:enable */
 
+import Item from './Item';
+import { Pointer } from 'parse';
+
 export class Account extends Parse.Object {
     constructor() {
         super('Account');
@@ -17,6 +20,14 @@ export class Account extends Parse.Object {
 
     set accountId(id: string) {
         this.set('accountId', id);
+    }
+
+    get item(): Item {
+        return this.get('item');
+    }
+
+    set item(item: Item) {
+        this.set('item', item);
     }
 
     get availableBalance(): number {
@@ -57,6 +68,22 @@ export class Account extends Parse.Object {
 
     set subType(type: string) {
         this.set('subType', type);
+    }
+
+    get logo(): string {
+        return this.get('logo');
+    }
+
+    set logo(logo: string) {
+        this.set('logo', `data:image/png;base64, ${logo}`);
+    }
+
+    get color(): string {
+        return this.get('color');
+    }
+
+    set color(color: string) {
+        this.set('color', color);
     }
 }
 

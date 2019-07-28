@@ -8,13 +8,19 @@
         </div>
         <div 
             class="account-item" 
+            :style="accountItemStyle(account.color)"
             :class="{ selected: selectedId === account.accountId }"
             v-for="account in accounts" 
             :key="account.accountId"
             @click="accountClicked(account)"
         >
+<<<<<<< HEAD
             <div class="account-status" >
                 <font-awesome-icon v-if="account.name === 'Plaid CD'" icon="exclamation-circle"/>
+=======
+            <div class="bank-icon">
+                <b-img :src="account.logo" fluid alt="Responsive image"></b-img>
+>>>>>>> 6c8537f3e3178de2e1c03dc8327a3785e5b5c74f
             </div>
             {{ account.name }}
         </div>
@@ -34,6 +40,12 @@ import NewAccount from './NewAccount.vue';
 })
 export default class AcountList extends Vue {
     public selectedId: string = '';
+
+    public accountItemStyle(color: string) {
+        return {
+            '--account-item-color': color,
+        };
+    }
 
     public get accounts(): Account[] {
         return AccountModule.accounts;
@@ -56,7 +68,16 @@ export default class AcountList extends Vue {
     height: 100%;
 }
 
+.bank-icon {
+    width: 30px;
+    height: 30px;
+    padding-right: 8px;
+}
+
 .account-item {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
     padding: 4px 8px;
     font-weight: 300;
     cursor: pointer;
