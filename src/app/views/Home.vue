@@ -3,10 +3,10 @@
     <Navigation />
     <div class="page-container">
       <div class="account-list-container">
-        <AccountList />
+        <AccountList :onAccountClick="handleAccountClick" :selectedAccountId="selectedAccountId"/>
       </div>
       <div class="content-container">
-        <Account />
+        <Account  v-if="selectedAccountId" :account="selectedAccount"/>
       </div>
     </div>
   </div>
@@ -20,6 +20,7 @@ import Navigation from './Navigation.vue';
 import AccountList from './AccountList.vue';
 import Account from './Account.vue';
 import AccountSubsciption from '@/app/store/Subscriber';
+import AccountModel from '@/models/Account';
 
 @Component({
   components: {
@@ -29,11 +30,19 @@ import AccountSubsciption from '@/app/store/Subscriber';
   },
 })
 export default class App extends Vue {
+  public selectedAccount?: AccountModel;
+  public selectedAccountId: string = '';
+
   public async mounted() {
     AccountModule.loadAccounts();
 
     const sub = new AccountSubsciption();
     await sub.subscribe();
+  }
+
+  public handleAccountClick(account: AccountModel) {
+    this.selectedAccount = account;
+    this.selectedAccountId = account.accountId;
   }
 }
 </script>

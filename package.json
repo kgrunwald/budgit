@@ -26,6 +26,7 @@
     "bootstrap-vue": "^2.0.0-rc.27",
     "cookie-parser": "^1.4.4",
     "core-js": "^2.6.5",
+    "currency-formatter": "^1.5.4",
     "dotenv": "^8.0.0",
     "express": "^4.17.1",
     "parse": "^2.5.1",

@@ -9,10 +9,10 @@
         <div 
             class="account-item" 
             :style="accountItemStyle(account.color)"
-            :class="{ selected: selectedId === account.accountId }"
+            :class="{ selected: selectedAccountId === account.accountId }"
             v-for="account in accounts" 
             :key="account.accountId"
-            @click="accountClicked(account)"
+            @click="onAccountClick(account)"
         >
             <div class="account-status" >
                 <font-awesome-icon v-if="account.name === 'Plaid CD'" icon="exclamation-circle"/>
@@ -32,10 +32,12 @@ import NewAccount from './NewAccount.vue';
     components: {
         NewAccount,
     },
+    props: {
+        onAccountClick: Function,
+        selectedAccountId: String,
+    },
 })
 export default class AcountList extends Vue {
-    public selectedId: string = '';
-
     public accountItemStyle(color: string) {
         return {
             '--account-item-color': color,
@@ -44,10 +46,6 @@ export default class AcountList extends Vue {
 
     public get accounts(): Account[] {
         return AccountModule.accounts;
-    }
-
-    public accountClicked(account: Account) {
-        this.selectedId = account.accountId;
     }
 }
 </script>
