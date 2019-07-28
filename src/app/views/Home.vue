@@ -50,7 +50,6 @@ export default class App extends Vue {
 
 .account-list-container {
   width: 15%;
-  height: 100%;
   display: flex;
   border-right: solid black 1px;
 }

@@ -1,8 +1,10 @@
 <template>
     <div class="account-list">
         <div class="title">
-            <h3>Accounts</h3>
-            <NewAccount />
+            <span>Accounts</span>
+            <div class="new-account-container">
+                <NewAccount />
+            </div>
         </div>
         <div 
             class="account-item" 
@@ -11,6 +13,9 @@
             :key="account.accountId"
             @click="accountClicked(account)"
         >
+            <div class="account-status" >
+                <font-awesome-icon v-if="account.name === 'Plaid CD'" icon="exclamation-circle"/>
+            </div>
             {{ account.name }}
         </div>
     </div>
@@ -41,28 +46,56 @@ export default class AcountList extends Vue {
 </script>
 
 <style lang="scss" scoped>
+@import "@/app/styles/custom.scss";
+
 .account-list {
     width: 100%;
+    background-color: lighten($primary, 10%);
+    color: $white;
+    border: none;
+    height: 100%;
 }
 
 .account-item {
     padding: 4px 8px;
+    font-weight: 300;
     cursor: pointer;
+    display: flex;
 
     &:hover {
-        background-color: #eee;
+        background-color: lighten($primary, 5%);
     }
 
     &.selected {
-        background-color: #eee;
+        background-color: darken($primary, 10%);
+    }
+
+    .account-status {
+        font-size: 11px;
+        margin: 2px 8px 0 0;
+        min-width: 11px;
     }
 }
 
 .title {
     padding-left: 8px;
     display: flex;
+    justify-content: space-between;
     flex-direction: row;
     align-items: center;
+
+    span {
+        font-weight: 200;
+        font-size: 12px;
+        text-transform: uppercase;
+    }
+
+    .new-account-container {
+        float: right;
+        font-size: 12px;
+        margin-right: 8px;
+        cursor: pointer;
+    }
 }
 </style>
 

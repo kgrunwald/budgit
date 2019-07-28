@@ -34,8 +34,9 @@ export default class Account extends Vue {
 <style lang="scss" scoped>
 .account-container {
     width: 100%;
+    height: 100%;
     padding: 10px;
-    background-color: #eee;
+    background-color: #fafafa;
 }
 
 .card:first-child {
