@@ -1,13 +1,20 @@
 <template>
     <div class="account-container">
         <b-card>
-            <div class="account-title">
-                <span>{{ account.name }}</span>
-                <span :class="account.currentBalance > 0 ? 'positive' : 'negative'">{{ currentBalance }}</span>
-            </div>
-            <div class="type">
-                <span>{{ account.subType }}</span>
-                <span>Current Balance</span>
+            <div class="account-header">
+                <div class="account-icon">
+                    <b-img class="icon" :src="account.logo"></b-img>
+                </div>
+                <div class="account-info">
+                    <div class="account-title">
+                        <span>{{ account.name }}</span>
+                        <span :class="account.currentBalance > 0 ? 'positive' : 'negative'">{{ currentBalance }}</span>
+                    </div>
+                    <div class="type">
+                        <span>{{ account.subType }}</span>
+                        <span>Current Balance</span>
+                    </div>
+                </div>
             </div>
         </b-card>
         <b-card no-body="">
@@ -65,27 +72,51 @@ export default class Account extends Vue {
     padding: 10px;
     background-color: #fafafa;
 
-    .account-title {
+    .account-header {
         display: flex;
-        font-size: 18px;
-        font-weight: 500;
-        justify-content: space-between;
+        width: 100%;
+        flex-direction: row;
+        align-items: center;
 
-        .positive {
-            color: $green;
+        .account-icon {
+            display: flex;
+            justify-content: center;
+            flex-direction: column;
+            padding-right: 20px;
+
+            .icon {
+                width: 40px;
+                height: 40px;
+            }
         }
 
-        .negative {
-            color: $red;
-        }
-    }
+        .account-info {
+            width: 100%;
 
-    .type {
-        display: flex;
-        justify-content: space-between;
-        text-transform: capitalize;
-        font-size: 14px;
-        font-weight: 300;
+            .account-title {
+                display: flex;
+                font-size: 18px;
+                font-weight: 500;
+                justify-content: space-between;
+                width: 100%;
+
+                .positive {
+                    color: $green;
+                }
+
+                .negative {
+                    color: $red;
+                }
+            }
+
+            .type {
+                display: flex;
+                justify-content: space-between;
+                text-transform: capitalize;
+                font-size: 14px;
+                font-weight: 300;
+            }
+        }
     }
 }
 
