@@ -11,7 +11,7 @@
     "stop:db": "docker kill mongodb",
     "start:client": "yarn serve",
     "start:server": "nodemon",
-    "start:prod": "node dist/server/index.js",
+    "start:prod": "node dist/server/server/index.js",
     "build": "vue-cli-service build && tsc --skipLibCheck -p src/server",
     "clean": "rm -rf dist",
     "lint": "vue-cli-service lint",
