@@ -45,7 +45,7 @@ export default class Account extends Vue {
     }
 
     get currentBalance(): string {
-        return formatter.format(this.account.currentBalance, { code: 'USD' });
+        return formatter.format(this.$props.account.currentBalance, { code: 'USD' });
     }
 }
 </script>
