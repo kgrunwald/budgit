@@ -4,6 +4,8 @@ import { Router, Request, Response } from 'express';
 import logger from '../logger';
 import Item from '../../models/Item';
 import Account from '../../models/Account';
+import Transaction from '../../models/Transaction';
+import { subDays, format} from 'date-fns';
 
 const CLIENT_ID = process.env.PLAID_CLIENT_ID || '';
 const PLAID_SECRET = process.env.PLAID_SECRET || '';
@@ -16,6 +18,8 @@ const client = new plaid.Client(
     plaid.environments.sandbox,
     {version: '2019-05-29'},
 );
+
+const DATE_FORMAT = 'YYYY-MM-DD';
 
 const plaidRouter = Router();
 
@@ -67,8 +71,36 @@ async function getAccounts(user: Parse.User, item: Item): Promise<void> {
             
             model.setACL(new Parse.ACL(user));
             await model.save();
+            await getTransactions(user, model);
         }
     })
+}
+
+async function getTransactions(user: Parse.User, account: Account): Promise<void> {
+    try {
+        logger.info("Getting transactions for user: " + user.getUsername() + " and account: " + account.accountId);
+
+        const endDate = format(Date(), DATE_FORMAT);
+        const startDate = format(subDays(endDate, 30), DATE_FORMAT);
+        logger.info(`Loading transactions from ${startDate} to ${endDate}`);
+        const response = await client.getTransactions(account.item.accessToken, startDate, endDate, {
+            account_ids: [account.accountId]
+        });
+
+        response.transactions.forEach(async (transaction) => {
+            logger.info("Transaction", transaction);
+
+            const txn = new Transaction();
+            txn.merchant = transaction.name || '';
+            txn.date = transaction.date;
+            txn.amount = transaction.amount || 0;
+            txn.category = (transaction.category && transaction.category[0] || '');
+            txn.account = account;
+            await txn.save();
+        });
+    } catch(e) {
+        logger.error('error', e);
+    }
 }
 
 plaidRouter.post('/login', async (req: Request, res: Response) => {

@@ -11,7 +11,12 @@
             </div>
         </b-card>
         <b-card no-body="">
-            <b-table striped hover small :items="transactions" :fields="fields" />
+            <b-table striped hover small :items="transactions" :fields="fields">
+                    <col slot="table-colgroup" width="10%" />
+                    <col slot="table-colgroup" width="40%" />
+                    <col slot="table-colgroup" width="40%" />
+                    <col slot="table-colgroup" width="10%">
+            </b-table>
         </b-card>
     </div>
 </template>
@@ -19,6 +24,7 @@
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
 import formatter from 'currency-formatter';
+import { format } from 'date-fns';
 import Transaction from '@/models/Transaction';
 import AccountModel from '@/models/Account';
 
@@ -30,15 +36,15 @@ import AccountModel from '@/models/Account';
 export default class Account extends Vue {
     public transactions: Transaction[] = [];
 
-    public fields = ['date', 'merchant', 'category', 'memo', 'amount'];
+    public fields = ['date', 'merchant', 'category', { key: 'formattedAmount', label: 'Amount'}];
 
     public mounted() {
         for (let i = 0; i < 10; i++) {
             const t = new Transaction();
             t.merchant = 'Merchant ' + i;
-            t.date = '2019/07/25';
-            t.amount = `$${i + 1}.00`;
-            t.memo = 'Memo ' + i;
+            t.date = format('2019-07-25', 'MM/DD/YYYY');
+            t.amount = 100 + i;
+            t.category = 'Coffee';
 
             this.transactions.push(t);
         }
