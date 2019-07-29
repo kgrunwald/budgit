@@ -61,7 +61,7 @@ export default class AcountList extends Vue {
     height: 100%;
 
     .title {
-        padding-left: 8px;
+        padding: 10px 0 10px 10px;
         display: flex;
         justify-content: space-between;
         flex-direction: row;

@@ -6,7 +6,7 @@
             clientName="Budgit"
             product="transactions"
             :token="token"
-            v-bind="{ onSuccess }">
+            v-bind="{ onSuccess, onExit, onEvent }">
             <template slot="button" slot-scope="props">
               <div class="icon">
                 <font-awesome-icon :icon="icon" @click="props.onClick" />
@@ -18,7 +18,7 @@
 
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
-import PlaidLink from 'vue-plaid-link';
+import PlaidLink from './PlaidLink.vue';
 
 @Component({
   components: { PlaidLink },
@@ -46,11 +46,19 @@ export default class AccountAction extends Vue {
         });
       }
     }
+
+    public async onExit(error: string, meta: object) {
+      // handle onExit
+    }
+
+    public async onEvent(event: string, meta: object) {
+      // handle onEvent
+    }
 }
 </script>
 
 <style lang="scss" scoped>
 .icon {
-    padding: 10px 10px 10px 10px;
+    padding: 0 10px 0 10px;
 }
 </style>
