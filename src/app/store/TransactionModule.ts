@@ -22,7 +22,7 @@ class TransactionModule extends VuexModule {
     public async loadTransactions(account: Account) {
         // @ts-ignore
         const query = new Parse.Query(Transaction);
-        // query.equalTo('account', account);
+        query.equalTo('account', account);
         const txns = await query.find();
         txns.forEach((txn: Transaction) => {
             this.addTransaction(txn);
@@ -44,9 +44,8 @@ class TransactionModule extends VuexModule {
 
     get byAccountId() {
         return (acctId: string): Transaction[] => {
-            const matches = pickBy(this.txnsByid, (key: string) => {
-                const txn = this.txnsByid[key] as Transaction;
-                return txn.account.accountId === acctId;
+            const matches = pickBy(this.txnsByid, (txn: Transaction) => {
+                return txn && txn.account.accountId === acctId;
             });
 
             // @ts-ignore

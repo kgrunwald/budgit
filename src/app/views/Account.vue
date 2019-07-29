@@ -42,16 +42,14 @@ import AccountModel from '@/models/Account';
     },
 })
 export default class Account extends Vue {
-    public transactions: Transaction[] = [];
-
     public fields = ['date', 'merchant', 'category', { key: 'formattedAmount', label: 'Amount'}];
-
-    public mounted() {
-        this.transactions = TransactionModule.byAccountId(this.$props.account.accountId);
-    }
 
     get currentBalance(): string {
         return formatter.format(this.$props.account.currentBalance, { code: 'USD' });
+    }
+
+    get transactions(): Transaction[] {
+        return TransactionModule.byAccountId(this.$props.account.accountId);
     }
 }
 </script>
