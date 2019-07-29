@@ -25,12 +25,12 @@ class TransactionModule extends VuexModule {
         query.equalTo('account', account);
         const txns = await query.find();
         txns.forEach((txn: Transaction) => {
-            this.addTransaction(txn);
+            this.add(txn);
         });
     }
 
     @Mutation
-    public addTransaction(txn: Transaction) {
+    public add(txn: Transaction) {
         this.txnsByid = {
             ...this.txnsByid,
             [txn.transactionId]: txn,
@@ -38,7 +38,7 @@ class TransactionModule extends VuexModule {
     }
 
     @Mutation
-    public removeTransaction(txn: Transaction) {
+    public remove(txn: Transaction) {
         this.txnsByid = omit(this.txnsByid, txn.transactionId);
     }
 

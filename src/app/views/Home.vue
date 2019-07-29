@@ -15,12 +15,13 @@
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
 import AccountModule from '@/app/store/AccountModule';
-import AccountSubscription from '@/app/store/Subscriber';
+import Subscriber from '@/app/store/Subscriber';
 import Navigation from './Navigation.vue';
 import AccountList from './AccountList.vue';
 import Account from './Account.vue';
-import AccountSubsciption from '@/app/store/Subscriber';
 import AccountModel from '@/models/Account';
+import Transaction from '../../models/Transaction';
+import TransactionModule from '../store/TransactionModule';
 
 @Component({
   components: {
@@ -36,8 +37,13 @@ export default class App extends Vue {
   public async mounted() {
     AccountModule.loadAccounts();
 
-    const sub = new AccountSubsciption();
-    await sub.subscribe();
+    // @ts-ignore
+    const acctSub = new Subscriber(AccountModel, AccountModule);
+    await acctSub.subscribe();
+
+    // @ts-ignore
+    const txnSub = new Subscriber(Transaction, TransactionModule);
+    await txnSub.subscribe();
   }
 
   public handleAccountClick(account: AccountModel) {
