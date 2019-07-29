@@ -21,13 +21,13 @@ class AccountModule extends VuexModule {
         const query = new Parse.Query(Account);
         const accounts = await query.find();
         accounts.forEach((account: Account) => {
-            this.addAccount(account);
+            this.add(account);
             TransactionModule.loadTransactions(account);
         });
     }
 
     @Mutation
-    public addAccount(account: Account) {
+    public add(account: Account) {
         this.accountsById = {
             ...this.accountsById,
             [account.accountId]: account,
@@ -35,7 +35,7 @@ class AccountModule extends VuexModule {
     }
 
     @Mutation
-    public removeAccount(account: Account) {
+    public remove(account: Account) {
         this.accountsById = omit(this.accountsById, account.accountId);
     }
 

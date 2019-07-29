@@ -1,37 +1,34 @@
 import Parse from 'parse';
-import Account from '@/models/Account';
-import Transaction from '@/models/Transaction';
-import AccountModule from './AccountModule';
-import TransactionModule from './TransactionModule';
 
-class AccountSubsciption {
+interface LiveQueryHandler {
+    add(obj: Parse.Object): void;
+    remove(obj: Parse.Object): void;
+}
+
+class Subscriber {
+    constructor(private t: Parse.Object, private handler: LiveQueryHandler) {}
+
     public async subscribe() {
-        // Subscribe to account updates
         // @ts-ignore
-        const accountQuery = new Parse.Query(Account);
-        const accountSubscription = await accountQuery.subscribe();
+        const query = new Parse.Query(this.t);
+        const subscription = await query.subscribe();
 
-        accountSubscription.on('create', (acct: Account) => {
-            AccountModule.addAccount(acct);
+        subscription.on('create', (obj: Parse.Object) => {
+            this.handler.add(obj);
         });
 
-        accountSubscription.on('delete', (acct: Account) => {
-            AccountModule.removeAccount(acct);
+        subscription.on('enter', (obj: Parse.Object) => {
+            this.handler.add(obj);
         });
 
-        // Subscribe to transaction updates
-        // @ts-ignore
-        const transactionQuery = new Parse.Query(Transaction);
-        const transactionSubscription = await transactionQuery.subscribe();
-
-        transactionSubscription.on('create', (trans: Transaction) => {
-            TransactionModule.addTransaction(trans);
+        subscription.on('delete', (obj: Parse.Object) => {
+            this.handler.remove(obj);
         });
 
-        transactionSubscription.on('delete', (trans: Transaction) => {
-            TransactionModule.removeTransaction(trans);
+        subscription.on('leave', (obj: Parse.Object) => {
+            this.handler.remove(obj);
         });
     }
 }
 
-export default AccountSubsciption;
+export default Subscriber;
