@@ -1,12 +1,7 @@
-/* tslint:disable */
-if (typeof window !== 'undefined') {
-    var Parse = require('parse');
-} else {
-    var Parse = require('parse/node');
-}
-/* tslint:enable */
+import Parse from './Parse';
+import PrivateModel from './PrivateModel';
 
-class Item extends Parse.Object {
+class Item extends PrivateModel {
     constructor() {
         super('Item');
     }

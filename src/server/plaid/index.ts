@@ -37,7 +37,10 @@ plaidRouter.post('/get_access_token', async (req: Request, res: Response) => {
         const item = new Item();
         item.accessToken = tokenResponse.access_token;
         item.itemId = tokenResponse.item_id;
-        item.setACL(new Parse.ACL(user));
+        const acl = new Parse.ACL();
+        acl.setPublicReadAccess(false);
+        acl.setPublicWriteAccess(false);
+        item.setACL(acl);
         await item.save();
 
         getAccounts(user, item);
@@ -69,8 +72,7 @@ async function getAccounts(user: Parse.User, item: Item): Promise<void> {
             model.color = institution.primary_color
             model.logo = institution.logo
             
-            model.setACL(new Parse.ACL(user));
-            await model.save();
+            await model.commit(user);
             await getTransactions(user, model);
         }
     })
@@ -98,7 +100,7 @@ async function getTransactions(user: Parse.User, account: Account): Promise<void
             txn.category = (transaction.category && transaction.category[0] || '');
             txn.account = account;
             
-            await txn.save();
+            await txn.commit(user);
         });
     } catch(e) {
         logger.error('error', e);

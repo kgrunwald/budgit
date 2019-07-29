@@ -1,15 +1,9 @@
-/* tslint:disable */
-if (typeof window !== 'undefined') {
-    var Parse = require('parse');
-} else {
-    var Parse = require('parse/node');
-}
-/* tslint:enable */
-
+import Parse from './Parse';
+import PrivateModel from './PrivateModel';
 import Account from './Account';
 import formatter from 'currency-formatter';
 
-class Transaction extends Parse.Object {
+class Transaction extends PrivateModel {
     constructor() {
         super('Transaction');
     }
