@@ -45,7 +45,7 @@ export default class PlaidLink extends Vue {
         console.log('There was an issue loading the link-initialize.js script: ', error);
     }
     public onScriptLoaded() {
-        const hello = (window as any).linkHandler = (window as any).Plaid.create({
+        (window as any).linkHandler = (window as any).Plaid.create({
             clientName: this.$props.clientName,
             env: this.$props.env,
             key: this.$props.publicKey,
