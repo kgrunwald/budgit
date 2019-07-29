@@ -27,7 +27,7 @@ import PlaidLink from 'vue-plaid-link';
     icon: String,
   },
 })
-export default class NewAccount extends Vue {
+export default class AccountAction extends Vue {
     public PLAID_PUBLIC_KEY = process.env.VUE_APP_PLAID_PUBLIC_KEY;
     public PLAID_ENVIRONMENT = process.env.VUE_APP_PLAID_ENV;
 

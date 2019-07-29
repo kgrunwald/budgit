@@ -3,7 +3,7 @@
         <div class="title">
             <span>Accounts</span>
             <div class="new-account-container">
-                <NewAccount icon="plus-circle" />
+                <AccountAction icon="plus-circle" />
             </div>
         </div>
         <div 
@@ -16,7 +16,7 @@
         >
             {{ account.name }}
             <div class="account-status" >
-                <NewAccount icon="sync" :token="account.refreshToken" v-if="account.name === 'Plaid CD'" />
+                <AccountAction icon="sync" :token="account.refreshToken" v-if="account.name === 'Plaid CD'" />
             </div>
         </div>
     </div>
@@ -26,11 +26,11 @@
 import { Component, Vue } from 'vue-property-decorator';
 import AccountModule from '@/app/store/AccountModule';
 import Account from '@/models/Account';
-import NewAccount from './NewAccount.vue';
+import AccountAction from './AccountAction.vue';
 
 @Component({
     components: {
-        NewAccount,
+        AccountAction,
     },
     props: {
         onAccountClick: Function,
