@@ -5,11 +5,11 @@
             :publicKey="PLAID_PUBLIC_KEY"
             clientName="Budgit"
             product="transactions"
-            :token="token"
+            :token="refreshToken"
             v-bind="{ onSuccess }">
             <template slot="button" slot-scope="props">
               <div class="icon">
-                <font-awesome-icon icon="plus-circle" @click="props.onClick" />
+                <font-awesome-icon :icon="icon" @click="props.onClick" />
               </div>
             </template>
         </plaid-link>
@@ -24,17 +24,19 @@ import PlaidLink from 'vue-plaid-link';
   components: { PlaidLink },
   props: {
     token: String,
+    icon: String,
   },
 })
 export default class NewAccount extends Vue {
     public PLAID_PUBLIC_KEY = process.env.VUE_APP_PLAID_PUBLIC_KEY;
     public PLAID_ENVIRONMENT = process.env.VUE_APP_PLAID_ENV;
+
     public async onSuccess(token: string) {
-          const resp = await fetch('/get_access_token', {
-              method: 'post',
-              headers: {'Content-Type': 'application/json'},
-               body: JSON.stringify({public_token: token}),
-            });
+      const resp = await fetch('/get_access_token', {
+          method: 'post',
+          headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({public_token: token}),
+        });
     }
 }
 </script>

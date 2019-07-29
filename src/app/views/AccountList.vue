@@ -3,21 +3,21 @@
         <div class="title">
             <span>Accounts</span>
             <div class="new-account-container">
-                <NewAccount />
+                <NewAccount icon="plus-circle" />
             </div>
         </div>
         <div 
             class="account-item" 
             :style="accountItemStyle(account.color)"
             :class="{ selected: selectedAccountId === account.accountId }"
-            v-for="account in accounts" 
+            v-for="account in accounts"
             :key="account.accountId"
             @click="onAccountClick(account)"
         >
-            <div class="account-status" >
-                <font-awesome-icon v-if="account.name === 'Plaid CD'" icon="sync"/>
-            </div>
             {{ account.name }}
+            <div class="account-status" >
+                <NewAccount icon="sync" :token="account.refreshToken" v-if="account.name === 'Plaid CD'" />
+            </div>
         </div>
     </div>
 </template>
@@ -84,6 +84,7 @@ export default class AcountList extends Vue {
     .account-item {
         display: flex;
         flex-direction: row;
+        justify-content: space-between;
         align-items: center;
         padding: 4px 8px;
         font-weight: 300;
@@ -100,7 +101,6 @@ export default class AcountList extends Vue {
 
         .account-status {
             font-size: 11px;
-            margin-right: 8px;
             min-width: 11px;
             display: flex;
             align-items: center;
