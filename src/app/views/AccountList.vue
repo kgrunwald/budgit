@@ -15,7 +15,7 @@
             @click="onAccountClick(account)"
         >
             <div class="account-status" >
-                <font-awesome-icon v-if="account.name === 'Plaid CD'" icon="exclamation-circle"/>
+                <font-awesome-icon v-if="account.name === 'Plaid CD'" icon="sync"/>
             </div>
             {{ account.name }}
         </div>
@@ -59,58 +59,52 @@ export default class AcountList extends Vue {
     color: $white;
     border: none;
     height: 100%;
-}
 
-.bank-icon {
-    width: 30px;
-    height: 30px;
-    padding-right: 8px;
-}
-
-.account-item {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    padding: 4px 8px;
-    font-weight: 300;
-    cursor: pointer;
-    display: flex;
-
-    &:hover {
-        background-color: lighten($primary, 5%);
-    }
-
-    &.selected {
-        background-color: darken($primary, 10%);
-    }
-
-    .account-status {
-        font-size: 11px;
-        margin-right: 8px;
-        min-width: 11px;
+    .title {
+        padding-left: 8px;
         display: flex;
+        justify-content: space-between;
+        flex-direction: row;
         align-items: center;
+
+        span {
+            font-weight: 200;
+            font-size: 12px;
+            text-transform: uppercase;
+        }
+
+        .new-account-container {
+            float: right;
+            font-size: 12px;
+            margin-right: 8px;
+            cursor: pointer;
+        }
     }
-}
 
-.title {
-    padding-left: 8px;
-    display: flex;
-    justify-content: space-between;
-    flex-direction: row;
-    align-items: center;
-
-    span {
-        font-weight: 200;
-        font-size: 12px;
-        text-transform: uppercase;
-    }
-
-    .new-account-container {
-        float: right;
-        font-size: 12px;
-        margin-right: 8px;
+    .account-item {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        padding: 4px 8px;
+        font-weight: 300;
         cursor: pointer;
+        display: flex;
+
+        &:hover {
+            background-color: lighten($primary, 5%);
+        }
+
+        &.selected {
+            background-color: darken($primary, 10%);
+        }
+
+        .account-status {
+            font-size: 11px;
+            margin-right: 8px;
+            min-width: 11px;
+            display: flex;
+            align-items: center;
+        }
     }
 }
 </style>

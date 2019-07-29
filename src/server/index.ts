@@ -36,7 +36,7 @@ const parse = new ParseServer({
     appId: APP_ID,
     masterKey: MASTER_KEY,
     liveQuery: {
-        classNames: ['Item', 'Account'],
+        classNames: ['Item', 'Account', 'Transaction'],
     },
     serverURL: SERVER_URL,
     expireInactiveSessions: true,
