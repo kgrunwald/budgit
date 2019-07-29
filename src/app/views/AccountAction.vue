@@ -5,7 +5,7 @@
             :publicKey="PLAID_PUBLIC_KEY"
             clientName="Budgit"
             product="transactions"
-            :token="refreshToken"
+            :token="token"
             v-bind="{ onSuccess }">
             <template slot="button" slot-scope="props">
               <div class="icon">
@@ -32,11 +32,19 @@ export default class AccountAction extends Vue {
     public PLAID_ENVIRONMENT = process.env.VUE_APP_PLAID_ENV;
 
     public async onSuccess(token: string) {
-      const resp = await fetch('/get_access_token', {
+      if (this.$props.token) {
+        const resp = await fetch('/refresh_public_token', {
           method: 'post',
           headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({public_token: token}),
         });
+      } else {
+        const resp = await fetch('/get_access_token', {
+          method: 'post',
+          headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({public_token: token}),
+        });
+      }
     }
 }
 </script>

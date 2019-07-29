@@ -16,7 +16,7 @@
         >
             {{ account.name }}
             <div class="account-status" >
-                <AccountAction icon="sync" :token="account.refreshToken" v-if="account.name === 'Plaid CD'" />
+                <AccountAction icon="sync" :token="account.refreshToken" v-if="account.refreshToken" />
             </div>
         </div>
     </div>

@@ -79,6 +79,14 @@ export class Account extends PrivateModel {
     set color(color: string) {
         this.set('color', color);
     }
+
+    get refreshToken(): string {
+        return this.get('refreshToken');
+    }
+
+    set refreshToken(refreshToken: string) {
+        this.set('refreshToken', refreshToken);
+    }
 }
 
 Parse.Object.registerSubclass('Account', Account);
