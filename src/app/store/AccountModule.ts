@@ -1,7 +1,9 @@
-import { Module, VuexModule, Mutation, MutationAction, getModule } from 'vuex-module-decorators';
+import { Module, VuexModule, Mutation, Action, getModule } from 'vuex-module-decorators';
+import { omit, values } from 'lodash';
 import Parse from 'parse';
 import Account from '@/models/Account';
 import Store from './index';
+import TransactionModule from './TransactionModule';
 
 
 @Module({
@@ -11,34 +13,34 @@ import Store from './index';
     namespaced: true,
 })
 class AccountModule extends VuexModule {
-    public accounts: Account[] = [];
-    public accountsById: Map<string, Account> = new Map<string, Account>();
+    public accountsById: object = {};
 
-    @MutationAction
+    @Action
     public async loadAccounts() {
         // @ts-ignore
         const query = new Parse.Query(Account);
         const accounts = await query.find();
-        return { accounts };
+        accounts.forEach((account: Account) => {
+            this.addAccount(account);
+            TransactionModule.loadTransactions(account);
+        });
     }
 
     @Mutation
-    public addAccounts(accounts: Account[]) {
-        this.accounts = [
-            ...this.accounts,
-            ...accounts,
-        ];
+    public addAccount(account: Account) {
+        this.accountsById = {
+            ...this.accountsById,
+            [account.accountId]: account,
+        };
     }
 
     @Mutation
     public removeAccount(account: Account) {
-        this.accounts = this.accounts.reduce((acctList: Account[], acct: Account) => {
-            if (acct.accountId !== account.accountId) {
-                acctList.push(acct);
-            }
+        this.accountsById = omit(this.accountsById, account.accountId);
+    }
 
-            return acctList;
-        }, []);
+    get accounts(): Account[] {
+        return values(this.accountsById);
     }
 }
 

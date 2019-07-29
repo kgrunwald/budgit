@@ -32,6 +32,7 @@
 import { Component, Vue } from 'vue-property-decorator';
 import formatter from 'currency-formatter';
 import { format } from 'date-fns';
+import TransactionModule from '@/app/store/TransactionModule';
 import Transaction from '@/models/Transaction';
 import AccountModel from '@/models/Account';
 
@@ -41,24 +42,14 @@ import AccountModel from '@/models/Account';
     },
 })
 export default class Account extends Vue {
-    public transactions: Transaction[] = [];
-
     public fields = ['date', 'merchant', 'category', { key: 'formattedAmount', label: 'Amount'}];
-
-    public mounted() {
-        for (let i = 0; i < 10; i++) {
-            const t = new Transaction();
-            t.merchant = 'Merchant ' + i;
-            t.date = format('2019-07-25', 'MM/DD/YYYY');
-            t.amount = 100 + i;
-            t.category = 'Coffee';
-
-            this.transactions.push(t);
-        }
-    }
 
     get currentBalance(): string {
         return formatter.format(this.$props.account.currentBalance, { code: 'USD' });
+    }
+
+    get transactions(): Transaction[] {
+        return TransactionModule.byAccountId(this.$props.account.accountId);
     }
 }
 </script>
