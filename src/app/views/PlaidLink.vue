@@ -44,7 +44,9 @@ export default class PlaidLink extends Vue {
     public onScriptError(error: object) {
         console.log('There was an issue loading the link-initialize.js script: ', error);
     }
-    public onScriptLoaded() {
+
+    public handleOnClick() {
+        const institution = this.$props.institution || null;
         (window as any).linkHandler = (window as any).Plaid.create({
             clientName: this.$props.clientName,
             env: this.$props.env,
@@ -57,13 +59,8 @@ export default class PlaidLink extends Vue {
             token: this.$props.token,
             webhook: this.$props.webhook,
         });
-    }
-    public handleOnClick() {
-        this.onScriptLoaded();
-        const institution = this.$props.institution || null;
-        if ((window as any).linkHandler) {
-            (window as any).linkHandler.open(institution);
-        }
+
+        (window as any).linkHandler.open(institution);
     }
     public loadScript(src: string) {
         return new Promise((resolve, reject) => {
