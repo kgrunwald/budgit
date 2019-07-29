@@ -86,8 +86,10 @@ export default class AcountList extends Vue {
 
     .account-status {
         font-size: 11px;
-        margin: 2px 8px 0 0;
+        margin-right: 8px;
         min-width: 11px;
+        display: flex;
+        align-items: center;
     }
 }
 
