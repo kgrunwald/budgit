@@ -7,7 +7,7 @@ if (typeof window !== 'undefined') {
 /* tslint:enable */
 
 import Item from './Item';
-import { Pointer } from 'parse';
+import Transaction from './Transaction';
 
 export class Account extends Parse.Object {
     constructor() {

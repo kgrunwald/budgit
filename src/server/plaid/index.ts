@@ -91,11 +91,13 @@ async function getTransactions(user: Parse.User, account: Account): Promise<void
             logger.info("Transaction", transaction);
 
             const txn = new Transaction();
+            txn.transactionId = transaction.transaction_id;
             txn.merchant = transaction.name || '';
             txn.date = transaction.date;
             txn.amount = transaction.amount || 0;
             txn.category = (transaction.category && transaction.category[0] || '');
             txn.account = account;
+            
             await txn.save();
         });
     } catch(e) {

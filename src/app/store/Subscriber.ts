@@ -9,7 +9,7 @@ class AccountSubsciption {
         const subscription = await query.subscribe();
 
         subscription.on('create', (acct: Account) => {
-            AccountModule.addAccounts([acct]);
+            AccountModule.addAccount(acct);
         });
 
         subscription.on('delete', (acct: Account) => {

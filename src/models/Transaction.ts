@@ -14,6 +14,14 @@ class Transaction extends Parse.Object {
         super('Transaction');
     }
 
+    get transactionId(): string {
+        return this.get('transactionId');
+    }
+
+    set transactionId(id: string) {
+        this.set('transactionId', id);
+    }
+
     get merchant(): string {
         return this.get('merchant');
     }
