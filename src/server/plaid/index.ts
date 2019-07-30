@@ -75,7 +75,7 @@ plaidRouter.post('/refreshToken', async (req: Request, res: Response) => {
         
         const { accountId } = req.body;
         // @ts-ignore
-        const acct: Account = await new Parse.Query(Account).include('item').first({ accountId }, { useMasterKey: true });
+        const acct: Account = await new Parse.Query(Account).include('item').equalTo('accountId', accountId).first({ useMasterKey: true });
         logger.info(`Loaded account: ${acct.accountId}. Refreshing token for item: ${acct.item.itemId}`);
 
         const response = await client.createPublicToken(acct.item.accessToken);
@@ -94,7 +94,7 @@ plaidRouter.post('/updateAccounts', async (req: Request, res: Response) => {
         
         const { accountId } = req.body;
         // @ts-ignore
-        const acct: Account = await new Parse.Query(Account).include('item').first({ accountId });
+        const acct: Account = await new Parse.Query(Account).include('item').equalTo('accountId', accountId).first({ useMasterKey: true });
         logger.info(`Loaded account: ${acct.accountId}. Refreshing all transactions for item: ${acct.item.itemId}`);
 
         const item = acct.item;
