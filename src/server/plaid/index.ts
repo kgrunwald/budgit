@@ -100,7 +100,7 @@ plaidRouter.post('/updateAccounts', async (req: Request, res: Response) => {
         const item = acct.item;
 
         // @ts-ignore
-        const accts: Account[] = await new Parse.Query(Account).equalTo('item', item).find({ useMasterKey: true });
+        const accts: Account[] = await new Parse.Query(Account).includeAll().equalTo('item', item).find({ useMasterKey: true });
         logger.info(`Loaded all accounts for item ${item.itemId}`);
         accts.forEach(async (acct) => {
             logger.info(`Loading transactions for account: ${acct.accountId}`);
@@ -146,7 +146,7 @@ async function getAccounts(user: Parse.User, item: Item): Promise<void> {
         })
     } catch (err) {
         if (err.error_code === 'ITEM_LOGIN_REQUIRED') {
-            logger.info(`Login required for item: ${item.itemId}`);
+            logger.error(`Login required for item: ${item.itemId}`);
             await markItemTokenExpired(item);
         } else {
             logger.error('Error updating accounts:', err);

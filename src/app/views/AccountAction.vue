@@ -45,7 +45,7 @@ export default class AccountAction extends Vue {
     }
 
     public async onSuccess(token: string) {
-      if (this.$props.token) {
+      if (this.token) {
         const resp = await fetch('/updateAccounts', {
           method: 'post',
           headers: {'Content-Type': 'application/json'},
