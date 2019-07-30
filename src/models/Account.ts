@@ -87,6 +87,14 @@ export class Account extends PrivateModel {
     set refreshToken(refreshToken: string) {
         this.set('refreshToken', refreshToken);
     }
+
+    get expired(): boolean {
+        return this.get('expired');
+    }
+
+    set expired(expired: boolean) {
+        this.set('expired', expired);
+    }
 }
 
 Parse.Object.registerSubclass('Account', Account);

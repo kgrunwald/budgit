@@ -23,7 +23,7 @@ const DATE_FORMAT = 'YYYY-MM-DD';
 
 const plaidRouter = Router();
 
-plaidRouter.post('/get_access_token', async (req: Request, res: Response) => {
+plaidRouter.post('/getAccessToken', async (req: Request, res: Response) => {
     try {
         const user = await new Parse.Query(Parse.User).first({ sessionToken: req.signedCookies.token });
         if (!user) {
@@ -54,7 +54,7 @@ plaidRouter.post('/get_access_token', async (req: Request, res: Response) => {
     }
 });
 
-plaidRouter.post('/refresh_public_token', async (req: Request, res: Response) => {
+plaidRouter.post('/refreshToken', async (req: Request, res: Response) => {
     try {
         const user = await new Parse.Query(Parse.User).first({ sessionToken: req.signedCookies.token });
         if (!user) {
@@ -62,18 +62,50 @@ plaidRouter.post('/refresh_public_token', async (req: Request, res: Response) =>
             return
         }
 
-        logger.info('Got updated token from: ' + user.getUsername());
+        logger.info('Got refreshToken request from: ' + user.getUsername());
         
+        const { accountId } = req.body;
         // @ts-ignore
-        const accts = await new Parse.Query(Account).equalTo("_User", user).find();
-        logger.info(`Loaded ${accts.length} accounts for user: ${user.getUsername()}`);
+        const acct: Account = await new Parse.Query(Account).include('item').first({ accountId });
+        logger.info(`Loaded account: ${acct.accountId}. Refreshing token for item: ${acct.item.itemId}`);
 
-        accts.forEach((acct: Account) => {
-            getTransactions(user, acct);
-        });
-       
-        res.json({'error': false});
+        const response = await client.createPublicToken(acct.item.accessToken);
+        logger.info("Got new public token for account.", response);
+        res.json({ publicToken: response.public_token });
     } catch (err) {
+        logger.error("Error exchanging public token.", err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+plaidRouter.post('/updateAccounts', async (req: Request, res: Response) => {
+    try {
+        const user = await new Parse.Query(Parse.User).first({ sessionToken: req.signedCookies.token });
+        if (!user) {
+            res.status(404).json({message: 'user not found'});
+            return
+        }
+
+        logger.info('Got updateAccounts request from: ' + user.getUsername());
+        
+        const { accountId } = req.body;
+        // @ts-ignore
+        const acct: Account = await new Parse.Query(Account).include('item').first({ accountId });
+        logger.info(`Loaded account: ${acct.accountId}. Refreshing all transactions for item: ${acct.item.itemId}`);
+
+        const item = acct.item;
+
+        // @ts-ignore
+        const accts: Account[] = await new Parse.Query(Account).equalTo('item', item).find({ useMasterKey: true });
+        logger.info(`Loaded all accounts for item ${item.itemId}`);
+        accts.forEach(async (acct) => {
+            logger.info(`Loading transactions for account: ${acct.accountId}`);
+            await getTransactions(user, acct);
+        });
+
+        res.json({ error: false });
+    } catch (err) {
+        logger.error("Error updating accounts.", err);
         res.status(500).json({ error: err.message });
     }
 });
@@ -82,6 +114,7 @@ async function getAccounts(user: Parse.User, item: Item): Promise<void> {
     try {
         logger.info("Getting accounts for user " + user.getUsername());
         const validTypes = ['depository', 'credit'];
+
         const response = await client.getAccounts(item.accessToken);
         
         response.accounts.forEach(async (account) => {
@@ -90,26 +123,27 @@ async function getAccounts(user: Parse.User, item: Item): Promise<void> {
 
                 const {institution} = await client.getInstitutionById<InstitutionWithInstitutionData>(response.item.institution_id, {include_optional_metadata: true})
 
-                const model = new Account();
-                model.accountId = account.account_id;
-                model.item = item
-                model.availableBalance = account.balances.available || 0;
-                model.currentBalance = account.balances.current || 0;
-                model.name = account.name || '<no name>';
-                model.subType = account.subtype || '';
-                model.type = account.type || '';
-                model.color = institution.primary_color
-                model.logo = institution.logo
-                
-                model.setACL(new Parse.ACL(user));
-                await model.commit(user);
-                await getTransactions(user, model);
+                const acct = new Account();
+                acct.accountId = account.account_id;
+                acct.item = item
+                acct.availableBalance = account.balances.available || 0;
+                acct.currentBalance = account.balances.current || 0;
+                acct.name = account.name || '<no name>';
+                acct.subType = account.subtype || '';
+                acct.type = account.type || '';
+                acct.color = institution.primary_color
+                acct.logo = institution.logo
+                acct.expired = false;
+
+                acct.setACL(new Parse.ACL(user));
+                await acct.commit(user);
+                await getTransactions(user, acct);
             }
         })
     } catch (err) {
         if (err.error_code === 'ITEM_LOGIN_REQUIRED') {
             logger.info(`Login required for item: ${item.itemId}`);
-            await createRefreshToken(user, item);
+            await markItemTokenExpired(item);
         } else {
             logger.error('Error updating accounts:', err);
         }
@@ -140,28 +174,24 @@ async function getTransactions(user: Parse.User, account: Account): Promise<void
             
             await txn.commit(user);
         });
+
+        account.expired = false;
+        await account.save(null, { useMasterKey: true });
     } catch(err) {
         logger.error("Error loading transactions", err.message)
         throw err;
     }
 }
 
-async function createRefreshToken(user: Parse.User, item: Item) {
-    try {
-        logger.info(`Creating new public token for item ${item.itemId}`)
-        const resp = await client.createPublicToken(item.accessToken)
-        
-        // @ts-ignore
-        const accts = await new Parse.Query(Account).equalTo("item", item).find({ useMasterKey: true });
-        logger.info("Got accounts", accts);
-        accts.forEach(async (acct: Account) => {
-            logger.info(`Setting refresh token for account: ${acct.accountId}`);
-            acct.refreshToken = resp.public_token;
-            await acct.save(null, { useMasterKey: true });
-        });
-    } catch (err) {
-        logger.error("Error creating public token: ", err);
-    }
+async function markItemTokenExpired(item: Item): Promise<void> {
+    logger.info(`Marking all accounts for item ${item.itemId} as expired`);
+    // @ts-ignore
+    const accts: Account[] = await new Parse.Query(Account).equalTo('item', item).find({ useMasterKey: true });
+    accts.forEach(async (acct) => {
+        logger.info(`Marking account ${acct.accountId} expired.`)
+        acct.expired = true;
+        await acct.save(null, { useMasterKey: true });
+    });
 }
 
 plaidRouter.post('/login', async (req: Request, res: Response) => {
