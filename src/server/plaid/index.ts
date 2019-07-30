@@ -1,6 +1,6 @@
 import plaid, { InstitutionWithInstitutionData } from 'plaid';
-import Parse from 'parse/node';
-import { Router, Request, Response } from 'express';
+import Parse, { User } from 'parse/node';
+import { Router, Request, Response, NextFunction } from 'express';
 import logger from '../logger';
 import Item from '../../models/Item';
 import Account from '../../models/Account';
@@ -19,18 +19,32 @@ const client = new plaid.Client(
     {version: '2019-05-29'},
 );
 
+declare global {
+    namespace Express {
+      interface Request {
+        user: Parse.User
+      }
+    }
+  }
+
 const DATE_FORMAT = 'YYYY-MM-DD';
 
 const plaidRouter = Router();
 
+plaidRouter.use(async (req: Request, res: Response, next: NextFunction) => {
+    const user = await new Parse.Query(Parse.User).first({ sessionToken: req.signedCookies.token });
+    if (!user) {
+        res.status(401).json({message: 'user not found'});
+        return
+    };
+
+    req.user = user;
+    next();
+});
+
 plaidRouter.post('/getAccessToken', async (req: Request, res: Response) => {
     try {
-        const user = await new Parse.Query(Parse.User).first({ sessionToken: req.signedCookies.token });
-        if (!user) {
-            res.status(404).json({message: 'user not found'});
-            return
-        }
-
+        const { user } = req;
         logger.info('Got request for access token from: ' + user.getUsername());
         const tokenResponse = await client.exchangePublicToken(req.body.public_token);
         
@@ -56,17 +70,12 @@ plaidRouter.post('/getAccessToken', async (req: Request, res: Response) => {
 
 plaidRouter.post('/refreshToken', async (req: Request, res: Response) => {
     try {
-        const user = await new Parse.Query(Parse.User).first({ sessionToken: req.signedCookies.token });
-        if (!user) {
-            res.status(404).json({message: 'user not found'});
-            return
-        }
-
+        const { user } = req;
         logger.info('Got refreshToken request from: ' + user.getUsername());
         
         const { accountId } = req.body;
         // @ts-ignore
-        const acct: Account = await new Parse.Query(Account).include('item').first({ accountId });
+        const acct: Account = await new Parse.Query(Account).include('item').first({ accountId }, { useMasterKey: true });
         logger.info(`Loaded account: ${acct.accountId}. Refreshing token for item: ${acct.item.itemId}`);
 
         const response = await client.createPublicToken(acct.item.accessToken);
@@ -80,12 +89,7 @@ plaidRouter.post('/refreshToken', async (req: Request, res: Response) => {
 
 plaidRouter.post('/updateAccounts', async (req: Request, res: Response) => {
     try {
-        const user = await new Parse.Query(Parse.User).first({ sessionToken: req.signedCookies.token });
-        if (!user) {
-            res.status(404).json({message: 'user not found'});
-            return
-        }
-
+        const { user = new Parse.User() } = req;
         logger.info('Got updateAccounts request from: ' + user.getUsername());
         
         const { accountId } = req.body;
