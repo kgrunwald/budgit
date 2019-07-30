@@ -16,7 +16,7 @@
         >
             {{ account.name }}
             <div class="account-status" >
-                <AccountAction icon="sync" :token="account.refreshToken" v-if="account.refreshToken" />
+                <AccountAction icon="sync" :accountId="account.accountId" v-if="account.expired" />
             </div>
         </div>
     </div>

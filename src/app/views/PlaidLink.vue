@@ -23,7 +23,6 @@ import { Component, Vue } from 'vue-property-decorator';
         },
         institution: String,
         selectAccount: Boolean,
-        token: String,
         product: {
             type: [String, Array],
             default: () => ['transactions'],
@@ -42,12 +41,13 @@ import { Component, Vue } from 'vue-property-decorator';
 })
 export default class PlaidLink extends Vue {
     public onScriptError(error: object) {
-        console.log('There was an issue loading the link-initialize.js script: ', error);
+        console.error('There was an issue loading the link-initialize.js script: ', error);
     }
 
-    public handleOnClick() {
+    public handleOnClick(token: string) {
         const institution = this.$props.institution || null;
         (window as any).linkHandler = (window as any).Plaid.create({
+            token,
             clientName: this.$props.clientName,
             env: this.$props.env,
             key: this.$props.publicKey,
@@ -56,7 +56,6 @@ export default class PlaidLink extends Vue {
             onSuccess: this.$props.onSuccess,
             product: this.$props.product,
             selectAccount: this.$props.selectAccount,
-            token: this.$props.token,
             webhook: this.$props.webhook,
         });
 

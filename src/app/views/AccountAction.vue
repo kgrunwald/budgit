@@ -5,11 +5,10 @@
             :publicKey="PLAID_PUBLIC_KEY"
             clientName="Budgit"
             product="transactions"
-            :token="token"
             v-bind="{ onSuccess, onExit, onEvent }">
             <template slot="button" slot-scope="props">
               <div class="icon">
-                <font-awesome-icon :icon="icon" @click="props.onClick" />
+                <font-awesome-icon :icon="icon" @click="triggerPlaidLink(accountId, props.onClick)" />
               </div>
             </template>
         </plaid-link>
@@ -23,23 +22,37 @@ import PlaidLink from './PlaidLink.vue';
 @Component({
   components: { PlaidLink },
   props: {
-    token: String,
+    accountId: String,
     icon: String,
   },
 })
 export default class AccountAction extends Vue {
     public PLAID_PUBLIC_KEY = process.env.VUE_APP_PLAID_PUBLIC_KEY;
     public PLAID_ENVIRONMENT = process.env.VUE_APP_PLAID_ENV;
+    private token: string = '';
+
+    public async triggerPlaidLink(accountId: string, triggerFunc: (token: string) => void) {
+      if (accountId) {
+        const resp = await fetch('/refreshToken', {
+          method: 'post',
+          headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({accountId}),
+        });
+        const data = await resp.json();
+        this.token = data.publicToken;
+      }
+      triggerFunc(this.token);
+    }
 
     public async onSuccess(token: string) {
       if (this.$props.token) {
-        const resp = await fetch('/refresh_public_token', {
+        const resp = await fetch('/updateAccounts', {
           method: 'post',
           headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({public_token: token}),
+            body: JSON.stringify({accountId: this.$props.accountId}),
         });
       } else {
-        const resp = await fetch('/get_access_token', {
+        const resp = await fetch('/getAccessToken', {
           method: 'post',
           headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({public_token: token}),
