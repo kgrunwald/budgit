@@ -21,6 +21,10 @@ class Subscriber {
             this.handler.add(obj);
         });
 
+        subscription.on('update', (obj: Parse.Object) => {
+            this.handler.add(obj);
+        });
+
         subscription.on('delete', (obj: Parse.Object) => {
             this.handler.remove(obj);
         });
