@@ -1,10 +1,14 @@
-import { Module, VuexModule, Mutation, Action, getModule } from 'vuex-module-decorators';
+import { Module, VuexModule, Mutation, Action, getModule, MutationAction } from 'vuex-module-decorators';
 import { omit, values } from 'lodash';
 import Parse from 'parse';
 import Account from '@/models/Account';
 import Store from './index';
 import TransactionModule from './TransactionModule';
+import { runInThisContext } from 'vm';
 
+interface AccountsById {
+    [key: string]: Account;
+}
 
 @Module({
     dynamic: true,
@@ -13,7 +17,13 @@ import TransactionModule from './TransactionModule';
     namespaced: true,
 })
 class AccountModule extends VuexModule {
-    public accountsById: object = {};
+    public accountsById: AccountsById = {};
+    public selectedAccountId: string = '';
+
+    @MutationAction
+    public async selectAccount(selectedAccountId: string) {
+        return { selectedAccountId };
+    }
 
     @Action
     public async loadAccounts() {
@@ -24,6 +34,9 @@ class AccountModule extends VuexModule {
             this.add(account);
             TransactionModule.loadTransactions(account);
         });
+        if (!this.selectedAccount) {
+            this.selectAccount(accounts[0].accountId);
+        }
     }
 
     @Mutation
@@ -41,6 +54,10 @@ class AccountModule extends VuexModule {
 
     get accounts(): Account[] {
         return values(this.accountsById);
+    }
+
+    get selectedAccount(): Account {
+        return this.accountsById[this.selectedAccountId];
     }
 }
 

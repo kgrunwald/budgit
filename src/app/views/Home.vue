@@ -31,9 +31,6 @@ import TransactionModule from '../store/TransactionModule';
   },
 })
 export default class App extends Vue {
-  public selectedAccount?: AccountModel;
-  public selectedAccountId: string = '';
-
   public async mounted() {
     AccountModule.loadAccounts();
 
@@ -47,8 +44,15 @@ export default class App extends Vue {
   }
 
   public handleAccountClick(account: AccountModel) {
-    this.selectedAccount = account;
-    this.selectedAccountId = account.accountId;
+    AccountModule.selectAccount(account.accountId);
+  }
+
+  get selectedAccountId() {
+    return AccountModule.selectedAccountId;
+  }
+
+  get selectedAccount() {
+    return AccountModule.selectedAccount;
   }
 }
 </script>
