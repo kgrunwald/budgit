@@ -21,6 +21,14 @@ class Item extends PrivateModel {
     set itemId(id: string) {
         this.set('itemId', id);
     }
+
+    get user(): Parse.User {
+        return this.get('user');
+    }
+
+    set user(user: Parse.User) {
+        this.set('user', user);
+    }
 }
 
 Parse.Object.registerSubclass('Item', Item);
