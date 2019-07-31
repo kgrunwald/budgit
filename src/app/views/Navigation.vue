@@ -1,6 +1,6 @@
 <template>
     <div class="nav-container">
-        <b-navbar toggleable="lg" type="dark" variant="primary">
+        <b-navbar toggleable="lg" type="dark" variant="primary" fixed="top" sticky="true">
             <b-navbar-brand href="#">Budgit</b-navbar-brand>
 
             <b-navbar-toggle target="nav-collapse"></b-navbar-toggle>
@@ -41,6 +41,5 @@ export default class Navigation extends Vue {
 <style lang="scss" scoped>
 .nav-container {
     display: block;
-    height: auto;
 }
 </style>
