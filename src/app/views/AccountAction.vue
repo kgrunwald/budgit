@@ -1,16 +1,14 @@
 <template>
     <section>
         <plaid-link
-            :env="PLAID_ENVIRONMENT"
-            :publicKey="PLAID_PUBLIC_KEY"
-            clientName="Budgit"
-            product="transactions"
-            v-bind="{ onSuccess, onExit, onEvent }">
-            <template slot="button" slot-scope="props">
-              <div class="icon">
-                <font-awesome-icon :icon="icon" @click="triggerPlaidLink(accountId, props.onClick)" />
-              </div>
-            </template>
+        :env="PLAID_ENVIRONMENT"
+        :publicKey="PLAID_PUBLIC_KEY"
+        clientName="Budgit"
+        product="transactions"
+        v-bind="{ onSuccess, onExit, onEvent }">
+          <template slot="button" slot-scope="props">
+            <slot name="action" v-bind:onClick="() => triggerPlaidLink(accountId, props.onClick)" />
+          </template>
         </plaid-link>
     </section>
 </template>

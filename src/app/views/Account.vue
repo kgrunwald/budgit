@@ -17,6 +17,21 @@
                 </div>
             </div>
         </b-card>
+        <div class="account-actions">
+            <AccountAction :accountId="account.accountId" v-if="account.expired">
+                <template slot="action" slot-scope="props">
+                    <!-- <font-awesome-icon icon="sync" @click="props.onClick" /> -->
+                    <b-button pill class=action variant="outline-danger" @click="props.onClick">
+                        <font-awesome-icon icon="exclamation-triangle"/>
+                        Refresh
+                    </b-button>
+                </template>
+            </AccountAction>
+            <b-button pill variant="outline-dark" class=action v-if="!account.expired">
+                <font-awesome-icon icon="cloud-download-alt"/>
+                Import
+            </b-button>
+        </div>
         <b-card no-body="">
             <b-table striped hover small :items="transactions" :fields="fields">
                     <col slot="table-colgroup" width="10%" />
@@ -35,8 +50,12 @@ import { format } from 'date-fns';
 import TransactionModule from '@/app/store/TransactionModule';
 import Transaction from '@/models/Transaction';
 import AccountModel from '@/models/Account';
+import AccountAction from './AccountAction.vue';
 
 @Component({
+    components: {
+        AccountAction,
+    },
     props: {
         account: AccountModel,
     },
@@ -111,7 +130,23 @@ export default class Account extends Vue {
     }
 }
 
-.card:first-child {
+.account-actions {
+    margin-bottom: 5px;
+    display: flex;
+
+    .action {
+        padding: 2px 8px 2px 8px;
+        display: flex;
+        align-items: center;
+        margin-right: 5px;
+
+        svg {
+            margin-right: 5px;
+        }
+    }
+}
+
+.card {
     margin-bottom: 5px;
 }
 </style>

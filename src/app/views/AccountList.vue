@@ -3,7 +3,11 @@
         <div class="title">
             <span>Accounts</span>
             <div class="new-account-container">
-                <AccountAction icon="plus-circle" />
+                <AccountAction>
+                    <template slot="action" slot-scope="props">
+                        <font-awesome-icon icon="plus-circle" size='lg' @click="props.onClick" />
+                    </template>
+                </AccountAction>
             </div>
         </div>
         <div 
@@ -16,7 +20,7 @@
         >
             {{ account.name }}
             <div class="account-status" >
-                <AccountAction icon="sync" :accountId="account.accountId" v-if="account.expired" />
+                <font-awesome-icon icon="sync" @click="props.onClick" v-if="account.expired"/>
             </div>
         </div>
     </div>
