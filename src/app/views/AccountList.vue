@@ -10,17 +10,19 @@
                 </AccountAction>
             </div>
         </div>
-        <div 
-            class="account-item" 
-            :style="accountItemStyle(account.color)"
-            :class="{ selected: selectedAccountId === account.accountId }"
-            v-for="account in accounts"
-            :key="account.accountId"
-            @click="onAccountClick(account)"
-        >
-            {{ account.name }}
-            <div class="account-status" >
-                <font-awesome-icon icon="sync" @click="props.onClick" v-if="account.expired"/>
+        <div class="account-items">
+            <div 
+                class="account-item" 
+                :style="accountItemStyle(account.color)"
+                :class="{ selected: selectedAccountId === account.accountId }"
+                v-for="account in accounts"
+                :key="account.accountId"
+                @click="onAccountClick(account)"
+            >
+                {{ account.name }}
+                <div class="account-status" >
+                    <font-awesome-icon icon="sync" v-if="account.expired"/>
+                </div>
             </div>
         </div>
     </div>
@@ -85,29 +87,34 @@ export default class AcountList extends Vue {
         }
     }
 
-    .account-item {
-        display: flex;
-        flex-direction: row;
-        justify-content: space-between;
-        align-items: center;
-        padding: 4px 8px;
-        font-weight: 300;
-        cursor: pointer;
-        display: flex;
+    .account-items {
+        height: auto;
+        overflow-y: scroll;
 
-        &:hover {
-            background-color: lighten($primary, 5%);
-        }
-
-        &.selected {
-            background-color: darken($primary, 10%);
-        }
-
-        .account-status {
-            font-size: 11px;
-            min-width: 11px;
+        .account-item {
             display: flex;
+            flex-direction: row;
+            justify-content: space-between;
             align-items: center;
+            padding: 4px 8px;
+            font-weight: 300;
+            cursor: pointer;
+            display: flex;
+
+            &:hover {
+                background-color: lighten($primary, 5%);
+            }
+
+            &.selected {
+                background-color: darken($primary, 10%);
+            }
+
+            .account-status {
+                font-size: 11px;
+                min-width: 11px;
+                display: flex;
+                align-items: center;
+            }
         }
     }
 }
