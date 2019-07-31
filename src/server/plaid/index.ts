@@ -1,4 +1,4 @@
-import plaid, { InstitutionWithInstitutionData } from 'plaid';
+import plaid, { InstitutionWithInstitutionData, PlaidEnvironments } from 'plaid';
 import Parse, { User } from 'parse/node';
 import { Router, Request, Response, NextFunction } from 'express';
 import logger from '../logger';
@@ -29,12 +29,19 @@ declare global {
     }
 }
 
-interface TransactionWebhook {
+interface Webhook {
     webhook_type: string;
     webhook_code: string;
     item_id: string;
+}
+
+interface TransactionWebhook extends Webhook {
     new_transactions: number;
     removed_transactions: string[];
+}
+
+interface ItemWebhook extends Webhook  {
+    error: plaid.PlaidError;
 }
 
 const DATE_FORMAT = 'YYYY-MM-DD';
@@ -45,6 +52,12 @@ plaidRouter.post('/webhook', async (req: Request, res: Response) => {
     const type = req.body.webhook_type;
     if (type === 'TRANSACTIONS') {
         await handleTransactionWebhook(req.body as TransactionWebhook);
+        res.json({ status: 'ok' });
+    } else if (type === 'ITEM') {
+        await handleItemWebhook(req.body as ItemWebhook);
+        res.json({ status: 'ok' });
+    } else {
+        logger.error('Got unknown webhook type', req.body);
         res.json({ status: 'ok' });
     }
 });
@@ -66,21 +79,9 @@ plaidRouter.post('/getAccessToken', async (req: Request, res: Response) => {
         logger.info('Got request for access token from: ' + user.getUsername());
         const tokenResponse = await client.exchangePublicToken(req.body.public_token);
         
-        const item = new Item();
-        item.accessToken = tokenResponse.access_token;
-        item.itemId = tokenResponse.item_id;
-        item.user = user;
-        const acl = new Parse.ACL();
-        acl.setPublicReadAccess(false);
-        acl.setPublicWriteAccess(false);
-        item.setACL(acl);
-        await item.save();
+        const item = await savePlaidItem(tokenResponse, user);
+        await getAccounts(user, item);
 
-        getAccounts(user, item)
-            .then(async () => {
-                await client.resetLogin(item.accessToken);
-                await getAccounts(user, item);
-            })
         res.json({'error': false});
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -143,24 +144,7 @@ async function getAccounts(user: Parse.User, item: Item): Promise<void> {
         response.accounts.forEach(async (account) => {
             if (validTypes.includes(account.type || '')) {
                 logger.info("Saving account", account);
-
-                const {institution} = await client.getInstitutionById<InstitutionWithInstitutionData>(response.item.institution_id, {include_optional_metadata: true})
-
-                const acct = new Account();
-                acct.accountId = account.account_id;
-                acct.item = item
-                acct.availableBalance = account.balances.available || 0;
-                acct.currentBalance = account.balances.current || 0;
-                acct.name = account.name || '<no name>';
-                acct.subType = account.subtype || '';
-                acct.type = account.type || '';
-                acct.color = institution.primary_color
-                acct.logo = institution.logo
-                acct.expired = false;
-
-                acct.setACL(new Parse.ACL(user));
-                await acct.commit(user);
-                await getTransactions(user, acct);
+                await savePlaidAccount(account, response.item.institution_id, item, user);
             }
         })
     } catch (err) {
@@ -213,9 +197,9 @@ async function handleTransactionWebhook(payload: TransactionWebhook): Promise<vo
     if (payload.webhook_code === 'HISTORICAL_UPDATE') {
         logger.info('Skipping historical update');
     } else if (payload.webhook_code === 'INITIAL_UPDATE' || payload.webhook_code === 'DEFAULT_UPDATE') {
-        logger.info(`Loading transactions: ${payload.webhook_code}`);
+        logger.info(`Loading transactions: ${payload.webhook_code} for item ${payload.item_id}`);
         // @ts-ignore
-        const item: Item = await new Parse.Query(Item).equalTo('itemId', payload.item_id).includeAll().first();
+        const item: Item = await new Parse.Query(Item).includeAll().equalTo('itemId', payload.item_id).first(SUDO);
 
         const endDate = format(Date(), DATE_FORMAT);
         const startDate = format(subDays(endDate, 30), DATE_FORMAT);
@@ -238,8 +222,31 @@ async function handleTransactionWebhook(payload: TransactionWebhook): Promise<vo
     }
 }
 
-function savePlaidTransaction(plaidTxn: plaid.Transaction, account: Account, user: Parse.User): Promise<void> {
-    const txn = new Transaction();
+async function handleItemWebhook(payload: ItemWebhook) {
+    if (payload.webhook_code === 'ERROR' && payload.error.error_code === 'ITEM_LOGIN_REQUIRED') {
+        logger.info(`Login required for ${payload.item_id}`);
+        const item = await get(Item, 'itemId', payload.item_id);
+        await markItemTokenExpired(item);
+    }
+}
+
+async function savePlaidItem(token: plaid.TokenResponse, user: Parse.User): Promise<Item> {
+    const item = await getOrCreate(Item, 'itemId', token.item_id);
+    item.accessToken = token.access_token;
+    item.itemId = token.item_id;
+    item.user = user;
+
+    const acl = new Parse.ACL();
+    acl.setPublicReadAccess(false);
+    acl.setPublicWriteAccess(false);
+    item.setACL(acl);
+    
+    await item.save();
+    return item;
+}
+
+async function savePlaidTransaction(plaidTxn: plaid.Transaction, account: Account, user: Parse.User): Promise<Transaction> {
+    const txn = await getOrCreate(Transaction, 'transactionId', plaidTxn.transaction_id);
     txn.transactionId = plaidTxn.transaction_id;
     txn.merchant = plaidTxn.name || '';
     txn.date = plaidTxn.date;
@@ -247,7 +254,47 @@ function savePlaidTransaction(plaidTxn: plaid.Transaction, account: Account, use
     txn.category = (plaidTxn.category && plaidTxn.category[0] || '');
     txn.account = account;
     
-    return txn.commit(user);
+    txn.setACL(new Parse.ACL(user));
+    await txn.save(null, SUDO);
+    return txn;
+}
+
+async function savePlaidAccount(account: plaid.Account, institutionId: string, item: Item, user: Parse.User): Promise<Account> {
+    const getAccount = getOrCreate(Account, 'accountId', account.account_id);
+    const getInstitution = client.getInstitutionById<InstitutionWithInstitutionData>(institutionId, {include_optional_metadata: true});
+    
+    const [acct, { institution }] = await Promise.all([getAccount, getInstitution]);
+    acct.accountId = account.account_id;
+    acct.item = item
+    acct.availableBalance = account.balances.available || 0;
+    acct.currentBalance = account.balances.current || 0;
+    acct.name = account.name || '<no name>';
+    acct.subType = account.subtype || '';
+    acct.type = account.type || '';
+    acct.color = institution.primary_color
+    acct.logo = institution.logo
+    acct.expired = false;
+
+    acct.setACL(new Parse.ACL(user));
+    await acct.save(null, SUDO);
+    return acct;
+}
+
+interface Queryable<T> {
+    new (...args: any[]): T;
+}
+
+async function getOrCreate<T>(classType: Queryable<T>, idField: string, id: string): Promise<T> {
+    let inst = await new Parse.Query(classType.name).includeAll().equalTo(idField, id).first(SUDO) as any as T;
+    if (!inst) {
+        inst = new classType();
+    }
+
+    return inst;
+}
+
+async function get<T>(classType: Queryable<T>, idField: string, id: string): Promise<T> {
+    return new Parse.Query(classType.name).includeAll().equalTo(idField, id).first(SUDO) as any as T;
 }
 
 plaidRouter.post('/login', async (req: Request, res: Response) => {

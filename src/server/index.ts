@@ -25,10 +25,6 @@ const app = express();
 
 app.use(cookieParser(process.env.COOKIE_SECRET));
 app.use(bodyParser.json());
-app.use((req, res, next) => {
-    logger.info(`Request on path: ${req.path}`);
-    next();
-});
 
 const ParseServer = require('parse-server').ParseServer;
 const parse = new ParseServer({

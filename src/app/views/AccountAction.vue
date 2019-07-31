@@ -3,6 +3,7 @@
         <plaid-link
         :env="PLAID_ENVIRONMENT"
         :publicKey="PLAID_PUBLIC_KEY"
+        :webhook="PLAID_WEBHOOK_URL"
         clientName="Budgit"
         product="transactions"
         v-bind="{ onSuccess, onExit, onEvent }">
@@ -27,6 +28,7 @@ import PlaidLink from './PlaidLink.vue';
 export default class AccountAction extends Vue {
     public PLAID_PUBLIC_KEY = process.env.VUE_APP_PLAID_PUBLIC_KEY;
     public PLAID_ENVIRONMENT = process.env.VUE_APP_PLAID_ENV;
+    public PLAID_WEBHOOK_URL = process.env.VUE_APP_PLAID_WEBHOOK_URL;
     private token: string = '';
 
     public async triggerPlaidLink(accountId: string, triggerFunc: (token: string) => void) {
