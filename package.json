@@ -6,7 +6,7 @@
     "node": "12.x"
   },
   "scripts": {
-    "serve": "vue-cli-service serve",
+    "serve": "VUE_APP_PLAID_WEBHOOK_URL=`./scripts/run_ngrok.sh` vue-cli-service serve",
     "start:db": "docker run --rm -d -p 27017-27019:27017-27019 --name mongodb mongo",
     "stop:db": "docker kill mongodb",
     "start:client": "yarn serve",
@@ -58,6 +58,7 @@
     "@vue/test-utils": "1.0.0-beta.29",
     "babel-core": "7.0.0-bridge.0",
     "lint-staged": "^8.1.5",
+    "ngrok": "^3.2.4",
     "node-sass": "^4.9.0",
     "nodemon": "^1.19.1",
     "sass-loader": "^7.1.0",
