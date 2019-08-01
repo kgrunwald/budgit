@@ -38,7 +38,15 @@
             </AccountAction>
         </div>
         <b-card no-body="">
-            <b-table striped hover small :items="transactions" :fields="fields" :sort-by.sync="sortBy" :sort-desc.sync="sortDesc">
+            <b-table
+                striped 
+                hover 
+                small 
+                :items="transactions" 
+                :fields="fields" 
+                :sort-by.sync="sortBy" 
+                :sort-desc.sync="sortDesc"
+            >
                     <col slot="table-colgroup" width="10%" />
                     <col slot="table-colgroup" width="40%" />
                     <col slot="table-colgroup" width="40%" />
