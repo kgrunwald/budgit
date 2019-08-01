@@ -1,5 +1,5 @@
 import { Module, VuexModule, Mutation, Action, getModule } from 'vuex-module-decorators';
-import { omit, pickBy, values } from 'lodash';
+import { omit, pickBy, values, sortBy, reverse } from 'lodash';
 import Parse from 'parse';
 import Account from '@/models/Account';
 import Transaction from '@/models/Transaction';
@@ -49,7 +49,7 @@ class TransactionModule extends VuexModule {
             });
 
             // @ts-ignore
-            return values(matches);
+            return reverse(sortBy(values(matches), 'date'));
         };
     }
 }

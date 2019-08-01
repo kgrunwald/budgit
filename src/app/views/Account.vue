@@ -38,7 +38,7 @@
             </AccountAction>
         </div>
         <b-card no-body="">
-            <b-table striped hover small :items="transactions" :fields="fields">
+            <b-table striped hover small :items="transactions" :fields="fields" :sort-by.sync="sortBy" :sort-desc.sync="sortDesc">
                     <col slot="table-colgroup" width="10%" />
                     <col slot="table-colgroup" width="40%" />
                     <col slot="table-colgroup" width="40%" />
@@ -66,7 +66,14 @@ import AccountAction from './AccountAction.vue';
     },
 })
 export default class Account extends Vue {
-    public fields = ['date', 'merchant', 'category', { key: 'formattedAmount', label: 'Amount'}];
+    public fields = [
+        { key: 'date', label: 'Date', sortable: true },
+        'merchant',
+        'category',
+        { key: 'formattedAmount', label: 'Amount'},
+    ];
+    public sortBy = 'date';
+    public sortDesc = true;
 
     get currentBalance(): string {
         return formatter.format(this.$props.account.currentBalance, { code: 'USD' });
