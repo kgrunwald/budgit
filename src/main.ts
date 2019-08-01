@@ -38,6 +38,22 @@ Vue.config.productionTip = false;
 Vue.component('font-awesome-icon', FontAwesomeIcon);
 Vue.component('font-awesome-layers', FontAwesomeLayers);
 
+Vue.config.errorHandler = (err, vm, info) => {
+  // @ts-ignore
+  if (err.code === Parse.Error.INVALID_SESSION_TOKEN) {
+    Parse.User.logOut();
+    router.push('/login');
+  }
+};
+
+window.addEventListener('unhandledrejection', (err) => {
+  // @ts-ignore
+  if (err.reason.code === Parse.Error.INVALID_SESSION_TOKEN) {
+      Parse.User.logOut();
+      router.push('/login');
+  }
+});
+
 new Vue({
   router,
   store,
