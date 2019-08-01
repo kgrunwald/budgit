@@ -7,7 +7,9 @@ import Login from './views/Login.vue';
 Vue.use(Router);
 
 const loginGuard: NavigationGuard<Vue> = (to: Route, from: Route, next) => {
-  if (Parse.User.current()) {
+  const user = Parse.User.current();
+  if (user && user.authenticated()) {
+    console.log('Authenticated');
     next();
   } else {
     next('/login');

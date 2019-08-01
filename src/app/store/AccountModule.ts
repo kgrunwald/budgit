@@ -4,7 +4,6 @@ import Parse from 'parse';
 import Account from '@/models/Account';
 import Store from './index';
 import TransactionModule from './TransactionModule';
-import { runInThisContext } from 'vm';
 
 interface AccountsById {
     [key: string]: Account;
@@ -25,7 +24,7 @@ class AccountModule extends VuexModule {
         return { selectedAccountId };
     }
 
-    @Action
+    @Action({ rawError: true })
     public async loadAccounts() {
         // @ts-ignore
         const query = new Parse.Query(Account);

@@ -1689,7 +1689,7 @@ anymatch@^2.0.0:
     micromatch "^3.1.4"
     normalize-path "^2.1.1"
 
-"apn@github:parse-community/node-apn#semver:^v3.0.2-parse":
+"apn@parse-community/node-apn#semver:^v3.0.2-parse":
   version "3.0.2-parse"
   resolved "https://codeload.github.com/parse-community/node-apn/tar.gz/73e2826169cd3faaa211392d86b13eadf246eea8"
   dependencies:

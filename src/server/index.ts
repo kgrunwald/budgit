@@ -35,8 +35,7 @@ const parse = new ParseServer({
         classNames: ['Item', 'Account', 'Transaction'],
     },
     serverURL: SERVER_URL,
-    expireInactiveSessions: true,
-    sessionLength: 60 * 60 * 1000,
+    sessionLength: 60 * 60,
 });
 
 app.use('/parse', parse);
