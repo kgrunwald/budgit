@@ -22,6 +22,9 @@ export default new Router({
   routes: [
     {
       path: '/',
+      redirect: '/accounts' },
+    {
+      path: '/accounts',
       name: 'accounts',
       beforeEnter: loginGuard,
       component: Accounts,
@@ -30,6 +33,10 @@ export default new Router({
       path: '/login',
       name: 'login',
       component: Login,
+    },
+    {
+      path: '*',
+      redirect: '/',
     },
   ],
 });
