@@ -1,6 +1,5 @@
 <template>
   <div>
-    <Navigation />
     <div class="page-container">
       <div class="account-list-container">
         <AccountList :onAccountClick="handleAccountClick" :selectedAccountId="selectedAccountId"/>
@@ -16,7 +15,6 @@
 import { Component, Vue } from 'vue-property-decorator';
 import AccountModule from '@/app/store/AccountModule';
 import Subscriber from '@/app/store/Subscriber';
-import Navigation from './Navigation.vue';
 import AccountList from './AccountList.vue';
 import Account from './Account.vue';
 import AccountModel from '@/models/Account';
@@ -25,7 +23,6 @@ import TransactionModule from '../store/TransactionModule';
 
 @Component({
   components: {
-    Navigation,
     AccountList,
     Account,
   },

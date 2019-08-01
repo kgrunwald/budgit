@@ -41,5 +41,6 @@ export default class Navigation extends Vue {
 <style lang="scss" scoped>
 .nav-container {
     display: block;
+    width: 100%;
 }
 </style>

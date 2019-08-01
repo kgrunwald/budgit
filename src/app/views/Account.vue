@@ -81,6 +81,7 @@ export default class Account extends Vue {
     height: 100%;
     padding: 10px;
     background-color: #fafafa;
+    overflow-y: scroll;
 
     .account-header {
         display: flex;

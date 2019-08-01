@@ -67,6 +67,8 @@ export default class AcountList extends Vue {
     height: 100%;
 
     .title {
+        height: 40px;
+        position: relative;
         padding: 10px 0 10px 10px;
         display: flex;
         justify-content: space-between;
@@ -88,7 +90,7 @@ export default class AcountList extends Vue {
     }
 
     .account-items {
-        height: auto;
+        height: calc(100% - 40px);
         overflow-y: scroll;
 
         .account-item {
