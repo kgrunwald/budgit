@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <Navigation class="nav" />
+    <Navigation class="nav" v-if="this.$route.path !== '/login'" />
     <router-view class="app-container" />
   </div>
 </template>
@@ -14,9 +14,7 @@ import Navigation from './views/Navigation.vue';
     Navigation,
   },
 })
-export default class App extends Vue {
-
-}
+export default class App extends Vue {}
 </script>
 
 <style lang="scss">
