@@ -8,11 +8,20 @@
                 <div class="account-info">
                     <div class="account-title">
                         <span>{{ account.name }}</span>
-                        <span :class="account.currentBalance > 0 ? 'positive' : 'negative'">{{ currentBalance }}</span>
+                        <span class="info">{{ account.subType }}</span>
                     </div>
-                    <div class="type">
-                        <span>{{ account.subType }}</span>
-                        <span>Current Balance</span>
+                    <div class="summary">
+                        <div class="balance">
+                            <div :class="account.currentBalance > 0 ? 'positive' : 'negative'">{{ currentBalance }}</div>
+                            <span class="info">Current Balance</span>
+                        </div>
+                        <div class="separator" />
+                        <div class="actions">
+                            <b-button pill variant="outline-primary" class=action v-if="!account.expired">
+                                <font-awesome-icon icon="cloud-download-alt"/>
+                                Import
+                            </b-button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -27,10 +36,6 @@
                     </b-button>
                 </template>
             </AccountAction>
-            <b-button pill variant="outline-dark" class=action v-if="!account.expired">
-                <font-awesome-icon icon="cloud-download-alt"/>
-                Import
-            </b-button>
         </div>
         <b-card no-body="">
             <b-table striped hover small :items="transactions" :fields="fields">
@@ -102,43 +107,62 @@ export default class Account extends Vue {
 
         .account-info {
             width: 100%;
+            display: flex;
+            justify-content: space-between;
 
-            .account-title {
+            .title {
                 display: flex;
+                flex-direction: column;
                 font-size: 18px;
                 font-weight: 500;
-                justify-content: space-between;
                 width: 100%;
-
-                .positive {
-                    color: $green;
-                }
-
-                .negative {
-                    color: $red;
-                }
             }
 
-            .type {
+            .info {
                 display: flex;
-                justify-content: space-between;
+                flex-direction: column;
                 text-transform: capitalize;
                 font-size: 14px;
                 font-weight: 300;
+            }
+
+            .balance > div {
+                width: 100%;
+                text-align: right;
+            }
+
+            .positive {
+                    color: $green;
+            }
+
+            .negative {
+                color: $red;
+            }
+
+            .summary {
+                display: flex;                
             }
         }
     }
 }
 
-.account-actions {
+.actions {
     margin-bottom: 5px;
     display: flex;
+    flex-direction: column;
+    font-size: 12px;
 
     .action {
-        padding: 2px 8px 2px 8px;
+        padding: 0 8px 0 8px;
         display: flex;
+        height: 20px;
         align-items: center;
         margin-right: 5px;
+        font-size: 12px;
+
+        &:first-child {
+            margin-bottom: 8px;
+        }
 
         svg {
             margin-right: 5px;
@@ -148,6 +172,15 @@ export default class Account extends Vue {
 
 .card {
     margin-bottom: 5px;
+
+    .card-body {
+        padding: 0.75rem;
+    }
+}
+
+.separator {
+    border-right: 1px solid #ddd;
+    margin: 0 16px;
 }
 </style>
 
