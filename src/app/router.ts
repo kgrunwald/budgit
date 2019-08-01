@@ -1,7 +1,7 @@
 import Vue from 'vue';
 import Parse from 'parse';
 import Router, { NavigationGuard, Route } from 'vue-router';
-import Home from './views/Home.vue';
+import Accounts from './views/Accounts.vue';
 import Login from './views/Login.vue';
 
 Vue.use(Router);
@@ -20,9 +20,9 @@ export default new Router({
   routes: [
     {
       path: '/',
-      name: 'home',
+      name: 'accounts',
       beforeEnter: loginGuard,
-      component: Home,
+      component: Accounts,
     },
     {
       path: '/login',
