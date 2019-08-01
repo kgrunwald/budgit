@@ -44,6 +44,12 @@ export default class Login extends Vue {
     public error: boolean = false;
     public disabled: boolean = false;
 
+    public mounted() {
+        if (Parse.User.current()) {
+            Parse.User.logOut();
+        }
+    }
+
     public async onSubmit() {
         try {
             this.disabled = true;
