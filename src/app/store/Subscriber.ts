@@ -29,7 +29,6 @@ class Subscriber {
         });
 
         this.subscription.on('update', (obj: Parse.Object) => {
-            console.log('update');
             this.handler.add(obj);
         });
 

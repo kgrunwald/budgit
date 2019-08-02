@@ -51,6 +51,40 @@
                     <col slot="table-colgroup" width="40%" />
                     <col slot="table-colgroup" width="40%" />
                     <col slot="table-colgroup" width="10%">
+                    <template slot="merchant" slot-scope="data">
+                        <b-form-input
+                            size="sm"
+                            v-model="data.item.merchant"
+                            @blur="update(data.item)"
+                        />
+                    </template>
+                    <template slot="category" slot-scope="data">
+                        <b-form-input
+                            :id="`ctg-${data.item.id}`"
+                            size="sm"
+                            v-model="data.item.category"
+                            @blur="update(data.item)"
+                            @update="filterCategories"
+                        />
+                        <b-popover
+                            :target="`ctg-${data.item.id}`"
+                            :ref="`popover-${data.item.id}`"
+                            placement="bottom"
+                            custom-class="category-popover"
+                        >
+                            <template slot="title">
+                                Categories
+                            </template>
+                            <div 
+                                v-for="category in categories" 
+                                :key="category" 
+                                class="category"
+                                @click="setCategory(data.item, category)"
+                            >
+                                {{ category }}
+                            </div>
+                        </b-popover>
+                    </template>
             </b-table>
         </b-card>
     </div>
@@ -58,8 +92,10 @@
 
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
+import { filter, startsWith } from 'lodash';
 import formatter from 'currency-formatter';
 import { format } from 'date-fns';
+import CategoryModule from '@/app/store/CategoryModule';
 import TransactionModule from '@/app/store/TransactionModule';
 import Transaction from '@/models/Transaction';
 import AccountModel from '@/models/Account';
@@ -82,6 +118,7 @@ export default class Account extends Vue {
     ];
     public sortBy = 'date';
     public sortDesc = true;
+    private filter: string = '';
 
     get currentBalance(): string {
         return formatter.format(this.$props.account.currentBalance, { code: 'USD' });
@@ -90,10 +127,29 @@ export default class Account extends Vue {
     get transactions(): Transaction[] {
         return TransactionModule.byAccountId(this.$props.account.accountId);
     }
+
+    get categories(): string[] {
+        return filter(CategoryModule.categories, (ctg) => startsWith(ctg, this.filter));
+    }
+
+    public filterCategories(prefix: string) {
+        this.filter = prefix;
+    }
+
+    public async setCategory(txn: Transaction, category: string) {
+        txn.category = category;
+        const popover = this.$refs[`popover-${txn.id}`] as Vue;
+        popover.$emit('close');
+        await txn.save();
+    }
+
+    public async update(obj: Parse.Object) {
+        await obj.save();
+    }
 }
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 @import '@/app/styles/custom.scss';
 
 .account-container {
@@ -197,6 +253,19 @@ export default class Account extends Vue {
 .separator {
     border-right: 1px solid #ddd;
     margin: 0 16px;
+}
+
+.category-popover {
+    width: 400px;
+
+    .category {
+        width: 100%;
+        cursor: pointer;
+
+        &:hover {
+            background-color: lighten($primary, 55%);
+        }
+    }
 }
 </style>
 
