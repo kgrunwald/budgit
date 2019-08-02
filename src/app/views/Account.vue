@@ -45,10 +45,19 @@
                 :sort-by.sync="sortBy" 
                 :sort-desc.sync="sortDesc"
             >
+                    <col slot="table-colgroup" width="3%" />
                     <col slot="table-colgroup" width="10%" />
                     <col slot="table-colgroup" width="40%" />
                     <col slot="table-colgroup" width="40%" />
                     <col slot="table-colgroup" width="10%">
+                    <template slot="acknowledged" slot-scope="data">
+                        <font-awesome-icon 
+                            class="ack-icon" 
+                            icon="search-dollar"
+                            v-if="!data.item.acknowledged" 
+                            @click="acknowledge(data.item)"
+                        />
+                    </template>
                     <template slot="merchant" slot-scope="data">
                         <b-form-input
                             size="sm"
@@ -109,6 +118,7 @@ import AccountAction from './AccountAction.vue';
 })
 export default class Account extends Vue {
     public fields = [
+        { key: 'acknowledged', label: ''},
         { key: 'date', label: 'Date', sortable: true },
         'merchant',
         'category',
@@ -124,6 +134,11 @@ export default class Account extends Vue {
 
     get transactions(): Transaction[] {
         return TransactionModule.byAccountId(this.$props.account.accountId);
+    }
+
+    public async acknowledge(txn: Transaction) {
+        txn.acknowledged = true;
+        await txn.save();
     }
 
     get categories(): string[] {
@@ -264,6 +279,12 @@ export default class Account extends Vue {
             background-color: lighten($primary, 55%);
         }
     }
+}
+
+.ack-icon {
+    margin: 0 0 0 4px;
+    cursor: pointer;
+    color: $primary;
 }
 </style>
 

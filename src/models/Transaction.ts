@@ -67,6 +67,14 @@ class Transaction extends PrivateModel {
     set account(account: Account) {
         this.set('account', account);
     }
+
+    get acknowledged(): boolean {
+        return this.get('acknowledged');
+    }
+
+    set acknowledged(ack: boolean) {
+        this.set('acknowledged', ack);
+    }
 }
 
 Parse.Object.registerSubclass('Transaction', Transaction);
