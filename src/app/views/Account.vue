@@ -17,26 +17,24 @@
                         </div>
                         <div class="separator" />
                         <div class="actions">
-                            <b-button pill variant="outline-primary" class=action v-if="!account.expired">
+                            <b-button pill variant="outline-primary" class="action" :disabled="account.expired">
                                 <font-awesome-icon icon="cloud-download-alt"/>
                                 Import
                             </b-button>
+                            <AccountAction :accountId="account.accountId" v-if="account.expired">
+                                <template slot="action" slot-scope="props">
+                                    <!-- <font-awesome-icon icon="sync" @click="props.onClick" /> -->
+                                    <b-button pill class="action" variant="outline-danger" @click="props.onClick">
+                                        <font-awesome-icon icon="exclamation-triangle"/>
+                                        Refresh
+                                    </b-button>
+                                </template>
+                            </AccountAction>
                         </div>
                     </div>
                 </div>
             </div>
         </b-card>
-        <div class="account-actions">
-            <AccountAction :accountId="account.accountId" v-if="account.expired">
-                <template slot="action" slot-scope="props">
-                    <!-- <font-awesome-icon icon="sync" @click="props.onClick" /> -->
-                    <b-button pill class=action variant="outline-danger" @click="props.onClick">
-                        <font-awesome-icon icon="exclamation-triangle"/>
-                        Refresh
-                    </b-button>
-                </template>
-            </AccountAction>
-        </div>
         <b-card no-body="">
             <b-table
                 striped 

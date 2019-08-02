@@ -21,7 +21,6 @@ class Transaction extends PrivateModel {
     }
 
     set merchant(merchant: string) {
-        console.log('Set merchant', merchant);
         this.set('merchant', merchant);
     }
 
