@@ -1,10 +1,15 @@
 import { Module, VuexModule, Action, Mutation, getModule } from 'vuex-module-decorators';
-import { values } from 'lodash';
+import { values, reduce, map, uniq } from 'lodash';
 import Store from './index';
 import Category from '@/models/Category';
+import Parse from '@/models/Parse';
 
 interface CategoriesById {
     [key: string]: Category;
+}
+
+interface CategoriesByGroup {
+    [group: string]: Category;
 }
 
 @Module({
@@ -36,6 +41,19 @@ class CategoryModule extends VuexModule {
 
     get categories(): Category[] {
         return values(this.categoriesById);
+    }
+
+    get categoriesByGroup(): CategoriesByGroup {
+        return reduce(this.categories, (obj, category) => {
+            return {
+                ...obj,
+                [category.group]: category,
+            };
+        }, {});
+    }
+
+    get groups(): string[] {
+        return uniq(['Credit Cards', ...map(this.categories, (category) => category.group)]);
     }
 }
 

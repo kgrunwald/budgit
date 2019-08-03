@@ -161,6 +161,10 @@ export default class Account extends Vue {
     }
 
     public async update(obj: Parse.Object) {
+        if (obj instanceof Transaction) {
+            const popover = this.$refs[`popover-${obj.id}`] as Vue;
+            popover.$emit('close');
+        }
         await obj.save();
     }
 }
