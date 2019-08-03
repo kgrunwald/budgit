@@ -17,15 +17,25 @@
                         </div>
                         <div class="separator" />
                         <div class="actions">
-                            <b-button pill variant="outline-primary" class=action v-if="!account.expired">
+                            <b-button pill variant="outline-primary" class="action" :disabled="account.expired">
                                 <font-awesome-icon icon="cloud-download-alt"/>
                                 Import
                             </b-button>
+                            <AccountAction :accountId="account.accountId" v-if="account.expired">
+                                <template slot="action" slot-scope="props">
+                                    <!-- <font-awesome-icon icon="sync" @click="props.onClick" /> -->
+                                    <b-button pill class="action" variant="outline-danger" @click="props.onClick">
+                                        <font-awesome-icon icon="exclamation-triangle"/>
+                                        Refresh
+                                    </b-button>
+                                </template>
+                            </AccountAction>
                         </div>
                     </div>
                 </div>
             </div>
         </b-card>
+<<<<<<< HEAD
         <div class="account-actions">
             <AccountAction :accountId="account.accountId" v-if="account.expired">
                 <template slot="action" slot-scope="props">
@@ -36,12 +46,65 @@
                 </template>
             </AccountAction>
         </div>
+=======
+>>>>>>> 61f099854ff5d68c40c923a3752418c38d915704
         <b-card no-body="">
-            <b-table striped hover small :items="transactions" :fields="fields">
+            <b-table
+                striped 
+                hover 
+                small 
+                :items="transactions" 
+                :fields="fields" 
+                :sort-by.sync="sortBy" 
+                :sort-desc.sync="sortDesc"
+            >
+                    <col slot="table-colgroup" width="3%" />
                     <col slot="table-colgroup" width="10%" />
                     <col slot="table-colgroup" width="40%" />
                     <col slot="table-colgroup" width="40%" />
                     <col slot="table-colgroup" width="10%">
+                    <template slot="acknowledged" slot-scope="data">
+                        <font-awesome-icon 
+                            class="ack-icon" 
+                            icon="search-dollar"
+                            v-if="!data.item.acknowledged" 
+                            @click="acknowledge(data.item)"
+                        />
+                    </template>
+                    <template slot="merchant" slot-scope="data">
+                        <b-form-input
+                            size="sm"
+                            v-model="data.item.merchant"
+                            @blur="update(data.item)"
+                        />
+                    </template>
+                    <template slot="category" slot-scope="data">
+                        <b-form-input
+                            :id="`ctg-${data.item.id}`"
+                            size="sm"
+                            v-model="data.item.category"
+                            @blur="update(data.item)"
+                            @update="filterCategories"
+                        />
+                        <b-popover
+                            :target="`ctg-${data.item.id}`"
+                            :ref="`popover-${data.item.id}`"
+                            placement="bottom"
+                            custom-class="category-popover"
+                        >
+                            <template slot="title">
+                                Categories
+                            </template>
+                            <div 
+                                v-for="category in categories" 
+                                :key="category" 
+                                class="category"
+                                @click="setCategory(data.item, category)"
+                            >
+                                {{ category }}
+                            </div>
+                        </b-popover>
+                    </template>
             </b-table>
         </b-card>
     </div>
@@ -49,8 +112,10 @@
 
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
+import { filter, startsWith } from 'lodash';
 import formatter from 'currency-formatter';
 import { format } from 'date-fns';
+import CategoryModule from '@/app/store/CategoryModule';
 import TransactionModule from '@/app/store/TransactionModule';
 import Transaction from '@/models/Transaction';
 import AccountModel from '@/models/Account';
@@ -65,7 +130,16 @@ import AccountAction from './AccountAction.vue';
     },
 })
 export default class Account extends Vue {
-    public fields = ['date', 'merchant', 'category', { key: 'formattedAmount', label: 'Amount'}];
+    public fields = [
+        { key: 'acknowledged', label: ''},
+        { key: 'date', label: 'Date', sortable: true },
+        'merchant',
+        'category',
+        { key: 'formattedAmount', label: 'Amount'},
+    ];
+    public sortBy = 'date';
+    public sortDesc = true;
+    private filter: string = '';
 
     get currentBalance(): string {
         return formatter.format(this.$props.account.currentBalance, { code: 'USD' });
@@ -74,10 +148,34 @@ export default class Account extends Vue {
     get transactions(): Transaction[] {
         return TransactionModule.byAccountId(this.$props.account.accountId);
     }
+
+    public async acknowledge(txn: Transaction) {
+        txn.acknowledged = true;
+        await txn.save();
+    }
+
+    get categories(): string[] {
+        return filter(CategoryModule.categories, (ctg) => startsWith(ctg, this.filter));
+    }
+
+    public filterCategories(prefix: string) {
+        this.filter = prefix;
+    }
+
+    public async setCategory(txn: Transaction, category: string) {
+        txn.category = category;
+        const popover = this.$refs[`popover-${txn.id}`] as Vue;
+        popover.$emit('close');
+        await txn.save();
+    }
+
+    public async update(obj: Parse.Object) {
+        await obj.save();
+    }
 }
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 @import '@/app/styles/custom.scss';
 
 .account-container {
@@ -181,6 +279,25 @@ export default class Account extends Vue {
 .separator {
     border-right: 1px solid #ddd;
     margin: 0 16px;
+}
+
+.category-popover {
+    width: 400px;
+
+    .category {
+        width: 100%;
+        cursor: pointer;
+
+        &:hover {
+            background-color: lighten($primary, 55%);
+        }
+    }
+}
+
+.ack-icon {
+    margin: 0 0 0 4px;
+    cursor: pointer;
+    color: $primary;
 }
 </style>
 
