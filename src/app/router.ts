@@ -2,6 +2,7 @@ import Vue from 'vue';
 import Parse from 'parse';
 import Router, { NavigationGuard, Route } from 'vue-router';
 import Accounts from './views/Accounts.vue';
+import Budget from './views/Budget.vue';
 import Login from './views/Login.vue';
 
 Vue.use(Router);
@@ -9,7 +10,6 @@ Vue.use(Router);
 const loginGuard: NavigationGuard<Vue> = (to: Route, from: Route, next) => {
   const user = Parse.User.current();
   if (user && user.authenticated()) {
-    console.log('Authenticated');
     next();
   } else {
     next('/login');
@@ -22,7 +22,14 @@ export default new Router({
   routes: [
     {
       path: '/',
-      redirect: '/accounts' },
+      redirect: '/accounts',
+    },
+    {
+      path: '/budget',
+      name: 'budget',
+      beforeEnter: loginGuard,
+      component: Budget,
+    },
     {
       path: '/accounts',
       name: 'accounts',

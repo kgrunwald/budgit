@@ -3,7 +3,7 @@
         <b-card>
             <div class="account-header">
                 <div class="account-icon">
-                    <b-img class="icon" :src="account.logo"></b-img>
+                    <b-img class="bank-icon" :src="account.logo"></b-img>
                 </div>
                 <div class="account-info">
                     <div class="account-title">
@@ -29,7 +29,6 @@
         <div class="account-actions">
             <AccountAction :accountId="account.accountId" v-if="account.expired">
                 <template slot="action" slot-scope="props">
-                    <!-- <font-awesome-icon icon="sync" @click="props.onClick" /> -->
                     <b-button pill class=action variant="outline-danger" @click="props.onClick">
                         <font-awesome-icon icon="exclamation-triangle"/>
                         Refresh
@@ -100,7 +99,7 @@ export default class Account extends Vue {
             flex-direction: column;
             padding-right: 20px;
 
-            .icon {
+            .bank-icon {
                 width: 40px;
                 height: 40px;
             }

@@ -43,7 +43,7 @@ import AccountAction from './AccountAction.vue';
         selectedAccountId: String,
     },
 })
-export default class AcountList extends Vue {
+export default class AccountList extends Vue {
     public accountItemStyle(color: string) {
         return {
             '--account-item-color': color,

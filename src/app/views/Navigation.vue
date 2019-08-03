@@ -1,14 +1,24 @@
 <template>
     <div class="nav-container">
-        <b-navbar toggleable="lg" type="dark" variant="primary" fixed="top" sticky="true">
+        <b-navbar toggleable="lg" type="dark" variant="primary" fixed="top">
             <b-navbar-brand href="#">Budgit</b-navbar-brand>
 
             <b-navbar-toggle target="nav-collapse"></b-navbar-toggle>
 
             <b-collapse id="nav-collapse" is-nav>
                 <b-navbar-nav>
-                    <b-nav-item active href="#">Accounts</b-nav-item>
-                    <b-nav-item href="#">Budget</b-nav-item>
+                    <b-nav-item 
+                    :active="this.$route.path == '/accounts' ? true : false" 
+                    @click="(() => this.$router.push('accounts'))"
+                    >
+                        Accounts
+                    </b-nav-item>
+                    <b-nav-item 
+                    :active="this.$route.path == '/budget' ? true : false" 
+                    @click="() => this.$router.push('budget')"
+                    >
+                        Budget
+                    </b-nav-item>
                 </b-navbar-nav>
 
                 <!-- Right aligned nav items -->

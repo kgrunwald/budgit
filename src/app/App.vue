@@ -17,7 +17,7 @@ import Navigation from './views/Navigation.vue';
 export default class App extends Vue {}
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 .nav {
   position: absolute;
   height: 56px;

@@ -5,7 +5,7 @@
         <AccountList :onAccountClick="handleAccountClick" :selectedAccountId="selectedAccountId"/>
       </div>
       <div class="content-container">
-        <Account  v-if="selectedAccountId" :account="selectedAccount"/>
+        <Account v-if="selectedAccountId" :account="selectedAccount"/>
       </div>
     </div>
   </div>
@@ -27,7 +27,7 @@ import TransactionModule from '../store/TransactionModule';
     Account,
   },
 })
-export default class App extends Vue {
+export default class Accounts extends Vue {
   public async mounted() {
     AccountModule.loadAccounts();
 
