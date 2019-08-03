@@ -17,33 +17,43 @@
                 <b-button pill variant="outline-primary" class="action">
                   <font-awesome-icon icon="cloud-download-alt" />Import
                 </b-button>
+                <b-button v-b-modal.add-group pill variant="outline-primary" class="action">
+                  <font-awesome-icon icon="cloud-download-alt" />Add Group
+                  <b-modal :id="`add-group`" title="Add Group" @ok="createGroup">
+                  <b-form-input 
+                    v-model="newGroup" 
+                    placeholder="Enter Group Name"
+                  />
+                </b-modal>
+                </b-button>
               </div>
             </div>
           </div>
         </div>
       </b-card>
-      <b-card v-for="(group, i) in groups" :key="group" body-class="budget-card">
+      <b-card v-for="group in groups" :key="group.name" body-class="budget-card">
         <b-table
           striped 
           hover 
           small 
           caption-top
           :fields="fields"
+          :items="getGroupCategories(group)"
         >
           <template slot="table-caption">
             <div class="budget-group-header">
               <div>
-                {{ group }}
+                {{ group.name }}
               </div>
               <b-button 
                 pill 
                 variant="outline-primary" 
                 class="action"
-                v-b-modal="'add-category-' + i"
+                v-b-modal="'add-category-' + group.id"
               >
                 Add Category
               </b-button>
-              <b-modal :id="`add-category-${i}`" title="Add Category" @ok="createCategory(group)">
+              <b-modal :id="`add-category-${group.id}`" title="Add Category" @ok="createCategory(group)">
                 <b-form-input 
                   v-model="newCategory" 
                   placeholder="Enter category"
@@ -63,14 +73,17 @@
 
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
+import { keys } from 'lodash';
 import CategoryModule from '../store/CategoryModule';
 import Category from '../../models/Category';
 import Parse from '../../models/Parse';
+import CategoryGroup from '../../models/CategoryGroup';
 
 @Component
 export default class Budget extends Vue {
   public newCategory: string = '';
-  public fields = ['Category', 'Budget', 'Activity', 'Balance'];
+  public newGroup: string = '';
+  public fields = ['name', 'Budget', 'Activity', 'Balance'];
 
   public async mounted() {
     CategoryModule.loadCategories();
@@ -80,16 +93,22 @@ export default class Budget extends Vue {
     await categorySub.subscribe();
   }
 
-  get categories() {
-    return CategoryModule.categoriesByGroup;
-  }
-
   get groups() {
     return CategoryModule.groups;
   }
 
-  public async createCategory(group: string) {
-    console.log('create', group);
+  public getGroupCategories(group: CategoryGroup) {
+    return CategoryModule.categoriesFor(group);
+  }
+
+  public async createGroup() {
+    const group = new CategoryGroup();
+    group.name = this.newGroup;
+    await group.commit(Parse.User.current());
+    this.newGroup = '';
+  }
+
+  public async createCategory(group: CategoryGroup) {
     const category = new Category();
     category.name = this.newCategory;
     category.group = group;

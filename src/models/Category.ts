@@ -1,5 +1,6 @@
 import Parse from './Parse';
 import PrivateModel from './PrivateModel';
+import CategoryGroup from './CategoryGroup';
 
 class Category extends PrivateModel {
     constructor() {
@@ -14,12 +15,12 @@ class Category extends PrivateModel {
         this.set('name', name);
     }
 
-    get group(): string {
-        return this.get('group');
+    set group(group: CategoryGroup) {
+        this.set('group', group);
     }
 
-    set group(group: string) {
-        this.set('group', group);
+    get group(): CategoryGroup {
+        return this.get('group');
     }
 }
 

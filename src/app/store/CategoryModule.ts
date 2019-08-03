@@ -1,14 +1,15 @@
 import { Module, VuexModule, Action, Mutation, getModule } from 'vuex-module-decorators';
-import { values, reduce, map, uniq } from 'lodash';
+import { filter, values } from 'lodash';
 import Store from './index';
 import Category from '@/models/Category';
+import CategoryGroup from '@/models/CategoryGroup';
 import Parse from '@/models/Parse';
 
-interface CategoriesById {
-    [key: string]: Category;
+interface CategoryGroupsById {
+    [key: string]: CategoryGroup;
 }
 
-interface CategoriesByGroup {
+interface CategoriesById {
     [group: string]: Category;
 }
 
@@ -19,23 +20,38 @@ interface CategoriesByGroup {
     namespaced: true,
 })
 class CategoryModule extends VuexModule {
-    public categoriesById: CategoriesById = {};
+    public categoryGroupsById: CategoryGroupsById = {};
+    public categoriesById: CategoriesById = [];
 
     @Action({ rawError: true })
     public async loadCategories() {
         // @ts-ignore
-        const query = new Parse.Query(Category);
-        const categories = await query.find();
-        categories.forEach((category: Category) => {
-            this.add(category);
+        const query = new Parse.Query(CategoryGroup).includeAll();
+        const groups = await query.find();
+        groups.forEach((group: CategoryGroup) => {
+            this.add(group);
+        });
+
+        const category = new Parse.Query(Category).includeAll();
+        const categories = await category.find();
+        categories.forEach((ctg: Category) => {
+            this.addCategory(ctg);
         });
     }
 
     @Mutation
-    public add(category: Category) {
+    public add(group: CategoryGroup) {
+        this.categoryGroupsById = {
+            ...this.categoryGroupsById,
+            [group.id]: group,
+        };
+    }
+
+    @Mutation
+    public addCategory(ctg: Category) {
         this.categoriesById = {
             ...this.categoriesById,
-            [category.id]: category,
+            [ctg.id]: ctg,
         };
     }
 
@@ -43,17 +59,14 @@ class CategoryModule extends VuexModule {
         return values(this.categoriesById);
     }
 
-    get categoriesByGroup(): CategoriesByGroup {
-        return reduce(this.categories, (obj, category) => {
-            return {
-                ...obj,
-                [category.group]: category,
-            };
-        }, {});
+    get categoriesFor() {
+        return (group: CategoryGroup): Category[] => {
+            return filter(this.categories, (category) => category.group.name === group.name);
+        };
     }
 
-    get groups(): string[] {
-        return uniq(['Credit Cards', ...map(this.categories, (category) => category.group)]);
+    get groups(): CategoryGroup[] {
+        return values(this.categoryGroupsById);
     }
 }
 
