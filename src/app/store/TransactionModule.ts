@@ -23,6 +23,7 @@ class TransactionModule extends VuexModule {
         // @ts-ignore
         const query = new Parse.Query(Transaction);
         query.equalTo('account', account);
+        query.include('category');
         const txns = await query.find();
         txns.forEach((txn: Transaction) => {
             this.add(txn);

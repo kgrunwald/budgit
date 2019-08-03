@@ -14,7 +14,7 @@ class Subscriber {
 
     public async subscribe() {
         // @ts-ignore
-        const query = new Parse.Query(this.t);
+        const query = new Parse.Query(this.t).includeAll();
         this.subscription = await query.subscribe();
         if (!this.subscription) {
             this.resubscribe();

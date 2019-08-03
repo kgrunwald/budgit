@@ -82,7 +82,7 @@
                         <b-form-input
                             :id="`ctg-${data.item.id}`"
                             size="sm"
-                            v-model="data.item.category"
+                            v-model="data.item.category.name"
                             @blur="update(data.item)"
                             @update="filterCategories"
                         />
@@ -112,7 +112,7 @@
 
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
-import { filter, startsWith } from 'lodash';
+import { filter, startsWith, map, find } from 'lodash';
 import formatter from 'currency-formatter';
 import { format } from 'date-fns';
 import CategoryModule from '@/app/store/CategoryModule';
@@ -120,6 +120,7 @@ import TransactionModule from '@/app/store/TransactionModule';
 import Transaction from '@/models/Transaction';
 import AccountModel from '@/models/Account';
 import AccountAction from './AccountAction.vue';
+import Category from '../../models/Category';
 
 @Component({
     components: {
@@ -155,15 +156,18 @@ export default class Account extends Vue {
     }
 
     get categories(): string[] {
-        return filter(CategoryModule.categories, (ctg) => startsWith(ctg, this.filter));
+        const categoryNames = map(CategoryModule.categories, 'name');
+        return filter(categoryNames, (ctg) => startsWith(ctg, this.filter));
     }
 
     public filterCategories(prefix: string) {
         this.filter = prefix;
     }
 
-    public async setCategory(txn: Transaction, category: string) {
+    public async setCategory(txn: Transaction, categoryName: string) {
+        const category = find(CategoryModule.categories, (ctg: Category) => ctg.name === categoryName) as Category;
         txn.category = category;
+
         const popover = this.$refs[`popover-${txn.id}`] as Vue;
         popover.$emit('close');
         await txn.save();

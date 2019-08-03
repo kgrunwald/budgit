@@ -1,6 +1,7 @@
 import Parse from './Parse';
 import PrivateModel from './PrivateModel';
 import Account from './Account';
+import Category from './Category';
 import formatter from 'currency-formatter';
 
 class Transaction extends PrivateModel {
@@ -52,11 +53,11 @@ class Transaction extends PrivateModel {
         this.set('date', date);
     }
 
-    get category(): string {
+    get category(): Category {
         return this.get('category');
     }
 
-    set category(category: string) {
+    set category(category: Category) {
         this.set('category', category);
     }
 

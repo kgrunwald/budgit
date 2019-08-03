@@ -1,6 +1,11 @@
-import { Module, VuexModule, getModule } from 'vuex-module-decorators';
+import { Module, VuexModule, Action, Mutation, getModule } from 'vuex-module-decorators';
+import { values } from 'lodash';
 import Store from './index';
+import Category from '@/models/Category';
 
+interface CategoriesById {
+    [key: string]: Category;
+}
 
 @Module({
     dynamic: true,
@@ -9,16 +14,29 @@ import Store from './index';
     namespaced: true,
 })
 class CategoryModule extends VuexModule {
-    public categories: string[] = [
-        'Rent',
-        'Utilities',
-        'Pet',
-        'Vacation',
-        'Auto Loan - Tesla',
-        'Lease Payment - Blazer',
-        'Banana Stand',
-        'House Down Payment',
-    ];
+    public categoriesById: CategoriesById = {};
+
+    @Action({ rawError: true })
+    public async loadCategories() {
+        // @ts-ignore
+        const query = new Parse.Query(Category);
+        const categories = await query.find();
+        categories.forEach((category: Category) => {
+            this.add(category);
+        });
+    }
+
+    @Mutation
+    public add(category: Category) {
+        this.categoriesById = {
+            ...this.categoriesById,
+            [category.id]: category,
+        };
+    }
+
+    get categories(): Category[] {
+        return values(this.categoriesById);
+    }
 }
 
 export default getModule(CategoryModule);

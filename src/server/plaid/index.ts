@@ -6,6 +6,7 @@ import Item from '../../models/Item';
 import Account from '../../models/Account';
 import Transaction from '../../models/Transaction';
 import { subDays, format} from 'date-fns';
+import PlaidCategoryMapping from '../../models/PlaidCategoryMapping';
 
 const CLIENT_ID = process.env.PLAID_CLIENT_ID || '';
 const PLAID_SECRET = process.env.PLAID_SECRET || '';
@@ -271,7 +272,12 @@ async function savePlaidTransaction(plaidTxn: plaid.Transaction, account: Accoun
     txn.merchant = plaidTxn.name || '';
     txn.date = plaidTxn.date;
     txn.amount = plaidTxn.amount || 0;
-    txn.category = (plaidTxn.category && plaidTxn.category[0] || '');
+    if (plaidTxn.category_id) {
+        const categoryMap = await get(PlaidCategoryMapping, 'plaidCategoryId', plaidTxn.category_id);
+        if (categoryMap) {
+            txn.category = categoryMap.category;
+        }
+    }
     txn.account = account;
     
     txn.setACL(new Parse.ACL(user));
