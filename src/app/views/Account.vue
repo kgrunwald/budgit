@@ -35,19 +35,6 @@
                 </div>
             </div>
         </b-card>
-<<<<<<< HEAD
-        <div class="account-actions">
-            <AccountAction :accountId="account.accountId" v-if="account.expired">
-                <template slot="action" slot-scope="props">
-                    <b-button pill class=action variant="outline-danger" @click="props.onClick">
-                        <font-awesome-icon icon="exclamation-triangle"/>
-                        Refresh
-                    </b-button>
-                </template>
-            </AccountAction>
-        </div>
-=======
->>>>>>> 61f099854ff5d68c40c923a3752418c38d915704
         <b-card no-body="">
             <b-table
                 striped 
