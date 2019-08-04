@@ -189,7 +189,7 @@ export default class Account extends Vue {
 
     public async acknowledge(txn: Transaction) {
         txn.acknowledged = true;
-        await txn.save();
+        await TransactionModule.update(txn);
     }
 
     get categories(): Category[] {
@@ -198,7 +198,7 @@ export default class Account extends Vue {
 
     public async setCategory(txn: Transaction, category: Category) {
         txn.category = category;
-        await txn.save();
+        await TransactionModule.update(txn);
         this.uneditCategory(txn.transactionId);
     }
 

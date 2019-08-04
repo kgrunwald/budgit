@@ -85,10 +85,6 @@ export default class Budget extends Vue {
   public newGroup: string = '';
   public fields = ['name', 'Budget', 'Activity', 'Balance'];
 
-  public async mounted() {
-    CategoryModule.loadCategories();
-  }
-
   get groups() {
     return CategoryModule.groups;
   }
