@@ -40,6 +40,7 @@
                 striped 
                 hover 
                 small 
+                tbody-tr-class="account-row-class"
                 :items="transactions" 
                 :fields="fields" 
                 :sort-by.sync="sortBy" 
@@ -59,34 +60,60 @@
                         />
                     </template>
                     <template slot="merchant" slot-scope="data">
-                        <b-form-input
-                            size="sm"
-                            v-model="data.item.merchant"
-                            @blur="update(data.item)"
-                        />
+                        <div
+                            class="view-category"
+                            @click="editMerchant(data.item.id)" 
+                            v-if="transactionMerchantEdit !== data.item.id"
+                        >
+                            <span v-html="data.item.merchant || '<i>None</i>'"></span>
+                        </div>
+                        <div v-if="transactionMerchantEdit === data.item.id">
+                            <b-form-input
+                                autofocus
+                                size="sm"
+                                v-model="data.item.merchant"
+                                @blur="update(data.item)"
+                            />
+                        </div>
                     </template>
                     <template slot="categoryName" slot-scope="data">
-                        <b-dropdown
-                            :text="data.item.categoryName"
-                            split
-                            split-variant="outline-primary"
-                            variant="primary"
-                            size="sm"
+                        <div
+                            class="view-category"
+                            @click="editCategory(data.item.id)" 
+                            v-if="transactionCategoryEdit !== data.item.id"
                         >
-                            <b-dropdown-form>
-                                <b-form-input
-                                    size="sm"
-                                    v-model="filter"
-                                />
-                            </b-dropdown-form>
-                            <b-dropdown-item 
-                                v-for="category in categories" 
-                                :key="category.id"
-                                @click="setCategory(data.item, category)"
+                            <span v-html="data.item.categoryName || '<i>None</i>'"></span>
+                        </div>
+                        <div v-show="transactionCategoryEdit === data.item.id">
+                            <b-dropdown
+                                :ref="'dd-' + data.item.id"
+                                class="category-dropdown"
+                                :text="data.item.categoryName"
+                                split
+                                split-variant="outline-primary"
+                                variant="primary"
+                                size="sm"
+                                @hide="uneditCategory(data.item.id)"
+                                @shown="focusCategorySearch(data.item.id)"
                             >
-                                {{ category.name}}
-                            </b-dropdown-item>
-                        </b-dropdown>
+                                <b-dropdown-form>
+                                    <b-form-input
+                                        class="testing"
+                                        :ref="'input-' + data.item.id"
+                                        size="sm"
+                                        v-model="filter"
+                                    />
+                                </b-dropdown-form>
+                                <b-dropdown-item 
+                                    v-for="category in categories" 
+                                    :key="category.id"
+                                    @click="setCategory(data.item, category)"
+                                    @blur="uneditCategory(data.item.id)"
+                                >
+                                    {{ category.name}}
+                                </b-dropdown-item>
+                            </b-dropdown>
+                        </div>
                     </template>
             </b-table>
         </b-card>
@@ -116,14 +143,41 @@ import Category from '../../models/Category';
 export default class Account extends Vue {
     public fields = [
         { key: 'acknowledged', label: ''},
-        { key: 'date', label: 'Date', sortable: true },
-        'merchant',
+        { key: 'date', label: 'Date', sortable: true},
+        { key: 'merchant', label: 'Merchant', sortable: true},
         { key: 'categoryName', label: 'Category'},
         { key: 'formattedAmount', label: 'Amount'},
     ];
     public sortBy = 'date';
     public sortDesc = true;
+    public transactionCategoryEdit: string = '';
+    public transactionMerchantEdit: string = '';
     public filter: string = '';
+
+    public editCategory(transactionId: string) {
+        this.transactionCategoryEdit = transactionId;
+        // @ts-ignore
+        this.$refs['dd-' + transactionId].show();
+    }
+
+    public focusCategorySearch(transactionId: string) {
+        // @ts-ignore
+        this.$refs['input-' + transactionId].focus();
+    }
+
+    public editMerchant(transactionId: string) {
+        this.transactionMerchantEdit = transactionId;
+    }
+
+    public uneditCategory(transactionId: string) {
+        if (this.transactionCategoryEdit === transactionId) {
+            this.transactionCategoryEdit = '';
+        }
+    }
+
+    public uneditMerchant() {
+        this.transactionMerchantEdit = '';
+    }
 
     get currentBalance(): string {
         return formatter.format(this.$props.account.currentBalance, { code: 'USD' });
@@ -144,8 +198,13 @@ export default class Account extends Vue {
 
     public async setCategory(txn: Transaction, category: Category) {
         txn.category = category;
-        console.log('set txn category', category.name);
         await txn.save();
+        this.uneditCategory(txn.transactionId);
+    }
+
+    public async update(obj: Parse.Object) {
+        this.uneditMerchant();
+        await obj.save();
     }
 }
 </script>
@@ -274,5 +333,19 @@ export default class Account extends Vue {
     cursor: pointer;
     color: $primary;
 }
+
+.view-category {
+    width: 100%;
+    height: 100%;
+}
+
+.account-row-class {
+    height: 40px;
+
+    td {
+        vertical-align: middle;
+    }
+}
+
 </style>
 
