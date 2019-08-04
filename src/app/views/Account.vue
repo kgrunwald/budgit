@@ -171,6 +171,8 @@ export default class Account extends Vue {
     }
 
     public uneditCategory(transactionId: string) {
+        // @ts-ignore
+        this.filter = '';
         if (this.transactionCategoryEdit === transactionId) {
             this.transactionCategoryEdit = '';
         }
