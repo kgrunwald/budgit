@@ -73,6 +73,7 @@
                                 size="sm"
                                 v-model="data.item.merchant"
                                 @blur="update(data.item)"
+                                @keydown.enter.native="update(data.item)"
                             />
                         </div>
                     </template>
@@ -203,8 +204,8 @@ export default class Account extends Vue {
     }
 
     public async update(obj: Parse.Object) {
-        this.uneditMerchant();
         await obj.save();
+        this.uneditMerchant();
     }
 }
 </script>
