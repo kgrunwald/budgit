@@ -38,9 +38,28 @@
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
 import Parse from 'parse';
+import AccountModule from '@/app/store/AccountModule';
+import Subscriber from '@/app/store/Subscriber';
+import Account from '@/models/Account';
+import Transaction from '@/models/Transaction';
+import Category from '@/models/Category';
+import CategoryModule from '../store/CategoryModule';
 
 @Component({})
 export default class Navigation extends Vue {
+    public async mounted() {
+        AccountModule.loadAccounts();
+        CategoryModule.loadCategories();
+
+        // @ts-ignore
+        const acctSub = new Subscriber(AccountModel, AccountModule);
+        await acctSub.subscribe();
+
+        // @ts-ignore
+        const txnSub = new Subscriber(Transaction, TransactionModule);
+        await txnSub.subscribe();
+    }
+
     public async signOut() {
         await Parse.User.logOut();
         this.$router.push('/login');

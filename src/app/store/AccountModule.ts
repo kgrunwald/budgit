@@ -33,7 +33,7 @@ class AccountModule extends VuexModule {
             this.add(account);
             TransactionModule.loadTransactions(account);
         });
-        if (!this.selectedAccount) {
+        if (!this.selectedAccount && accounts.length > 0) {
             this.selectAccount(accounts[0].accountId);
         }
     }

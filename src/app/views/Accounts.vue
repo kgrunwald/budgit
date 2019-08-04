@@ -28,18 +28,6 @@ import TransactionModule from '../store/TransactionModule';
   },
 })
 export default class Accounts extends Vue {
-  public async mounted() {
-    AccountModule.loadAccounts();
-
-    // @ts-ignore
-    const acctSub = new Subscriber(AccountModel, AccountModule);
-    await acctSub.subscribe();
-
-    // @ts-ignore
-    const txnSub = new Subscriber(Transaction, TransactionModule);
-    await txnSub.subscribe();
-  }
-
   public handleAccountClick(account: AccountModel) {
     AccountModule.selectAccount(account.accountId);
   }

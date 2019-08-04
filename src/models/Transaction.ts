@@ -61,6 +61,10 @@ class Transaction extends PrivateModel {
         this.set('category', category);
     }
 
+    get categoryName(): string {
+        return this.category ? this.category.name : '';
+    }
+
     get account(): Account {
         return this.get('account');
     }

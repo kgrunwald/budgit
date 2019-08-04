@@ -1,5 +1,5 @@
 import plaid, { InstitutionWithInstitutionData, PlaidEnvironments } from 'plaid';
-import Parse, { User } from 'parse/node';
+import Parse from 'parse/node';
 import { Router, Request, Response, NextFunction } from 'express';
 import logger from '../logger';
 import Item from '../../models/Item';
@@ -247,7 +247,7 @@ async function handleItemWebhook(payload: ItemWebhook) {
     if (payload.webhook_code === 'ERROR' && payload.error.error_code === 'ITEM_LOGIN_REQUIRED') {
         logger.info(`Login required for ${payload.item_id}`);
         const item = await get(Item, 'itemId', payload.item_id);
-        await markItemTokenExpired(item);
+        await markItemTokenExpired(item as Item);
     }
 }
 
@@ -311,16 +311,29 @@ interface Queryable<T> {
 }
 
 async function getOrCreate<T>(classType: Queryable<T>, idField: string, id: string): Promise<T> {
-    let inst = await new Parse.Query(classType.name).includeAll().equalTo(idField, id).first(SUDO) as any as T;
+    let inst: T | null = null;
+    try {
+        inst = await new Parse.Query(classType.name).includeAll().equalTo(idField, id).first(SUDO) as any as T;
+    } catch (e) {
+        logger.info(`Class ${classType.name} did not exist. Creating new instance`);
+    }
+
     if (!inst) {
         inst = new classType();
     }
-
+    
     return inst;
 }
 
-async function get<T>(classType: Queryable<T>, idField: string, id: string): Promise<T> {
-    return new Parse.Query(classType.name).includeAll().equalTo(idField, id).first(SUDO) as any as T;
+async function get<T>(classType: Queryable<T>, idField: string, id: string): Promise<T | null> {
+    let inst: T | null = null;
+    try {
+        inst = await new Parse.Query(classType.name).includeAll().equalTo(idField, id).first(SUDO) as any as T;
+    } catch (e) {
+        logger.info(`Class ${classType.name} did not exist. Skipping due to get().`);
+    }
+
+    return inst;
 }
 
 export default plaidRouter;

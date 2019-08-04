@@ -14,14 +14,6 @@ class Category extends PrivateModel {
     set name(name: string) {
         this.set('name', name);
     }
-
-    set group(group: CategoryGroup) {
-        this.set('group', group);
-    }
-
-    get group(): CategoryGroup {
-        return this.get('group');
-    }
 }
 
 Parse.Object.registerSubclass('Category', Category);

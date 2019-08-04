@@ -16,7 +16,7 @@ import initializeParseClient from './parse';
 
 const { PORT = 3000, APP_ID = 'jk-budgit', MASTER_KEY = 'myMasterKey' } = process.env;
 const SERVER_URL = process.env.SERVER_URL || `http://localhost:${PORT}/parse`;
-
+const STATIC_PATH = process.env.STATIC_PATH || '/../..';
 initializeParseClient(APP_ID, MASTER_KEY, SERVER_URL);
 
 import logger from './logger';
@@ -41,12 +41,12 @@ const parse = new ParseServer({
 app.use('/parse', parse);
 app.use(plaid);
 
-const publicPath = resolve(__dirname, '../');
+const publicPath = resolve(__dirname, STATIC_PATH);
 const staticConf = { maxAge: '1y', etag: false };
 
 app.use(express.static(publicPath, staticConf));
 app.get('*', (req, res) => {
-    res.sendFile(join(__dirname + '/../index.html'));
+    res.sendFile(join(__dirname + STATIC_PATH + '/public/index.html'));
 });
 
 const httpServer = http.createServer(app);

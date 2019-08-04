@@ -1,5 +1,5 @@
 import { Module, VuexModule, Action, Mutation, getModule } from 'vuex-module-decorators';
-import { filter, values } from 'lodash';
+import { values } from 'lodash';
 import Store from './index';
 import Category from '@/models/Category';
 import CategoryGroup from '@/models/CategoryGroup';
@@ -20,13 +20,13 @@ interface CategoriesById {
     namespaced: true,
 })
 class CategoryModule extends VuexModule {
-    public categoryGroupsById: CategoryGroupsById = {};
-    public categoriesById: CategoriesById = [];
+    public groupsById: CategoryGroupsById = {};
+    public categoriesById: CategoriesById = {};
 
     @Action({ rawError: true })
     public async loadCategories() {
         // @ts-ignore
-        const query = new Parse.Query(CategoryGroup).includeAll();
+        const query = new Parse.Query(CategoryGroup).include('categories');
         const groups = await query.find();
         groups.forEach((group: CategoryGroup) => {
             this.add(group);
@@ -41,8 +41,8 @@ class CategoryModule extends VuexModule {
 
     @Mutation
     public add(group: CategoryGroup) {
-        this.categoryGroupsById = {
-            ...this.categoryGroupsById,
+        this.groupsById = {
+            ...this.groupsById,
             [group.id]: group,
         };
     }
@@ -59,14 +59,8 @@ class CategoryModule extends VuexModule {
         return values(this.categoriesById);
     }
 
-    get categoriesFor() {
-        return (group: CategoryGroup): Category[] => {
-            return filter(this.categories, (category) => category.group.name === group.name);
-        };
-    }
-
     get groups(): CategoryGroup[] {
-        return values(this.categoryGroupsById);
+        return values(this.groupsById);
     }
 }
 

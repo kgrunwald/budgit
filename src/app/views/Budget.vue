@@ -38,7 +38,7 @@
           small 
           caption-top
           :fields="fields"
-          :items="getGroupCategories(group)"
+          :items="group.categories"
         >
           <template slot="table-caption">
             <div class="budget-group-header">
@@ -87,18 +87,10 @@ export default class Budget extends Vue {
 
   public async mounted() {
     CategoryModule.loadCategories();
-
-    // @ts-ignore
-    const categorySub = new Subscriber(Category, CategoryModule);
-    await categorySub.subscribe();
   }
 
   get groups() {
     return CategoryModule.groups;
-  }
-
-  public getGroupCategories(group: CategoryGroup) {
-    return CategoryModule.categoriesFor(group);
   }
 
   public async createGroup() {
@@ -111,8 +103,11 @@ export default class Budget extends Vue {
   public async createCategory(group: CategoryGroup) {
     const category = new Category();
     category.name = this.newCategory;
-    category.group = group;
-    await category.commit(Parse.User.current());
+    group.addCategory(category);
+    await Promise.all([
+      category.commit(Parse.User.current()),
+      group.commit(Parse.User.current()),
+    ]);
     this.newCategory = '';
   }
 

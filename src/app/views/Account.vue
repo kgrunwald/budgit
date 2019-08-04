@@ -65,32 +65,28 @@
                             @blur="update(data.item)"
                         />
                     </template>
-                    <template slot="category" slot-scope="data">
-                        <b-form-input
-                            :id="`ctg-${data.item.id}`"
+                    <template slot="categoryName" slot-scope="data">
+                        <b-dropdown
+                            :text="data.item.categoryName"
+                            split
+                            split-variant="outline-primary"
+                            variant="primary"
                             size="sm"
-                            v-model="data.item.category.name"
-                            @blur="update(data.item)"
-                            @update="filterCategories"
-                        />
-                        <b-popover
-                            :target="`ctg-${data.item.id}`"
-                            :ref="`popover-${data.item.id}`"
-                            placement="bottom"
-                            custom-class="category-popover"
                         >
-                            <template slot="title">
-                                Categories
-                            </template>
-                            <div 
+                            <b-dropdown-form>
+                                <b-form-input
+                                    size="sm"
+                                    v-model="filter"
+                                />
+                            </b-dropdown-form>
+                            <b-dropdown-item 
                                 v-for="category in categories" 
-                                :key="category" 
-                                class="category"
+                                :key="category.id"
                                 @click="setCategory(data.item, category)"
                             >
-                                {{ category }}
-                            </div>
-                        </b-popover>
+                                {{ category.name}}
+                            </b-dropdown-item>
+                        </b-dropdown>
                     </template>
             </b-table>
         </b-card>
@@ -122,12 +118,12 @@ export default class Account extends Vue {
         { key: 'acknowledged', label: ''},
         { key: 'date', label: 'Date', sortable: true },
         'merchant',
-        'category',
+        { key: 'categoryName', label: 'Category'},
         { key: 'formattedAmount', label: 'Amount'},
     ];
     public sortBy = 'date';
     public sortDesc = true;
-    private filter: string = '';
+    public filter: string = '';
 
     get currentBalance(): string {
         return formatter.format(this.$props.account.currentBalance, { code: 'USD' });
@@ -142,30 +138,14 @@ export default class Account extends Vue {
         await txn.save();
     }
 
-    get categories(): string[] {
-        const categoryNames = map(CategoryModule.categories, 'name');
-        return filter(categoryNames, (ctg) => startsWith(ctg, this.filter));
+    get categories(): Category[] {
+        return filter(CategoryModule.categories, (ctg) => startsWith(ctg.name, this.filter));
     }
 
-    public filterCategories(prefix: string) {
-        this.filter = prefix;
-    }
-
-    public async setCategory(txn: Transaction, categoryName: string) {
-        const category = find(CategoryModule.categories, (ctg: Category) => ctg.name === categoryName) as Category;
+    public async setCategory(txn: Transaction, category: Category) {
         txn.category = category;
-
-        const popover = this.$refs[`popover-${txn.id}`] as Vue;
-        popover.$emit('close');
+        console.log('set txn category', category.name);
         await txn.save();
-    }
-
-    public async update(obj: Parse.Object) {
-        if (obj instanceof Transaction) {
-            const popover = this.$refs[`popover-${obj.id}`] as Vue;
-            popover.$emit('close');
-        }
-        await obj.save();
     }
 }
 </script>
