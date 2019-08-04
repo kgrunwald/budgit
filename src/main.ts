@@ -10,6 +10,7 @@ import {
   faExclamationTriangle,
   faCloudDownloadAlt,
   faSearchDollar,
+  faDollarSign,
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon, FontAwesomeLayers } from '@fortawesome/vue-fontawesome';
 import './app/styles/custom.scss';
@@ -32,6 +33,7 @@ library.add(
   faExclamationTriangle,
   faCloudDownloadAlt,
   faSearchDollar,
+  faDollarSign,
 );
 
 Vue.use(BootstrapVue);
