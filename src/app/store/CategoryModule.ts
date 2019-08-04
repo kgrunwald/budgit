@@ -1,9 +1,10 @@
 import { Module, VuexModule, Action, Mutation, getModule } from 'vuex-module-decorators';
-import { values } from 'lodash';
+import { values, omit, map, flatten, reject, isUndefined } from 'lodash';
 import Store from './index';
 import Category from '@/models/Category';
 import CategoryGroup from '@/models/CategoryGroup';
 import Parse from '@/models/Parse';
+import Subscriber from './Subscriber';
 
 interface CategoryGroupsById {
     [key: string]: CategoryGroup;
@@ -27,15 +28,12 @@ class CategoryModule extends VuexModule {
     public async loadCategories() {
         // @ts-ignore
         const query = new Parse.Query(CategoryGroup).include('categories');
+        const sub = new Subscriber(query, this);
+        await sub.subscribe();
+
         const groups = await query.find();
         groups.forEach((group: CategoryGroup) => {
             this.add(group);
-        });
-
-        const category = new Parse.Query(Category).includeAll();
-        const categories = await category.find();
-        categories.forEach((ctg: Category) => {
-            this.addCategory(ctg);
         });
     }
 
@@ -48,15 +46,12 @@ class CategoryModule extends VuexModule {
     }
 
     @Mutation
-    public addCategory(ctg: Category) {
-        this.categoriesById = {
-            ...this.categoriesById,
-            [ctg.id]: ctg,
-        };
+    public remove(group: CategoryGroup) {
+        return omit(this.groupsById, group.id);
     }
 
     get categories(): Category[] {
-        return values(this.categoriesById);
+        return reject(flatten(map(this.groupsById, (group) => group.categories)), isUndefined);
     }
 
     get groups(): CategoryGroup[] {

@@ -5,6 +5,7 @@ import Account from '@/models/Account';
 import Transaction from '@/models/Transaction';
 import Store from './index';
 import Category from '@/models/Category';
+import Subscriber from './Subscriber';
 
 interface TxnMap {
     [k: string]: Transaction;
@@ -20,11 +21,20 @@ class TransactionModule extends VuexModule {
     public txnsByid: TxnMap = {};
 
     @Action
+    public async load() {
+        // @ts-ignore
+        const query = new Parse.Query(Transaction).includeAll();
+        const txnSub = new Subscriber(query, this);
+        await txnSub.subscribe();
+    }
+
+    @Action
     public async loadTransactions(account: Account) {
         // @ts-ignore
         const query = new Parse.Query(Transaction);
         query.equalTo('account', account);
         query.include('category');
+
         const txns = await query.find();
         txns.forEach((txn: Transaction) => {
             this.add(txn);

@@ -32,7 +32,7 @@ const parse = new ParseServer({
     appId: APP_ID,
     masterKey: MASTER_KEY,
     liveQuery: {
-        classNames: ['Item', 'Account', 'Transaction'],
+        classNames: ['Item', 'Account', 'Transaction', 'CategoryGroup', 'Category'],
     },
     serverURL: SERVER_URL,
     sessionLength: 60 * 60,
@@ -41,13 +41,13 @@ const parse = new ParseServer({
 app.use('/parse', parse);
 app.use(plaid);
 
-const publicPath = resolve(__dirname, STATIC_PATH);
-const staticConf = { maxAge: '1y', etag: false };
+// const publicPath = resolve(__dirname, STATIC_PATH);
+// const staticConf = { maxAge: '1y', etag: false };
 
-app.use(express.static(publicPath, staticConf));
-app.get('*', (req, res) => {
-    res.sendFile(join(__dirname + STATIC_PATH + '/public/index.html'));
-});
+// app.use(express.static(publicPath, staticConf));
+// app.get('*', (req, res) => {
+    // res.sendFile(join(__dirname + STATIC_PATH + '/public/index.html'));
+// });
 
 const httpServer = http.createServer(app);
 httpServer.listen(PORT, () => {

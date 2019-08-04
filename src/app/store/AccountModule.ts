@@ -4,6 +4,8 @@ import Parse from 'parse';
 import Account from '@/models/Account';
 import Store from './index';
 import TransactionModule from './TransactionModule';
+import Subscriber from './Subscriber';
+import Transaction from '@/models/Transaction';
 
 interface AccountsById {
     [key: string]: Account;
@@ -28,11 +30,15 @@ class AccountModule extends VuexModule {
     public async loadAccounts() {
         // @ts-ignore
         const query = new Parse.Query(Account);
+        const sub = new Subscriber(query, this);
+        sub.subscribe();
+
         const accounts = await query.find();
         accounts.forEach((account: Account) => {
             this.add(account);
             TransactionModule.loadTransactions(account);
         });
+
         if (!this.selectedAccount && accounts.length > 0) {
             this.selectAccount(accounts[0].accountId);
         }
