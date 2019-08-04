@@ -1,9 +1,10 @@
-import { Module, VuexModule, Mutation, Action, getModule } from 'vuex-module-decorators';
+import { Module, VuexModule, Mutation, Action, getModule, MutationAction } from 'vuex-module-decorators';
 import { omit, pickBy, values, sortBy, reverse } from 'lodash';
 import Parse from 'parse';
 import Account from '@/models/Account';
 import Transaction from '@/models/Transaction';
 import Store from './index';
+import Category from '@/models/Category';
 
 interface TxnMap {
     [k: string]: Transaction;
@@ -52,6 +53,12 @@ class TransactionModule extends VuexModule {
             // @ts-ignore
             return reverse(sortBy(values(matches), 'date'));
         };
+    }
+
+    @Action({ commit: 'add' })
+    public async update(txn: Transaction) {
+        await txn.save();
+        return txn;
     }
 }
 
