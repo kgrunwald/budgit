@@ -5,7 +5,12 @@
         <div class="budget-header">
           <div class="budget-info">
             <div class="budget-title">
-              <span>Budget</span>
+              <div class="month">
+                <font-awesome-icon class="date-arrow" icon="arrow-left" @click="previousMonth" />
+                {{ currentMonthString }}
+                <font-awesome-icon class="date-arrow" icon="arrow-right" @click="nextMonth" />
+              </div>
+              <div>Budget</div>
             </div>
             <div class="summary">
               <div class="balance">
@@ -75,7 +80,10 @@
               <b-form-input
                 placeholder="0.00"
                 size="sm"
-                :value="data.item.budget"
+                type="number"
+                number
+                :value="data.item.getBudget(currentMonthKey)"
+                @change="setBudget(data.item, ...arguments)"
               />
             </b-input-group>
           </template>
@@ -91,6 +99,7 @@
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
 import { keys } from 'lodash';
+import { format, addMonths } from 'date-fns';
 import CategoryModule from '../store/CategoryModule';
 import Category from '../../models/Category';
 import Parse from '../../models/Parse';
@@ -98,12 +107,34 @@ import CategoryGroup from '../../models/CategoryGroup';
 
 @Component
 export default class Budget extends Vue {
+  public currentMonth: Date = new Date();
   public newCategory: string = '';
   public newGroup: string = '';
   public fields = ['name', 'budget', { key: 'formattedActivity', label: 'Activity'}, 'balance'];
 
   get groups() {
     return CategoryModule.groups;
+  }
+
+  get currentMonthString(): string {
+    return format(this.currentMonth, 'MMM YYYY');
+  }
+
+  get currentMonthKey(): string {
+    return format(this.currentMonth, 'YYYYMM');
+  }
+
+  public previousMonth() {
+    this.currentMonth = addMonths(this.currentMonth, -1);
+  }
+
+  public nextMonth() {
+    this.currentMonth = addMonths(this.currentMonth, 1);
+  }
+
+  public async setBudget(category: Category, value: string) {
+    category.setBudget(this.currentMonthKey, parseFloat(value));
+    await category.commit(Parse.User.current());
   }
 
   public async createGroup() {
@@ -134,6 +165,23 @@ export default class Budget extends Vue {
   padding: 20px;
   background-color: #fafafa;
   overflow-y: scroll;
+
+  .month {
+    font-size: 24px;
+    font-weight: 600;
+    color: $primary;
+
+    .date-arrow {
+      font-size: 16px;
+      font-weight: 300;
+      margin: 0 4px 4px 4px;
+      cursor: pointer;
+
+      &:first-child {
+        margin-left: 0;
+      }
+    }
+  }
 
   .budget-header {
     display: flex;

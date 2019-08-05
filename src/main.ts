@@ -11,6 +11,8 @@ import {
   faCloudDownloadAlt,
   faSearchDollar,
   faDollarSign,
+  faArrowRight,
+  faArrowLeft,
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon, FontAwesomeLayers } from '@fortawesome/vue-fontawesome';
 import './app/styles/custom.scss';
@@ -34,6 +36,8 @@ library.add(
   faCloudDownloadAlt,
   faSearchDollar,
   faDollarSign,
+  faArrowRight,
+  faArrowLeft,
 );
 
 Vue.use(BootstrapVue);

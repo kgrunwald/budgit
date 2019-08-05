@@ -16,13 +16,15 @@ class Category extends PrivateModel {
         this.set('name', name);
     }
 
-    get budget(): number {
-        // return this.get('budget');
-        return 207;
+    public setBudget(monthKey: string, amount: number) {
+        const budget = this.get('budget') || {};
+        budget[monthKey] = amount;
+        this.set('budget', budget);
     }
 
-    set budget(budget: number) {
-        this.set('budget', budget);
+    public getBudget(monthKey: string): number {
+        const budget = this.get('budget') || {};
+        return (budget[monthKey] || 0.0).toFixed(2);
     }
 
     get activity(): number {
