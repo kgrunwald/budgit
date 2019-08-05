@@ -26,7 +26,7 @@
                         <div class="actions">
                             <b-button 
                                 pill
-                                variant="outline-primary"
+                                variant="outline-secondary"
                                 class="action"
                                 :disabled="account.expired"
                                 @click="AccountModule.updateAccount(account.accountId)"
@@ -374,7 +374,7 @@ export default class Account extends Vue {
 .ack-icon {
     margin: 0 0 0 4px;
     cursor: pointer;
-    color: $primary;
+    color: $secondary;
 }
 
 .view-category {
@@ -389,7 +389,7 @@ export default class Account extends Vue {
         vertical-align: middle;
 
         i {
-            color: $secondary;
+            color: lighten(black, 55%);
         }
     }
 }

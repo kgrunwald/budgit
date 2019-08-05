@@ -4,13 +4,16 @@
       <b-card>
         <div class="budget-header">
           <div class="budget-info">
-            <div class="budget-title">
-              <div class="month">
-                <font-awesome-icon class="date-arrow" icon="arrow-left" @click="previousMonth" />
-                {{ currentMonthString }}
-                <font-awesome-icon class="date-arrow" icon="arrow-right" @click="nextMonth" />
+            <div class="budget-title-group">
+              <font-awesome-icon size="3x" class="budget-icon" icon="file-invoice-dollar"/>
+              <div class="budget-title">
+                <div class="month">
+                  <font-awesome-icon class="date-arrow" icon="arrow-circle-left" @click="previousMonth" />
+                  {{ currentMonthString }}
+                  <font-awesome-icon class="date-arrow" icon="arrow-circle-right" @click="nextMonth" />
+                </div>
+                <div>Budget</div>
               </div>
-              <div>Budget</div>
             </div>
             <div class="summary">
               <div class="balance">
@@ -19,7 +22,7 @@
               </div>
               <div class="separator" />
               <div class="actions">
-                <b-button v-b-modal.add-group pill variant="outline-primary" class="action">
+                <b-button v-b-modal.add-group pill variant="outline-secondary" class="action">
                   <font-awesome-icon icon="cloud-download-alt" />Add Group
                   <b-modal :id="`add-group`" title="Add Group" @ok="createGroup">
                   <b-form-input 
@@ -49,7 +52,7 @@
               </div>
               <b-button 
                 pill 
-                variant="outline-primary" 
+                variant="outline-secondary" 
                 class="action"
                 v-b-modal="'add-category-' + group.id"
               >
@@ -159,7 +162,7 @@ export default class Budget extends Vue {
 .budget-container {
   width: 100%;
   height: 100%;
-  padding: 20px;
+  padding: 10px;
   background-color: #fafafa;
   overflow-y: scroll;
 
@@ -172,6 +175,7 @@ export default class Budget extends Vue {
       font-size: 16px;
       font-weight: 300;
       margin: 0 4px 4px 4px;
+      color: black;
       cursor: pointer;
 
       &:first-child {
@@ -190,6 +194,16 @@ export default class Budget extends Vue {
       width: 100%;
       display: flex;
       justify-content: space-between;
+
+      .budget-title-group {
+        display: flex;
+        align-items: center;
+
+        .budget-icon {
+          margin: 5px 20px 0 10px;
+          color: $secondary;
+        }
+      }
 
       .title {
         display: flex;
@@ -278,7 +292,7 @@ export default class Budget extends Vue {
     border-radius: 5px 0 0 5px;
     text-align: center;
     padding: 0 4px 0 6px;
-    color: $purple;
+    color: $secondary;
     border: 1px solid #ced4da;
 }
 
