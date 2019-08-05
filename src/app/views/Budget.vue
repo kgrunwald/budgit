@@ -19,9 +19,6 @@
               </div>
               <div class="separator" />
               <div class="actions">
-                <b-button pill variant="outline-primary" class="action">
-                  <font-awesome-icon icon="cloud-download-alt" />Import
-                </b-button>
                 <b-button v-b-modal.add-group pill variant="outline-primary" class="action">
                   <font-awesome-icon icon="cloud-download-alt" />Add Group
                   <b-modal :id="`add-group`" title="Add Group" @ok="createGroup">
