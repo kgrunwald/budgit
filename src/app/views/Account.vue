@@ -24,7 +24,13 @@
                         </div>
                         <div class="separator" />
                         <div class="actions">
-                            <b-button pill variant="outline-primary" class="action" :disabled="account.expired">
+                            <b-button 
+                                pill
+                                variant="outline-primary"
+                                class="action"
+                                :disabled="account.expired"
+                                @click="AccountModule.updateAccount(account.accountId)"
+                            >
                                 <font-awesome-icon icon="cloud-download-alt"/>
                                 Import
                             </b-button>
@@ -163,6 +169,7 @@ export default class Account extends Vue {
     public transactionCategoryEdit: string = '';
     public transactionMerchantEdit: string = '';
     public filter: string = '';
+    public AccountModule = AccountModule;
 
     public editAccountName() {
         this.accountNameEdit = true;

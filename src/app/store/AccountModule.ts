@@ -70,6 +70,15 @@ class AccountModule extends VuexModule {
         await acct.save();
         return acct;
     }
+
+    @Action
+    public async updateAccount(accountId: string) {
+        const resp = await fetch('/updateAccounts', {
+            method: 'post',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({accountId}),
+        });
+    }
 }
 
 export default getModule(AccountModule);

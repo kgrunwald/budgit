@@ -17,6 +17,7 @@
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
 import PlaidLink from './PlaidLink.vue';
+import AccountModule from '../store/AccountModule';
 
 @Component({
   components: { PlaidLink },
@@ -46,11 +47,7 @@ export default class AccountAction extends Vue {
 
     public async onSuccess(token: string) {
       if (this.token) {
-        const resp = await fetch('/updateAccounts', {
-          method: 'post',
-          headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({accountId: this.$props.accountId}),
-        });
+        await AccountModule.updateAccount(this.$props.accountId);
       } else {
         const resp = await fetch('/getAccessToken', {
           method: 'post',
