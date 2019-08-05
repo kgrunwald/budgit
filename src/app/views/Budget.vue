@@ -90,6 +90,11 @@
                   />
                 </b-input-group>
               </template>
+              <template slot="HEAD_balance">
+                <span class="balance-header">
+                  Balance
+                </span>
+              </template>
               <template slot="balance" slot-scope="data">
                 <span class="balance">
                   <b-badge pill :variant="data.item.getBalance(currentMonthKey) != 0 ? data.item.getBalance(currentMonthKey) > 0 ? 'success' : 'danger' : 'dark'">
@@ -128,7 +133,11 @@ export default class Budget extends Vue {
   public currentMonth: Date = new Date();
   public newCategory: string = '';
   public newGroup: string = '';
-  public fields = ['name', 'budget', 'activity', 'balance'];
+  public fields = [
+    'name',
+    'budget',
+    'activity',
+    { key: 'balance', label: 'Balance', tdClass: 'balance-cell', thClass: 'balance-cell'}];
 
   get groups() {
     return CategoryGroupModule.groups;
@@ -346,6 +355,11 @@ export default class Budget extends Vue {
 
 .balance {
   font-size: 20px;
+  float: right;
+}
+
+.balance-header {
+  float: right;
 }
 
 .budget-row-class {
@@ -355,6 +369,8 @@ export default class Budget extends Vue {
         vertical-align: middle;
     }
 }
+
+
 </style>
 
 
