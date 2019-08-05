@@ -2,13 +2,10 @@ import Parse from './Parse';
 import PrivateModel from './PrivateModel';
 import formatter from 'currency-formatter';
 import CategoryGroup from './CategoryGroup';
-import { reduce } from 'lodash';
-
+import { reduce, has } from 'lodash';
+import { format } from 'date-fns';
 
 class Category extends PrivateModel {
-    constructor() {
-        super('Category');
-    }
 
     get name(): string {
         return this.get('name');
@@ -26,35 +23,47 @@ class Category extends PrivateModel {
         return this.get('group');
     }
 
-    public setBudget(monthKey: string, amount: number) {
+    public static getKey(month: Date): string {
+        return format(month, 'YYYYMM');
+    }
+    constructor() {
+        super('Category');
+    }
+
+    public setBudget(month: Date, amount: number) {
         const budget = this.get('budget') || {};
-        budget[monthKey] = amount;
+        budget[Category.getKey(month)] = amount;
         this.set('budget', budget);
     }
 
-    public getBudget(monthKey: string): number {
+    public getBudget(month: Date): number {
         const budget = this.get('budget') || {};
-        return (budget[monthKey] || 0.0).toFixed(2);
+        return (budget[Category.getKey(month)] || 0.0).toFixed(2);
     }
 
-    public setActivity(monthKey: string, amount: number) {
+    public setActivity(month: Date, amount: number) {
         const activity = this.get('activity') || {};
-        activity[monthKey] = amount;
+        activity[Category.getKey(month)] = amount;
         this.set('activity', activity);
     }
 
-    public getActivity(monthKey: string): number {
+    public hasActivity(month: Date): boolean {
+        return has(this.get('activity'), Category.getKey(month));
+    }
+
+    public getActivity(month: Date): number {
         const activity = this.get('activity') || {};
-        return activity[monthKey] || 0;
+        return activity[Category.getKey(month)] || 0;
     }
 
-    public getFormattedActivity(monthKey: string): string {
-        return formatter.format(this.getActivity(monthKey), { code: 'USD' });
+    public getFormattedActivity(month: Date): string {
+        return formatter.format(this.getActivity(month), { code: 'USD' });
     }
 
-    public getBalance(monthKey: string): number {
+    public getBalance(month: Date): number {
         const budget = this.get('budget');
         const activity = this.get('activity');
+        const monthKey = Category.getKey(month);
 
         const accumulatePrevious = (total: number, val: number, key: string) => {
             if (key <= monthKey) {
@@ -65,11 +74,11 @@ class Category extends PrivateModel {
 
         const totalBudget = reduce(budget, accumulatePrevious, 0);
         const totalActivity = reduce(activity, accumulatePrevious, 0);
-        return totalBudget - totalActivity;
+        return totalBudget + totalActivity;
     }
 
-    public getFormattedBalance(monthKey: string): string {
-        return formatter.format(this.getBalance(monthKey), { code: 'USD' });
+    public getFormattedBalance(month: Date): string {
+        return formatter.format(this.getBalance(month), { code: 'USD' });
     }
 }
 

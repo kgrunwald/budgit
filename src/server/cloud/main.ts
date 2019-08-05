@@ -1,14 +1,30 @@
 import Parse from 'parse/node';
 import Transaction from '../../models/Transaction';
 import Category from '../../models/Category';
-import { format } from 'date-fns'; 
-import { reduce } from 'lodash';
+import { reduce, get } from 'lodash';
+import { setDate, addMonths } from 'date-fns'
 
 Parse.Cloud.afterSave(Transaction, async (req): Promise<void> => {
-    const txn = req.object as unknown as Transaction;
-    const oldTxn = req.original as unknown as Transaction;
+    const orig = req.original as unknown as Transaction;
+    const update = req.object as unknown as Transaction;
 
-    await handleCategoryChange(oldTxn, txn);
+    const origCatId = get(orig, 'category.id');
+    const updateCatId = get(update, 'category.id');
+
+    if (origCatId === updateCatId) {
+        console.log('[CLOUD] No category change, skipping afterSave hook');
+        return;
+    }
+
+    if (origCatId) {
+        console.log('[CLOUD] Calculating activity for OLD transaction');
+        await setCategoryActivity(orig);
+    }
+    
+    if (updateCatId) {
+        console.log('[CLOUD] Calculating activity for NEW transaction');
+        await setCategoryActivity(update);
+    }
 })
 
 const handleCategoryChange = async (oldTxn: Transaction, newTxn: Transaction) => {
@@ -31,32 +47,49 @@ const handleCategoryChange = async (oldTxn: Transaction, newTxn: Transaction) =>
     }
 
     const isChange = ctg.id !== (oldCtg && oldCtg.id);
-    const key = format(newTxn.date, 'YYYYMM');
+    const date = newTxn.date;
 
     const promises = [];
     if (!oldCtg || isChange) {
-        console.log('[CLOUD: afterSave] Incrementing new category activity');
-        const oldActivity = ctg.getActivity(key);
-        ctg.setActivity(key, oldActivity + newTxn.amount);
+        console.log(`[CLOUD: afterSave] Incrementing new category activity: ${ctg.name}`);
+        const oldActivity = ctg.getActivity(date);
+        ctg.setActivity(date, oldActivity + newTxn.amount);
         promises.push(ctg.save(null, { useMasterKey: true }));
     }
 
     if (oldCtg !== null) {
-        console.log('[CLOUD: afterSave] Decrementing old category activity');
-        const oldActivity = oldCtg.getActivity(key);
-        oldCtg.setActivity(key, oldActivity - newTxn.amount);
+        console.log(`[CLOUD: afterSave] Decrementing old category activity: ${oldCtg.name}`);
+        const oldActivity = oldCtg.getActivity(date);
+        oldCtg.setActivity(date, oldActivity - newTxn.amount);
         promises.push(oldCtg.save(null, { useMasterKey: true }));
     }
 
     await Promise.all(promises);
 }
 
-Parse.Cloud.beforeSave(Category, (request) => {
-    const ctg = request.object as unknown as Category;
-    const budgets = ctg.get('budget');
-    const activity = ctg.get('activity');
+const setCategoryActivity = async (txn: Transaction) => {
+    // @ts-ignore
+    const ctg = await new Parse.Query(Category).get(txn.category.id, { useMasterKey: true }) as Category;
+    if (!ctg) {
+        console.log('[CLOUD] No category found for transaction');
+        return;
+    }
 
-    const totalBudget = reduce(budgets, (res, val) => res + val, 0);
-    const totalActivity = reduce(activity, (res, val) => res + val, 0);
-    ctg.total = totalBudget - totalActivity;
-});
+    const begin = setDate(txn.date, 1);
+    const end = addMonths(begin, 1);
+    console.log(`[CLOUD] Loading transactions between: ${Category.getKey(begin)} and ${Category.getKey(end)} for ${ctg.name}`);
+
+    // @ts-ignore
+    const txns = await new Parse.Query(Transaction)
+        .equalTo('category', ctg)
+        .greaterThanOrEqualTo('date', begin)
+        .lessThan('date', end)
+        .find({ useMasterKey: true });
+
+    const activity = reduce(txns, (val, txn) => val + txn.amount, 0);
+    console.log(`[CLOUD] Total for ${txns.length} transactions: $${activity}`);
+    console.log(`[CLOUD] Setting activity for key: ${Category.getKey(begin)}`);
+
+    ctg.setActivity(begin, activity);
+    await ctg.save(null, { useMasterKey: true });
+}

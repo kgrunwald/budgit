@@ -17,21 +17,24 @@
             </div>
             <div class="summary">
               <div class="available">
-                <div class="balance" :class="{ negative: availableCash < 0 }">
-                  {{ formatCurrency(availableCash) }}
+                <div class="balance" :class="{ negative: getAvailableCash(currentMonth) < 0 }">
+                  {{ formatCurrency(getAvailableCash(currentMonth)) }}
                 </div>
-                {{ availableCashGroup.name }}
+                <div>{{ availableCashGroup.name }}</div>
               </div>
               <div class="separator" />
-              <div class="available">
+              <div class="available-summary">
                 <div class="detail" >
-                  Rollover: {{ formatCurrency(rollover) }}
+                  <div>Rollover:</div>
+                  <div>{{ formatCurrency(getRollover(currentMonth)) }}</div>
                 </div>
                 <div class="detail" >
-                  Income: {{ formatCurrency(income) }}
+                  <div>Income:</div>
+                  <div>{{ formatCurrency(getIncome(currentMonth)) }}</div>
                 </div>
                 <div class="detail" >
-                  Budgeted: {{ formatCurrency(budgeted) }}
+                  <div>Budgeted:</div>
+                  <div>{{ formatCurrency(getBudgeted(currentMonth)) }}</div>
                 </div>
               </div>
               <div class="separator" />
@@ -99,7 +102,7 @@
                     size="sm"
                     type="number"
                     number
-                    :value="data.item.getBudget(currentMonthKey)"
+                    :value="data.item.getBudget(currentMonth)"
                     @change="setBudget(data.item, ...arguments)"
                   />
                 </b-input-group>
@@ -111,13 +114,13 @@
               </template>
               <template slot="balance" slot-scope="data">
                 <span class="balance">
-                  <b-badge pill :variant="data.item.getBalance(currentMonthKey) != 0 ? data.item.getBalance(currentMonthKey) > 0 ? 'success' : 'danger' : 'dark'">
-                    {{ formatCurrency(data.item.getBalance(currentMonthKey)) }}
+                  <b-badge pill :variant="data.item.getBalance(currentMonth) != 0 ? data.item.getBalance(currentMonth) > 0 ? 'success' : 'danger' : 'dark'">
+                    {{ formatCurrency(data.item.getBalance(currentMonth)) }}
                   </b-badge>
                 </span>
               </template>
               <template slot="activity" slot-scope="data">
-                {{ formatCurrency(data.item.getActivity(currentMonthKey)) }}
+                {{ formatCurrency(data.item.getActivity(currentMonth)) }}
               </template>
             </b-table>
           </b-card>
@@ -167,24 +170,27 @@ export default class Budget extends Vue {
     return formatter.format(amount, { code: 'USD' });
   }
 
-  get availableCash() {
-    return this.rollover + this.income - this.budgeted;
+  public getAvailableCash(month: Date): number {
+    return this.getRollover(month) + this.getIncome(month) - this.getBudgeted(month);
   }
 
-  get rollover() {
-    const lastMonthKey = format(addMonths(this.currentMonth, -1), 'YYYYMM');
-    return -1 * this.availableCategory.getBalance(lastMonthKey);
+  public getRollover(month: Date): number {
+    const lastMonth = addMonths(month, -1);
+    if (this.availableCategory.hasActivity(lastMonth)) {
+      return this.getAvailableCash(lastMonth);
+    }
+    return 0;
   }
 
-  get income() {
-    return this.availableCategory.getActivity(this.currentMonthKey);
+  public getIncome(month: Date) {
+    return this.availableCategory.getActivity(month);
   }
 
-  get budgeted() {
+  public getBudgeted(month: Date) {
     let budgeted = 0;
     CategoryModule.categories.forEach((category) => {
       // @ts-ignore
-      budgeted = budgeted + parseFloat(category.getBudget(this.currentMonthKey));
+      budgeted = budgeted + parseFloat(category.getBudget(month));
     });
 
     return budgeted;
@@ -202,10 +208,6 @@ export default class Budget extends Vue {
     return format(this.currentMonth, 'MMM YYYY');
   }
 
-  get currentMonthKey(): string {
-    return format(this.currentMonth, 'YYYYMM');
-  }
-
   public previousMonth() {
     this.currentMonth = addMonths(this.currentMonth, -1);
   }
@@ -215,7 +217,7 @@ export default class Budget extends Vue {
   }
 
   public async setBudget(category: Category, value: string) {
-    category.setBudget(this.currentMonthKey, parseFloat(value));
+    category.setBudget(this.currentMonth, parseFloat(value));
     await category.commit();
   }
 
@@ -257,6 +259,20 @@ export default class Budget extends Vue {
   .budget-header {
     font-size: 14px;
     font-weight: 300;
+  }
+
+  .available {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .available-summary {
+    width: 145px;
+  }
+
+  .detail {
+    display: flex;
+    justify-content: space-between;
   }
 
   .month {
