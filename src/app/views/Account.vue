@@ -14,12 +14,12 @@
                             @blur="setAccountName(account, account.name)"
                             @keydown.enter.native="setAccountName(account, account.name)"
                         />
-                        <span v-else @click="editAccountName()">{{ account.name }}</span>
+                        <div class="title" v-else @click="editAccountName()">{{ account.name }}</div>
                         <span class="info">{{ account.subType }}</span>
                     </div>
                     <div class="summary">
                         <div class="balance">
-                            <div :class="account.currentBalance > 0 ? 'positive' : 'negative'">{{ currentBalance }}</div>
+                            <div class="title" :class="account.currentBalance > 0 ? 'positive' : 'negative'">{{ currentBalance }}</div>
                             <span class="info">Current Balance</span>
                         </div>
                         <div class="separator" />
@@ -269,8 +269,8 @@ export default class Account extends Vue {
             padding-right: 20px;
 
             .bank-icon {
-                width: 40px;
-                height: 40px;
+                width: 50px;
+                height: 50px;
             }
         }
 
@@ -279,12 +279,16 @@ export default class Account extends Vue {
             display: flex;
             justify-content: space-between;
 
-            .title {
+            .account-title {
                 display: flex;
                 flex-direction: column;
                 font-size: 18px;
                 font-weight: 500;
-                width: 100%;
+
+            }
+
+            .title {
+                margin: 6px 0 5px 0;
             }
 
             .info {
@@ -293,6 +297,8 @@ export default class Account extends Vue {
                 text-transform: capitalize;
                 font-size: 14px;
                 font-weight: 300;
+                white-space: nowrap;
+                margin-bottom: 5px;
             }
 
             .balance > div {
