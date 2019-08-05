@@ -129,6 +129,9 @@
                             </b-dropdown>
                         </div>
                     </template>
+                    <template slot="formattedAmount" slot-scope="data">
+                        <div :class="data.item.amount > 0 ? '' : 'negative'">{{ data.item.formattedAmount }}</div>
+                    </template>
             </b-table>
         </b-card>
     </div>
@@ -230,6 +233,7 @@ export default class Account extends Vue {
         txn.category = category;
         await TransactionModule.update(txn);
         this.uneditCategory(txn.transactionId);
+        this.acknowledge(txn);
     }
 
     public async setAccountName(acct: AccountModel, name: string) {
@@ -306,19 +310,19 @@ export default class Account extends Vue {
                 text-align: right;
             }
 
-            .positive {
-                    color: $green;
-            }
-
-            .negative {
-                color: $red;
-            }
-
             .summary {
                 display: flex;                
             }
         }
     }
+}
+
+.positive {
+    color: $green;
+}
+
+.negative {
+    color: $red;
 }
 
 .actions {

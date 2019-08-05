@@ -36,69 +36,78 @@
           </div>
         </div>
       </b-card>
-      <b-card v-for="group in groups" :key="group.id" body-class="budget-card">
-        <b-table
-          striped 
-          hover 
-          small 
-          caption-top
-          :fields="fields"
-          :items="categoriesForGroup(group)"
-        >
-          <template slot="table-caption">
-            <div class="budget-group-header">
-              <div>
-                {{ group.name }}
-              </div>
-              <b-button 
-                pill 
-                variant="outline-secondary" 
-                class="action"
-                v-b-modal="'add-category-' + group.id"
-              >
-                Add Category
-              </b-button>
-              <b-modal :id="`add-category-${group.id}`" title="Add Category" @ok="createCategory(group)">
-                <b-form-input 
-                  v-model="newCategory" 
-                  placeholder="Enter category"
-                />
-              </b-modal>
-            </div>
-          </template>
-          <col slot="table-colgroup" width="40%" />
-          <col slot="table-colgroup" width="20%" />
-          <col slot="table-colgroup" width="20%" />
-          <col slot="table-colgroup" width="20%" />
-          <template slot="budget" slot-scope="data">
-            <b-input-group>
-              <b-input-group-prepend size="sm">
-                <div class="icon">
-                    <font-awesome-icon icon="dollar-sign"/>
+      <div class=budget-body-container>
+        <div class="budget-groups">
+          <b-card v-for="group in groups" :key="group.id" body-class="budget-group-card-body">
+            <b-table
+              striped 
+              hover 
+              small 
+              caption-top
+              tbody-tr-class="budget-row-class"
+              :fields="fields"
+              :items="categoriesForGroup(group)"
+            >
+              <template slot="table-caption">
+                <div class="budget-group-header">
+                  <div>
+                    {{ group.name }}
+                  </div>
+                  <b-button 
+                    pill 
+                    variant="outline-secondary" 
+                    class="action"
+                    v-b-modal="'add-category-' + group.id"
+                  >
+                    Add Category
+                  </b-button>
+                  <b-modal :id="`add-category-${group.id}`" title="Add Category" @ok="createCategory(group)">
+                    <b-form-input 
+                      v-model="newCategory" 
+                      placeholder="Enter category"
+                    />
+                  </b-modal>
                 </div>
-              </b-input-group-prepend>
-              <b-form-input
-                placeholder="0.00"
-                size="sm"
-                type="number"
-                number
-                :value="data.item.getBudget(currentMonthKey)"
-                @change="setBudget(data.item, ...arguments)"
-              />
-            </b-input-group>
-          </template>
-          <template slot="balance" slot-scope="data">
-            <span class="balance">
-              <b-badge pill :variant="data.item.getBalance(currentMonthKey) > 0 ? 'success' : 'danger'">
-                {{ data.item.getFormattedBalance(currentMonthKey) }}
-              </b-badge>
-            </span>
-          </template>
-          <template slot="activity" slot-scope="data">
-            {{ data.item.getFormattedActivity(currentMonthKey) }}
-          </template>
-        </b-table>
-      </b-card>
+              </template>
+              <col slot="table-colgroup" width="40%" />
+              <col slot="table-colgroup" width="20%" />
+              <col slot="table-colgroup" width="20%" />
+              <col slot="table-colgroup" width="20%" />
+              <template slot="budget" slot-scope="data">
+                <b-input-group>
+                  <b-input-group-prepend size="sm">
+                    <div class="dollar-icon">
+                        <font-awesome-icon icon="dollar-sign"/>
+                    </div>
+                  </b-input-group-prepend>
+                  <b-form-input
+                    placeholder="0.00"
+                    size="sm"
+                    type="number"
+                    number
+                    :value="data.item.getBudget(currentMonthKey)"
+                    @change="setBudget(data.item, ...arguments)"
+                  />
+                </b-input-group>
+              </template>
+              <template slot="balance" slot-scope="data">
+                <span class="balance">
+                  <b-badge pill :variant="data.item.getBalance(currentMonthKey) != 0 ? data.item.getBalance(currentMonthKey) > 0 ? 'success' : 'danger' : 'dark'">
+                    {{ data.item.getFormattedBalance(currentMonthKey) }}
+                  </b-badge>
+                </span>
+              </template>
+              <template slot="activity" slot-scope="data">
+                {{ data.item.getFormattedActivity(currentMonthKey) }}
+              </template>
+            </b-table>
+          </b-card>
+        </div>
+        <div class=budget-actions-container>
+          <b-card class=budget-actions>
+          </b-card>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -168,7 +177,7 @@ export default class Budget extends Vue {
 }
 </script>
 
-<style lang="scss" scoped >
+<style lang="scss">
 @import '@/app/styles/custom.scss';
 
 .budget-container {
@@ -177,6 +186,8 @@ export default class Budget extends Vue {
   padding: 10px;
   background-color: #fafafa;
   overflow-y: scroll;
+  display: flex;
+  flex-flow: column;
 
   .month {
     font-size: 24px;
@@ -287,29 +298,57 @@ export default class Budget extends Vue {
     margin-right: 5px;
   }
 }
+.budget-body-container {
+  display: flex;
+  flex: 1 1 auto;
 
-.budget-card {
-  padding: 0 10px !important;
+  .budget-groups {
+    flex: 1 1 auto;
 
-  .budget-group-header {
-    display: flex;
-    justify-content: space-between
+    .budget-group-card-body {
+      padding: 0 10px !important;
+
+      .budget-group-header {
+        display: flex;
+        justify-content: space-between
+      }
+    }
   }
+  .budget-actions-container {
+      width: 300px;
+      height: 100%;
+      margin-left: 5px;
+
+      .budget-actions {
+        width: 100%;
+        height: 100%;
+      }
+    }
 }
 
-.icon {
+.dollar-icon {
     width: 24px;
     height: 31px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     background: #e9ecef;
     border-radius: 5px 0 0 5px;
     text-align: center;
-    padding: 0 4px 0 6px;
     color: $secondary;
     border: 1px solid #ced4da;
 }
 
 .balance {
   font-size: 20px;
+}
+
+.budget-row-class {
+    height: 40px;
+
+    td {
+        vertical-align: middle;
+    }
 }
 </style>
 
