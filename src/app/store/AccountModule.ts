@@ -64,6 +64,12 @@ class AccountModule extends VuexModule {
     get selectedAccount(): Account {
         return this.accountsById[this.selectedAccountId];
     }
+
+    @Action({ commit: 'add' })
+    public async update(acct: Account) {
+        await acct.save();
+        return acct;
+    }
 }
 
 export default getModule(AccountModule);

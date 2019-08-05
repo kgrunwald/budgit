@@ -7,7 +7,14 @@
                 </div>
                 <div class="account-info">
                     <div class="account-title">
-                        <span>{{ account.name }}</span>
+                        <b-form-input
+                            autofocus
+                            v-if="accountNameEdit"
+                            v-model="account.name"
+                            @blur="setAccountName(account, account.name)"
+                            @keydown.enter.native="setAccountName(account, account.name)"
+                        />
+                        <span v-else @click="editAccountName()">{{ account.name }}</span>
                         <span class="info">{{ account.subType }}</span>
                     </div>
                     <div class="summary">
@@ -72,8 +79,8 @@
                                 autofocus
                                 size="sm"
                                 v-model="data.item.merchant"
-                                @blur="update(data.item)"
-                                @keydown.enter.native="update(data.item)"
+                                @blur="setMerchant(data.item, data.item.merchant)"
+                                @keydown.enter.native="setMerchant(data.item, data.item.merchant)"
                             />
                         </div>
                     </template>
@@ -132,6 +139,7 @@ import Transaction from '@/models/Transaction';
 import AccountModel from '@/models/Account';
 import AccountAction from './AccountAction.vue';
 import Category from '../../models/Category';
+import AccountModule from '../store/AccountModule';
 
 @Component({
     components: {
@@ -151,9 +159,18 @@ export default class Account extends Vue {
     ];
     public sortBy = 'date';
     public sortDesc = true;
+    public accountNameEdit: boolean = false;
     public transactionCategoryEdit: string = '';
     public transactionMerchantEdit: string = '';
     public filter: string = '';
+
+    public editAccountName() {
+        this.accountNameEdit = true;
+    }
+
+    public uneditAccountName() {
+        this.accountNameEdit = false;
+    }
 
     public editCategory(transactionId: string) {
         this.transactionCategoryEdit = transactionId;
@@ -208,8 +225,15 @@ export default class Account extends Vue {
         this.uneditCategory(txn.transactionId);
     }
 
-    public async update(obj: Parse.Object) {
-        await obj.save();
+    public async setAccountName(acct: AccountModel, name: string) {
+        acct.name = name;
+        await AccountModule.update(acct);
+        this.uneditAccountName();
+    }
+
+    public async setMerchant(txn: Transaction, merchant: string) {
+        txn.merchant = merchant;
+        await TransactionModule.update(txn);
         this.uneditMerchant();
     }
 }
