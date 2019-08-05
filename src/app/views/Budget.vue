@@ -31,7 +31,7 @@
           </div>
         </div>
       </b-card>
-      <b-card v-for="group in groups" :key="group.name" body-class="budget-card">
+      <b-card v-for="group in groups" :key="group.id" body-class="budget-card">
         <b-table
           striped 
           hover 
@@ -65,6 +65,23 @@
           <col slot="table-colgroup" width="20%" />
           <col slot="table-colgroup" width="20%" />
           <col slot="table-colgroup" width="20%" />
+          <template slot="budget" slot-scope="data">
+            <b-input-group>
+              <b-input-group-prepend size="sm">
+                <div class="icon">
+                    <font-awesome-icon icon="dollar-sign"/>
+                </div>
+              </b-input-group-prepend>
+              <b-form-input
+                placeholder="0.00"
+                size="sm"
+                :value="data.item.budget"
+              />
+            </b-input-group>
+          </template>
+          <template slot="balance" slot-scope="data">
+            <span class="balance"><b-badge pill variant="success">{{ data.item.formattedBalance }}</b-badge></span>
+          </template>
         </b-table>
       </b-card>
     </div>
@@ -83,7 +100,7 @@ import CategoryGroup from '../../models/CategoryGroup';
 export default class Budget extends Vue {
   public newCategory: string = '';
   public newGroup: string = '';
-  public fields = ['name', 'Budget', 'Activity', 'Balance'];
+  public fields = ['name', 'budget', { key: 'formattedActivity', label: 'Activity'}, 'balance'];
 
   get groups() {
     return CategoryModule.groups;
@@ -100,10 +117,8 @@ export default class Budget extends Vue {
     const category = new Category();
     category.name = this.newCategory;
     group.addCategory(category);
-    await Promise.all([
-      category.commit(Parse.User.current()),
-      group.commit(Parse.User.current()),
-    ]);
+    await category.commit(Parse.User.current());
+    await group.commit(Parse.User.current());
     this.newCategory = '';
   }
 
@@ -209,6 +224,21 @@ export default class Budget extends Vue {
     display: flex;
     justify-content: space-between
   }
+}
+
+.icon {
+    width: 24px;
+    height: 31px;
+    background: #e9ecef;
+    border-radius: 5px 0 0 5px;
+    text-align: center;
+    padding: 0 4px 0 6px;
+    color: $purple;
+    border: 1px solid #ced4da;
+}
+
+.balance {
+  font-size: 20px;
 }
 </style>
 

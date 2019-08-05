@@ -196,7 +196,10 @@ export default class Account extends Vue {
     }
 
     get categories(): Category[] {
-        return filter(CategoryModule.categories, (ctg) => startsWith(ctg.name, this.filter));
+        return filter(CategoryModule.categories, (ctg) => startsWith(
+            ctg.name.toUpperCase(),
+            this.filter.toUpperCase(),
+        ));
     }
 
     public async setCategory(txn: Transaction, category: Category) {
