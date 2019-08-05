@@ -1,0 +1,10 @@
+{
+  "apps": [
+    {
+      "serverURL": "http://localhost:3000/parse",
+      "appId": "jk-budgit",
+      "masterKey": "myMasterKey",
+      "appName": "Budgit"
+    }
+  ]
+}
