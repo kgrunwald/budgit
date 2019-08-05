@@ -61,6 +61,7 @@
               <b-modal :id="`add-category-${group.id}`" title="Add Category" @ok="createCategory(group)">
                 <b-form-input 
                   v-model="newCategory" 
+                  @keyup.enter="submitNewCategory(group)"
                   placeholder="Enter category"
                 />
               </b-modal>
@@ -163,6 +164,11 @@ export default class Budget extends Vue {
     category.group = group;
     await category.commit(Parse.User.current());
     this.newCategory = '';
+  }
+
+  public async submitNewCategory(group: CategoryGroup) {
+    await this.createCategory(group);
+    this.$bvModal.hide(`add-category-${group.id}`);
   }
 
 }
