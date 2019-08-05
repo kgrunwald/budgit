@@ -1,17 +1,13 @@
 import { Module, VuexModule, Action, Mutation, getModule } from 'vuex-module-decorators';
-import { values, omit, map, flatten, reject, isUndefined } from 'lodash';
+import { values, omit, filter } from 'lodash';
 import Store from './index';
 import Category from '@/models/Category';
 import CategoryGroup from '@/models/CategoryGroup';
 import Parse from '@/models/Parse';
 import Subscriber from './Subscriber';
 
-interface CategoryGroupsById {
-    [key: string]: CategoryGroup;
-}
-
 interface CategoriesById {
-    [group: string]: Category;
+    [id: string]: Category;
 }
 
 @Module({
@@ -21,41 +17,42 @@ interface CategoriesById {
     namespaced: true,
 })
 class CategoryModule extends VuexModule {
-    public groupsById: CategoryGroupsById = {};
     public categoriesById: CategoriesById = {};
 
     @Action({ rawError: true })
     public async loadCategories() {
         // @ts-ignore
-        const query = new Parse.Query(CategoryGroup).include('categories');
+        const query = new Parse.Query(Category);
         const sub = new Subscriber(query, this);
         await sub.subscribe();
 
-        const groups = await query.find();
-        groups.forEach((group: CategoryGroup) => {
-            this.add(group);
+        const categories = await query.find();
+        categories.forEach((category: Category) => {
+            this.add(category);
         });
     }
 
     @Mutation
-    public add(group: CategoryGroup) {
-        this.groupsById = {
-            ...this.groupsById,
-            [group.id]: group,
+    public add(category: Category) {
+        this.categoriesById = {
+            ...this.categoriesById,
+            [category.id]: category,
         };
     }
 
     @Mutation
-    public remove(group: CategoryGroup) {
-        return omit(this.groupsById, group.id);
+    public remove(category: Category) {
+        return omit(this.categoriesById, category.id);
     }
 
     get categories(): Category[] {
-        return reject(flatten(map(this.groupsById, (group) => group.categories)), isUndefined);
+        return values(this.categoriesById);
     }
 
-    get groups(): CategoryGroup[] {
-        return values(this.groupsById);
+    get categoriesByGroup() {
+        return (group: CategoryGroup): Category[] => {
+            return filter(this.categories, (category) => category.group.id === group.id);
+        };
     }
 }
 

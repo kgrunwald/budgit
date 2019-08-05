@@ -43,7 +43,7 @@
           small 
           caption-top
           :fields="fields"
-          :items="group.categories"
+          :items="categoriesForGroup(group)"
         >
           <template slot="table-caption">
             <div class="budget-group-header">
@@ -88,7 +88,10 @@
             </b-input-group>
           </template>
           <template slot="balance" slot-scope="data">
-            <span class="balance"><b-badge pill variant="success">{{ data.item.formattedBalance }}</b-badge></span>
+            <span class="balance"><b-badge pill variant="success">{{ data.item.getFormattedBalance(currentMonthKey) }}</b-badge></span>
+          </template>
+          <template slot="activity" slot-scope="data">
+            {{ data.item.getFormattedActivity(currentMonthKey) }}
           </template>
         </b-table>
       </b-card>
@@ -101,19 +104,25 @@ import { Component, Vue } from 'vue-property-decorator';
 import { keys } from 'lodash';
 import { format, addMonths } from 'date-fns';
 import CategoryModule from '../store/CategoryModule';
+import CategoryGroupModule from '../store/CategoryGroupModule';
 import Category from '../../models/Category';
 import Parse from '../../models/Parse';
 import CategoryGroup from '../../models/CategoryGroup';
+import Transaction from '../../models/Transaction';
 
 @Component
 export default class Budget extends Vue {
   public currentMonth: Date = new Date();
   public newCategory: string = '';
   public newGroup: string = '';
-  public fields = ['name', 'budget', { key: 'formattedActivity', label: 'Activity'}, 'balance'];
+  public fields = ['name', 'budget', 'activity', 'balance'];
 
   get groups() {
-    return CategoryModule.groups;
+    return CategoryGroupModule.groups;
+  }
+
+  get categoriesForGroup() {
+    return (group: CategoryGroup) => CategoryModule.categoriesByGroup(group);
   }
 
   get currentMonthString(): string {
@@ -147,9 +156,8 @@ export default class Budget extends Vue {
   public async createCategory(group: CategoryGroup) {
     const category = new Category();
     category.name = this.newCategory;
-    group.addCategory(category);
+    category.group = group;
     await category.commit(Parse.User.current());
-    await group.commit(Parse.User.current());
     this.newCategory = '';
   }
 

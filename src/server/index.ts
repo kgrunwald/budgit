@@ -29,6 +29,7 @@ app.use(bodyParser.json());
 const ParseServer = require('parse-server').ParseServer;
 const parse = new ParseServer({
     databaseURI: process.env.MONGODB_URI || 'mongodb://localhost:27017/dev',
+    cloud: './src/server/cloud/main.ts',
     appId: APP_ID,
     masterKey: MASTER_KEY,
     liveQuery: {

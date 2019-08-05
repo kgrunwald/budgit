@@ -1,6 +1,7 @@
 import Parse from './Parse';
 import PrivateModel from './PrivateModel';
 import formatter from 'currency-formatter';
+import CategoryGroup from './CategoryGroup';
 
 
 class Category extends PrivateModel {
@@ -16,6 +17,14 @@ class Category extends PrivateModel {
         this.set('name', name);
     }
 
+    set group(group: CategoryGroup) {
+        this.set('group', group);
+    }
+
+    get group(): CategoryGroup {
+        return this.get('group');
+    }
+
     public setBudget(monthKey: string, amount: number) {
         const budget = this.get('budget') || {};
         budget[monthKey] = amount;
@@ -27,20 +36,27 @@ class Category extends PrivateModel {
         return (budget[monthKey] || 0.0).toFixed(2);
     }
 
-    get activity(): number {
-        return 73;
+    public setActivity(monthKey: string, amount: number) {
+        const activity = this.get('activity') || {};
+        activity[monthKey] = amount;
+        this.set('activity', activity);
     }
 
-    get formattedActivity(): string {
-        return formatter.format(this.activity, { code: 'USD' });
+    public getActivity(monthKey: string): number {
+        const activity = this.get('activity') || {};
+        return activity[monthKey] || 0;
     }
 
-    get balance(): number {
-        return this.budget - this.activity;
+    public getFormattedActivity(monthKey: string): string {
+        return formatter.format(this.getActivity(monthKey), { code: 'USD' });
     }
 
-    get formattedBalance(): string {
-        return formatter.format(this.balance, { code: 'USD' });
+    public getBalance(monthKey: string): number {
+        return this.getBudget(monthKey) - this.getActivity(monthKey);
+    }
+
+    public getFormattedBalance(monthKey: string): string {
+        return formatter.format(this.getBalance(monthKey), { code: 'USD' });
     }
 }
 

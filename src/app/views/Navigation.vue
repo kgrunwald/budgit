@@ -40,6 +40,7 @@ import { Component, Vue } from 'vue-property-decorator';
 import Parse from 'parse';
 import AccountModule from '@/app/store/AccountModule';
 import CategoryModule from '../store/CategoryModule';
+import CategoryGroupModule from '../store/CategoryGroupModule';
 import TransactionModule from '../store/TransactionModule';
 
 @Component({})
@@ -47,6 +48,7 @@ export default class Navigation extends Vue {
     public async mounted() {
         AccountModule.loadAccounts();
         CategoryModule.loadCategories();
+        CategoryGroupModule.loadCategoryGroups();
         TransactionModule.load();
     }
 
