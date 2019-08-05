@@ -374,6 +374,10 @@ export default class Account extends Vue {
 
     td {
         vertical-align: middle;
+
+        i {
+            color: $secondary;
+        }
     }
 }
 
