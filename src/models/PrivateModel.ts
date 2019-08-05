@@ -5,8 +5,8 @@ class PrivateModel extends Parse.Object {
         super(className);
     }
 
-    public async commit(user: Parse.User): Promise<void> {
-        this.setACL(new Parse.ACL(user));
+    public async commit(): Promise<void> {
+        this.setACL(new Parse.ACL(Parse.User.current()));
         await super.save();
     }
 }

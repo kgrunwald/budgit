@@ -4,10 +4,13 @@ import Store from './index';
 import CategoryGroup from '@/models/CategoryGroup';
 import Parse from '@/models/Parse';
 import Subscriber from './Subscriber';
+import Category from '@/models/Category';
 
 interface CategoryGroupsById {
     [key: string]: CategoryGroup;
 }
+
+const AVAILABLE_CASH_GROUP = 'Available Cash';
 
 @Module({
     dynamic: true,
@@ -17,11 +20,12 @@ interface CategoryGroupsById {
 })
 class CategoryGroupModule extends VuexModule {
     public groupsById: CategoryGroupsById = {};
+    public availableGroup!: CategoryGroup;
 
     @Action({ rawError: true })
     public async loadCategoryGroups() {
         // @ts-ignore
-        const query = new Parse.Query(CategoryGroup).include('categories');
+        const query = new Parse.Query(CategoryGroup).notEqualTo('name', AVAILABLE_CASH_GROUP).include('categories');
         const sub = new Subscriber(query, this);
         await sub.subscribe();
 
@@ -29,6 +33,18 @@ class CategoryGroupModule extends VuexModule {
         groups.forEach((group: CategoryGroup) => {
             this.add(group);
         });
+
+        const availQuery = new Parse.Query(CategoryGroup).equalTo('name', AVAILABLE_CASH_GROUP);
+        this.availableGroup = await availQuery.first();
+        if (!this.availableGroup) {
+            this.availableGroup = new CategoryGroup();
+            this.availableGroup.name = AVAILABLE_CASH_GROUP;
+            await this.availableGroup.commit();
+            const availableCashCategory = new Category();
+            availableCashCategory.group = this.availableGroup;
+            availableCashCategory.name = AVAILABLE_CASH_GROUP;
+            await availableCashCategory.commit();
+        }
     }
 
     @Mutation

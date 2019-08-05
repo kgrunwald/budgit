@@ -16,9 +16,23 @@
               </div>
             </div>
             <div class="summary">
-              <div class="balance">
-                <div :class="1000 > 0 ? 'positive' : 'negative'">1000</div>
-                <span class="info">Current Balance</span>
+              <div class="available">
+                <div class="balance" :class="{ negative: availableCash < 0 }">
+                  {{ formatCurrency(availableCash) }}
+                </div>
+                {{ availableCashGroup.name }}
+              </div>
+              <div class="separator" />
+              <div class="available">
+                <div class="detail" >
+                  Rollover: {{ formatCurrency(rollover) }}
+                </div>
+                <div class="detail" >
+                  Income: {{ formatCurrency(income) }}
+                </div>
+                <div class="detail" >
+                  Budgeted: {{ formatCurrency(budgeted) }}
+                </div>
               </div>
               <div class="separator" />
               <div class="actions">
@@ -98,12 +112,12 @@
               <template slot="balance" slot-scope="data">
                 <span class="balance">
                   <b-badge pill :variant="data.item.getBalance(currentMonthKey) != 0 ? data.item.getBalance(currentMonthKey) > 0 ? 'success' : 'danger' : 'dark'">
-                    {{ data.item.getFormattedBalance(currentMonthKey) }}
+                    {{ formatCurrency(data.item.getBalance(currentMonthKey)) }}
                   </b-badge>
                 </span>
               </template>
               <template slot="activity" slot-scope="data">
-                {{ data.item.getFormattedActivity(currentMonthKey) }}
+                {{ formatCurrency(data.item.getActivity(currentMonthKey)) }}
               </template>
             </b-table>
           </b-card>
@@ -127,6 +141,8 @@ import Category from '../../models/Category';
 import Parse from '../../models/Parse';
 import CategoryGroup from '../../models/CategoryGroup';
 import Transaction from '../../models/Transaction';
+import formatter from 'currency-formatter';
+
 
 @Component
 export default class Budget extends Vue {
@@ -138,6 +154,41 @@ export default class Budget extends Vue {
     'budget',
     'activity',
     { key: 'balance', label: 'Balance', tdClass: 'balance-cell', thClass: 'balance-cell'}];
+
+  get availableCashGroup() {
+    return CategoryGroupModule.availableGroup;
+  }
+
+  get availableCategory() {
+    return CategoryModule.categoriesByGroup(this.availableCashGroup)[0];
+  }
+
+  public formatCurrency(amount: number): string {
+    return formatter.format(amount, { code: 'USD' });
+  }
+
+  get availableCash() {
+    return this.rollover + this.income - this.budgeted;
+  }
+
+  get rollover() {
+    const lastMonthKey = format(addMonths(this.currentMonth, -1), 'YYYYMM');
+    return -1 * this.availableCategory.getBalance(lastMonthKey);
+  }
+
+  get income() {
+    return this.availableCategory.getActivity(this.currentMonthKey);
+  }
+
+  get budgeted() {
+    let budgeted = 0;
+    CategoryModule.categories.forEach((category) => {
+      // @ts-ignore
+      budgeted = budgeted + parseFloat(category.getBudget(this.currentMonthKey));
+    });
+
+    return budgeted;
+  }
 
   get groups() {
     return CategoryGroupModule.groups;
@@ -165,13 +216,13 @@ export default class Budget extends Vue {
 
   public async setBudget(category: Category, value: string) {
     category.setBudget(this.currentMonthKey, parseFloat(value));
-    await category.commit(Parse.User.current());
+    await category.commit();
   }
 
   public async createGroup() {
     const group = new CategoryGroup();
     group.name = this.newGroup;
-    await group.commit(Parse.User.current());
+    await group.commit();
     this.newGroup = '';
   }
 
@@ -179,7 +230,7 @@ export default class Budget extends Vue {
     const category = new Category();
     category.name = this.newCategory;
     category.group = group;
-    await category.commit(Parse.User.current());
+    await category.commit();
     this.newCategory = '';
   }
 
@@ -203,6 +254,11 @@ export default class Budget extends Vue {
   display: flex;
   flex-flow: column;
 
+  .budget-header {
+    font-size: 14px;
+    font-weight: 300;
+  }
+
   .month {
     font-size: 24px;
     font-weight: 600;
@@ -217,6 +273,21 @@ export default class Budget extends Vue {
 
       &:first-child {
         margin-left: 0;
+      }
+    }
+  }
+
+  .available {
+    text-align: center;
+    border-radius: 4px;
+
+    .balance {
+      font-size: 24px;
+      font-weight: 600;
+      color: $success;
+
+      &.negative {
+        color: $danger;
       }
     }
   }

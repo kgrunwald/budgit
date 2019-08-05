@@ -2,6 +2,7 @@ import Parse from './Parse';
 import PrivateModel from './PrivateModel';
 import formatter from 'currency-formatter';
 import CategoryGroup from './CategoryGroup';
+import { reduce } from 'lodash';
 
 
 class Category extends PrivateModel {
@@ -52,7 +53,19 @@ class Category extends PrivateModel {
     }
 
     public getBalance(monthKey: string): number {
-        return this.getBudget(monthKey) - this.getActivity(monthKey);
+        const budget = this.get('budget');
+        const activity = this.get('activity');
+
+        const accumulatePrevious = (total: number, val: number, key: string) => {
+            if (key <= monthKey) {
+                total += val;
+            }
+            return total;
+        };
+
+        const totalBudget = reduce(budget, accumulatePrevious, 0);
+        const totalActivity = reduce(activity, accumulatePrevious, 0);
+        return totalBudget - totalActivity;
     }
 
     public getFormattedBalance(monthKey: string): string {
