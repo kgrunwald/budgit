@@ -197,7 +197,7 @@ export default class Budget extends Vue {
 .budget-container {
   width: 100%;
   height: 100%;
-  padding: 10px;
+  padding: 5px;
   background-color: #fafafa;
   overflow-y: scroll;
   display: flex;
@@ -277,7 +277,7 @@ export default class Budget extends Vue {
     }
   }
   .card {
-      margin-bottom: 5px;
+      margin: 5px;
 
       .card-body {
           padding: 0.75rem;
@@ -288,87 +288,89 @@ export default class Budget extends Vue {
       border-right: 1px solid #ddd;
       margin: 0 16px;
   }
-}
-.actions {
-  margin-bottom: 5px;
-  display: flex;
-  flex-direction: column;
-  font-size: 12px;
-}
 
-.action {
-  padding: 0 8px 0 8px;
-  display: flex;
-  height: 20px;
-  align-items: center;
-  margin-right: 5px;
-  font-size: 12px;
-
-  &:first-child {
-    margin-bottom: 8px;
+  .actions {
+    margin-bottom: 5px;
+    display: flex;
+    flex-direction: column;
+    font-size: 12px;
   }
 
-  svg {
+  .action {
+    padding: 0 8px 0 8px;
+    display: flex;
+    height: 20px;
+    align-items: center;
     margin-right: 5px;
-  }
-}
-.budget-body-container {
-  display: flex;
-  flex: 1 1 auto;
+    font-size: 12px;
 
-  .budget-groups {
+    &:first-child {
+      margin-bottom: 8px;
+    }
+
+    svg {
+      margin-right: 5px;
+    }
+  }
+  .budget-body-container {
+    display: flex;
     flex: 1 1 auto;
 
-    .budget-group-card-body {
-      padding: 0 10px !important;
+    .budget-groups {
+      flex: 1 1 auto;
 
-      .budget-group-header {
+      .budget-group-card-body {
+        padding: 0 10px !important;
+
+        .budget-group-header {
+          display: flex;
+          justify-content: space-between
+        }
+      }
+    }
+    .budget-actions-container {
+        flex: 0 1 auto;
+        width: 300px;
         display: flex;
-        justify-content: space-between
+        flex-direction: column;
+
+        .budget-actions {
+          flex: 1 1 auto;
+        }
       }
-    }
   }
-  .budget-actions-container {
-      width: 300px;
-      height: 100%;
-      margin-left: 5px;
 
-      .budget-actions {
-        width: 100%;
-        height: 100%;
+  .dollar-icon {
+      width: 24px;
+      height: 31px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #e9ecef;
+      border-radius: 5px 0 0 5px;
+      text-align: center;
+      color: $secondary;
+      border: 1px solid #ced4da;
+  }
+
+  .balance {
+    font-size: 20px;
+    float: right;
+  }
+
+  .balance-header {
+    float: right;
+  }
+
+  .budget-row-class {
+      height: 40px;
+
+      td {
+          vertical-align: middle;
       }
-    }
+  }
 }
 
-.dollar-icon {
-    width: 24px;
-    height: 31px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: #e9ecef;
-    border-radius: 5px 0 0 5px;
-    text-align: center;
-    color: $secondary;
-    border: 1px solid #ced4da;
-}
-
-.balance {
-  font-size: 20px;
-  float: right;
-}
-
-.balance-header {
-  float: right;
-}
-
-.budget-row-class {
-    height: 40px;
-
-    td {
-        vertical-align: middle;
-    }
-}
 
 
 </style>
