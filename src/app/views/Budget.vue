@@ -174,6 +174,11 @@ export default class Budget extends Vue {
     this.newCategory = '';
   }
 
+  public async submitNewCategory(group: CategoryGroup) {
+    await this.createCategory(group);
+    this.$bvModal.hide(`add-category-${group.id}`);
+  }
+
 }
 </script>
 
