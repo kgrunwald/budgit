@@ -270,7 +270,7 @@ async function savePlaidTransaction(plaidTxn: plaid.Transaction, account: Accoun
     const txn = await getOrCreate(Transaction, 'transactionId', plaidTxn.transaction_id);
     txn.transactionId = plaidTxn.transaction_id;
     txn.merchant = plaidTxn.name || '';
-    txn.date = plaidTxn.date;
+    txn.date = new Date(plaidTxn.date);
     txn.amount = plaidTxn.amount || 0;
     if (plaidTxn.category_id) {
         const categoryMap = await get(PlaidCategoryMapping, 'plaidCategoryId', plaidTxn.category_id);

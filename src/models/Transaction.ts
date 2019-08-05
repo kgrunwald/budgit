@@ -45,12 +45,16 @@ class Transaction extends PrivateModel {
         return this.get('currency');
     }
 
-    get date(): string {
+    get date(): Date {
         return this.get('date');
     }
 
-    set date(date: string) {
+    set date(date: Date) {
         this.set('date', date);
+    }
+
+    get formattedDate(): string {
+        return this.date.toISOString().split('T')[0];
     }
 
     get category(): Category {

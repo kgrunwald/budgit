@@ -144,7 +144,7 @@ import Category from '../../models/Category';
 export default class Account extends Vue {
     public fields = [
         { key: 'acknowledged', label: ''},
-        { key: 'date', label: 'Date', sortable: true},
+        { key: 'formattedDate', label: 'Date', sortable: true},
         { key: 'merchant', label: 'Merchant', sortable: true},
         { key: 'categoryName', label: 'Category'},
         { key: 'formattedAmount', label: 'Amount'},
