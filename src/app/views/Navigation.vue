@@ -1,6 +1,6 @@
 <template>
     <div class="nav-container">
-        <b-navbar toggleable="lg" type="dark" variant="primary" fixed="top">
+        <b-navbar toggleable="lg" type="dark" variant="primary">
             <b-navbar-brand href="#">Budgit</b-navbar-brand>
 
             <b-navbar-toggle target="nav-collapse"></b-navbar-toggle>

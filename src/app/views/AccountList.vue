@@ -60,6 +60,8 @@ export default class AccountList extends Vue {
 @import "@/app/styles/custom.scss";
 
 .account-list {
+    display: flex;
+    flex-direction: column;
     width: 100%;
     background-color: lighten($primary, 10%);
     color: $white;
@@ -90,7 +92,6 @@ export default class AccountList extends Vue {
     }
 
     .account-items {
-        height: calc(100% - 40px);
         overflow-y: scroll;
 
         .account-item {

@@ -18,19 +18,11 @@ export default class App extends Vue {}
 </script>
 
 <style lang="scss">
-.nav {
-  position: absolute;
-  height: 56px;
-  width: 100%;
-}
-
-.app-container {
-  padding-top: 56px;
-}
-
 html, body, #app, .app-container {
+  display: flex;
+  flex-direction: column;
   height: 100vh;
-  max-height: 100vh;
+  width: 100vw;
   overflow: hidden;
 }
 </style>
