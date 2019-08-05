@@ -88,7 +88,11 @@
             </b-input-group>
           </template>
           <template slot="balance" slot-scope="data">
-            <span class="balance"><b-badge pill variant="success">{{ data.item.getFormattedBalance(currentMonthKey) }}</b-badge></span>
+            <span class="balance">
+              <b-badge pill :variant="data.item.getBalance(currentMonthKey) > 0 ? 'success' : 'danger'">
+                {{ data.item.getFormattedBalance(currentMonthKey) }}
+              </b-badge>
+            </span>
           </template>
           <template slot="activity" slot-scope="data">
             {{ data.item.getFormattedActivity(currentMonthKey) }}
