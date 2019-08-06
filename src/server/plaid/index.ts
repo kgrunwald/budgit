@@ -64,6 +64,40 @@ plaidRouter.post('/webhook', async (req: Request, res: Response) => {
     }
 });
 
+plaidRouter.post('/login', async (req: Request, res: Response) => {
+    try {
+        const { username, password } = req.body;
+        const user = await Parse.User.logIn(username, password);
+        logger.info("User", user);
+        set(req, 'session.token', user.getSessionToken());
+        res.json(user);
+    } catch (err) {
+        if (err.message === 'Invalid username/password.') {
+            res.status(401).json({ error: err.message });
+        } else {
+            res.status(500).json({ error: err.message });
+        }
+    }
+});
+
+plaidRouter.get('/logout', (req, res) => {
+    logger.info('Logout route', req.session);
+    req.session && req.session.destroy(() => logger.info('Session destroyed'));
+    res.json({ message: 'ok' });
+});
+
+plaidRouter.use(async (req: Request, res: Response, next: NextFunction) => {
+    const user = await new Parse.Query(Parse.User).first({ sessionToken: get(req, 'session.token', '') });
+    if (!user) {
+        req.session && req.session.destroy(() => logger.info('Session destroyed'));
+        res.redirect('/login');
+        return;
+    };
+
+    req.user = user;
+    next();
+});
+
 plaidRouter.post('/getAccessToken', async (req: Request, res: Response) => {
     try {
         const { user } = req;
@@ -100,7 +134,7 @@ plaidRouter.post('/refreshToken', async (req: Request, res: Response) => {
 
 plaidRouter.post('/updateAccounts', async (req: Request, res: Response) => {
     try {
-        const { user = new Parse.User() } = req;
+        const { user } = req;
         logger.info('Got updateAccounts request from: ' + user.getUsername());
         
         const { accountId } = req.body;
@@ -127,7 +161,7 @@ plaidRouter.post('/updateAccounts', async (req: Request, res: Response) => {
 
 plaidRouter.post('/removeAccount', async (req: Request, res: Response) => {
     try {
-        const { user = new Parse.User() } = req;
+        const { user } = req;
         logger.info('Got removeAccount request from: ' + user.getUsername());
 
         const { accountId } = req.body;

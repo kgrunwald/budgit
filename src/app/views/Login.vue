@@ -53,7 +53,15 @@ export default class Login extends Vue {
     public async onSubmit() {
         try {
             this.disabled = true;
-            await Parse.User.logIn(this.username, this.password);
+            const response = await fetch('/api/login', {
+                method: 'post',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ username: this.username, password: this.password }),
+            });
+            const body = await response.json();
+            await Parse.User.become(body.sessionToken);
             this.error = false;
             this.$router.push('/');
         } catch (e) {

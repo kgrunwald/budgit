@@ -53,7 +53,11 @@ export default class Navigation extends Vue {
     }
 
     public async signOut() {
-        await Parse.User.logOut();
+        await Promise.all([
+            Parse.User.logOut(),
+            fetch('/api/logout'),
+        ]);
+
         location.reload();
     }
 }
