@@ -20,7 +20,7 @@ const AVAILABLE_CASH_GROUP = 'Available Cash';
 })
 class CategoryGroupModule extends VuexModule {
     public groupsById: CategoryGroupsById = {};
-    public availableGroup!: CategoryGroup;
+    public availableGroup: CategoryGroup = new CategoryGroup();
 
     @Action({ rawError: true })
     public async loadCategoryGroups() {
@@ -34,17 +34,31 @@ class CategoryGroupModule extends VuexModule {
             this.add(group);
         });
 
+        this.loadAvailableGroup();
+    }
+
+    @Action({ rawError: true })
+    public async loadAvailableGroup() {
         const availQuery = new Parse.Query(CategoryGroup).equalTo('name', AVAILABLE_CASH_GROUP);
-        this.availableGroup = await availQuery.first();
-        if (!this.availableGroup) {
-            this.availableGroup = new CategoryGroup();
-            this.availableGroup.name = AVAILABLE_CASH_GROUP;
-            await this.availableGroup.commit();
+        let availableGroup = await availQuery.first();
+        if (!availableGroup) {
+            availableGroup = new CategoryGroup();
+            availableGroup.name = AVAILABLE_CASH_GROUP;
+            await availableGroup.commit();
+
             const availableCashCategory = new Category();
-            availableCashCategory.group = this.availableGroup;
+            availableCashCategory.group = availableGroup;
             availableCashCategory.name = AVAILABLE_CASH_GROUP;
             await availableCashCategory.commit();
         }
+
+        this.setAvailableGroup(availableGroup);
+        return availableGroup;
+    }
+
+    @Mutation
+    public setAvailableGroup(group: CategoryGroup) {
+        this.availableGroup = group;
     }
 
     @Mutation

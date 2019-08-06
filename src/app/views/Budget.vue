@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div v-if="ready">
     <div class="budget-container">
       <b-card>
         <div class="budget-header">
@@ -136,7 +136,7 @@
 
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
-import { keys } from 'lodash';
+import { get, keys } from 'lodash';
 import { format, addMonths } from 'date-fns';
 import CategoryModule from '../store/CategoryModule';
 import CategoryGroupModule from '../store/CategoryGroupModule';
@@ -151,18 +151,21 @@ export default class Budget extends Vue {
   public currentMonth: Date = new Date();
   public newCategory: string = '';
   public newGroup: string = '';
+  public ready: boolean = false;
+  public availableCashGroup!: CategoryGroup;
   public fields = [
     'name',
     'budget',
     'activity',
     { key: 'balance', label: 'Balance', tdClass: 'balance-cell', thClass: 'balance-cell'}];
 
-  get availableCashGroup() {
-    return CategoryGroupModule.availableGroup;
+  public async mounted() {
+    this.availableCashGroup = await CategoryGroupModule.loadAvailableGroup();
+    this.ready = true;
   }
 
   get availableCategory() {
-    return CategoryModule.categoriesByGroup(this.availableCashGroup)[0];
+      return get(CategoryModule.categoriesByGroup(this.availableCashGroup), '[0]');
   }
 
   public formatCurrency(amount: number): string {
