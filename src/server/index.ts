@@ -12,18 +12,18 @@ if (NODE_ENV === 'production') {
 }
 
 console.log(resolve(__dirname, dotenvPath, '.env'));
+dotenv.config({ path: resolve(__dirname, dotenvPath, '.env')});
 if (NODE_ENV !== 'production') {
     console.log('Loading local env');
     dotenv.config({ path: resolve(__dirname, dotenvPath, '.env.local')});
 }
-dotenv.config({ path: resolve(__dirname, dotenvPath, '.env')});
 
 const { 
     PORT = 3000, 
     APP_ID = 'jk-budgit',
     MASTER_KEY = 'myMasterKey',
     SERVER_URL = `http://localhost:${PORT}/parse`,
-    STATIC_PATH = '/../..',
+    STATIC_PATH = '/../../public',
     MONGODB_URI = 'mongodb://localhost:27017/dev',
     CLOUD_CODE = './src/server/cloud/main.ts',
 } = process.env;
@@ -64,7 +64,7 @@ const staticConf = { maxAge: '1y', etag: false };
 
 app.use(express.static(publicPath, staticConf));
 app.get('*', (req, res) => {
-    res.sendFile(resolve(__dirname, STATIC_PATH + '/public/index.html'));
+    res.sendFile(resolve(__dirname, STATIC_PATH + '/index.html'));
 });
 
 const httpServer = http.createServer(app);
