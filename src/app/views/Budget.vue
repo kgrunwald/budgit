@@ -265,7 +265,7 @@ export default class Budget extends Vue {
   }
 
   .available-summary {
-    width: 145px;
+    width: 180px;
   }
 
   .detail {
@@ -459,7 +459,7 @@ export default class Budget extends Vue {
     }
     .budget-actions-container {
       flex: 0 1 auto;
-      width: 300px;
+      width: 351px;
       display: flex;
       flex-direction: column;
 
