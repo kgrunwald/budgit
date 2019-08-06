@@ -90,7 +90,7 @@ class AccountModule extends VuexModule {
 
     @Action
     public async removeAccount(accountId: string) {
-        const resp = await fetch('/removeAccount', {
+        const resp = await fetch('/api/removeAccount', {
             method: 'post',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({accountId}),
