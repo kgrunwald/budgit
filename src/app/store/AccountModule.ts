@@ -19,7 +19,7 @@ interface AccountsById {
 })
 class AccountModule extends VuexModule {
     public accountsById: AccountsById = {};
-    public selectedAccountId: string = '';
+    public selectedAccountId: string = 'init';
 
     @MutationAction
     public async selectAccount(selectedAccountId: string) {
@@ -34,14 +34,19 @@ class AccountModule extends VuexModule {
         sub.subscribe();
 
         const accounts = await query.find();
+
+        if (!this.selectedAccount) {
+            if (accounts.length > 0) {
+                this.selectAccount(accounts[0].accountId);
+            } else {
+                this.selectAccount('');
+            }
+        }
+
         accounts.forEach((account: Account) => {
             this.add(account);
             TransactionModule.loadTransactions(account);
         });
-
-        if (!this.selectedAccount && accounts.length > 0) {
-            this.selectAccount(accounts[0].accountId);
-        }
     }
 
     @Mutation
@@ -50,6 +55,9 @@ class AccountModule extends VuexModule {
             ...this.accountsById,
             [account.accountId]: account,
         };
+        if (!this.selectedAccountId) {
+            this.selectedAccountId = account.accountId;
+        }
     }
 
     @Mutation
@@ -78,6 +86,20 @@ class AccountModule extends VuexModule {
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({accountId}),
         });
+    }
+
+    @Action
+    public async removeAccount(accountId: string) {
+        const resp = await fetch('/removeAccount', {
+            method: 'post',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({accountId}),
+        });
+        if (this.accounts.length > 0) {
+            this.selectAccount(this.accounts[0].accountId);
+        } else {
+            this.selectAccount('');
+        }
     }
 }
 

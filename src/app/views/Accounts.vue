@@ -6,6 +6,7 @@
       </div>
       <div class="content-container">
         <Account v-if="selectedAccountId" :account="selectedAccount"/>
+        <NoAccounts v-else/>
       </div>
     </div>
   </div>
@@ -17,6 +18,7 @@ import AccountModule from '@/app/store/AccountModule';
 import Subscriber from '@/app/store/Subscriber';
 import AccountList from './AccountList.vue';
 import Account from './Account.vue';
+import NoAccounts from './NoAccounts.vue';
 import AccountModel from '@/models/Account';
 import Transaction from '../../models/Transaction';
 import TransactionModule from '../store/TransactionModule';
@@ -25,6 +27,7 @@ import TransactionModule from '../store/TransactionModule';
   components: {
     AccountList,
     Account,
+    NoAccounts,
   },
 })
 export default class Accounts extends Vue {
@@ -49,6 +52,7 @@ export default class Accounts extends Vue {
 }
 
 .content-container {
+  display: flex;
   width: 100%;
 }
 

@@ -155,6 +155,36 @@ plaidRouter.post('/updateAccounts', async (req: Request, res: Response) => {
     }
 });
 
+plaidRouter.post('/removeAccount', async (req: Request, res: Response) => {
+    try {
+        const { user = new Parse.User() } = req;
+        logger.info('Got removeAccount request from: ' + user.getUsername());
+
+        const { accountId } = req.body;
+        // @ts-ignore
+        const acct: Account = await new Parse.Query(Account).include('item').equalTo('accountId', accountId).first(SUDO);
+        logger.info(`Loaded account: ${acct.accountId}. Account item: ${acct.item.itemId}`);
+
+        const item = acct.item;
+        logger.info(`Removing account: ${acct.accountId}.`);
+        await acct.destroy(SUDO)
+
+        // @ts-ignore
+        const accts: Account[] = await new Parse.Query(Account).includeAll().equalTo('item', item).find(SUDO);
+        logger.info(`Length of all accounts for item ${item.itemId}: ${accts.length}`);
+
+        if (accts.length === 0) {
+            logger.info(`Removing item: ${item.itemId}.`);
+            await item.destroy(SUDO)
+        }
+
+        res.json({ error: false });
+    } catch (err) {
+        logger.error("Error destroying account.", err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
 async function getAccounts(user: Parse.User, item: Item): Promise<void> {
     try {
         logger.info("Getting accounts for user " + user.getUsername());

@@ -26,6 +26,15 @@
                         <div class="actions">
                             <b-button 
                                 pill
+                                variant="outline-danger"
+                                class="action"
+                                @click="removeAccount()"
+                            >
+                                <font-awesome-icon icon="trash-alt"/>
+                                Remove
+                            </b-button>
+                            <b-button 
+                                pill
                                 variant="outline-secondary"
                                 class="action"
                                 :disabled="account.expired"
@@ -247,6 +256,10 @@ export default class Account extends Vue {
         await TransactionModule.update(txn);
         this.uneditMerchant();
     }
+
+    public async removeAccount() {
+        await AccountModule.removeAccount(this.$props.account.accountId);
+    }
 }
 </script>
 
@@ -320,6 +333,7 @@ export default class Account extends Vue {
                     display: flex;
                     flex-direction: column;
                     font-size: 12px;
+                    justify-content: center;
 
                     .action {
                         padding: 0 8px 0 8px;

@@ -15,6 +15,7 @@ import {
   faArrowCircleLeft,
   faFunnelDollar,
   faFileInvoiceDollar,
+  faTrashAlt,
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon, FontAwesomeLayers } from '@fortawesome/vue-fontawesome';
 import './app/styles/custom.scss';
@@ -42,6 +43,7 @@ library.add(
   faArrowCircleLeft,
   faFunnelDollar,
   faFileInvoiceDollar,
+  faTrashAlt,
 );
 
 Vue.use(BootstrapVue);
