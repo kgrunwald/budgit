@@ -12,10 +12,11 @@ if (NODE_ENV === 'production') {
 }
 
 console.log(resolve(__dirname, dotenvPath, '.env'));
-dotenv.config({ path: resolve(__dirname, dotenvPath, '.env')});
 if (NODE_ENV !== 'production') {
+    console.log('Loading local env');
     dotenv.config({ path: resolve(__dirname, dotenvPath, '.env.local')});
 }
+dotenv.config({ path: resolve(__dirname, dotenvPath, '.env')});
 
 const { 
     PORT = 3000, 
@@ -56,7 +57,7 @@ const parse = new ParseServer({
 });
 
 app.use('/parse', parse);
-app.use(plaid);
+app.use('/api', plaid);
 
 const publicPath = resolve(__dirname, STATIC_PATH);
 const staticConf = { maxAge: '1y', etag: false };

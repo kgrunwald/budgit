@@ -34,7 +34,7 @@ export default class AccountAction extends Vue {
 
     public async triggerPlaidLink(accountId: string, triggerFunc: (token: string) => void) {
       if (accountId) {
-        const resp = await fetch('/refreshToken', {
+        const resp = await fetch('/api/refreshToken', {
           method: 'post',
           headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({accountId}),
@@ -49,7 +49,7 @@ export default class AccountAction extends Vue {
       if (this.token) {
         await AccountModule.updateAccount(this.$props.accountId);
       } else {
-        const resp = await fetch('/getAccessToken', {
+        const resp = await fetch('/api/getAccessToken', {
           method: 'post',
           headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({public_token: token}),

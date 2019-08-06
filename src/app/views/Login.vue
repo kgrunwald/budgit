@@ -53,7 +53,7 @@ export default class Login extends Vue {
     public async onSubmit() {
         try {
             this.disabled = true;
-            const response = await fetch('/login', {
+            const response = await fetch('/api/login', {
                 method: 'post',
                 headers: {
                     'Content-Type': 'application/json',

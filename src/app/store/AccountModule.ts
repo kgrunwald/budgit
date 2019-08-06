@@ -73,7 +73,7 @@ class AccountModule extends VuexModule {
 
     @Action
     public async updateAccount(accountId: string) {
-        const resp = await fetch('/updateAccounts', {
+        const resp = await fetch('/api/updateAccounts', {
             method: 'post',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({accountId}),
