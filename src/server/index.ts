@@ -26,6 +26,7 @@ const {
     STATIC_PATH = '/../../public',
     MONGODB_URI = 'mongodb://localhost:27017/dev',
     CLOUD_CODE = './src/server/cloud/main.ts',
+    COOKIE_SECRET = 'cookieSecret'
 } = process.env;
 
 import initializeParseClient from './parse';
@@ -40,7 +41,7 @@ logger.info('Config', {
     PORT, APP_ID, SERVER_URL, STATIC_PATH, CLOUD_CODE
 })
 
-app.use(cookieParser(process.env.COOKIE_SECRET));
+app.use(cookieParser(COOKIE_SECRET));
 app.use(bodyParser.json());
 
 const ParseServer = require('parse-server').ParseServer;
