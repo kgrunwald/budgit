@@ -27,7 +27,7 @@ import Parse from 'parse';
 
 Parse.initialize(process.env.VUE_APP_PARSE_APP_ID || '');
 Parse.serverURL = `${process.env.VUE_APP_BASE_URL}/parse`;
-Parse.liveQueryServerURL = `ws://localhost:3000/parse`;
+Parse.liveQueryServerURL = `${process.env.VUE_APP_WS_URL}/parse`;
 
 library.add(
   faPlusCircle,

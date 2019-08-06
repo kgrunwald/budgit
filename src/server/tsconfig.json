@@ -10,7 +10,8 @@
     "./**.ts",
   ],
   "files": [
-    "./index.ts"
+    "./index.ts",
+    "./cloud/main.ts"
   ],
   "exclude": [
     "node_modules",
@@ -20,6 +21,7 @@
     "@/*": [
       "./*",
       "../*"
-    ]
+    ],
+    "*" : ["types/*"]
   },
 }

@@ -20,7 +20,7 @@ const AVAILABLE_CASH_GROUP = 'Available Cash';
 })
 class CategoryGroupModule extends VuexModule {
     public groupsById: CategoryGroupsById = {};
-    public availableGroup: CategoryGroup = new CategoryGroup();
+    public availableGroup!: CategoryGroup;
 
     @Action({ rawError: true })
     public async loadCategoryGroups() {
@@ -39,6 +39,10 @@ class CategoryGroupModule extends VuexModule {
 
     @Action({ rawError: true })
     public async loadAvailableGroup() {
+        if (this.availableGroup) {
+            return this.availableGroup;
+        }
+
         const availQuery = new Parse.Query(CategoryGroup).equalTo('name', AVAILABLE_CASH_GROUP);
         let availableGroup = await availQuery.first();
         if (!availableGroup) {
