@@ -169,7 +169,12 @@ plaidRouter.post('/removeAccount', async (req: Request, res: Response) => {
         logger.info(`Loaded account: ${acct.accountId}. Account item: ${acct.item.itemId}`);
 
         const item = acct.item;
-        logger.info(`Removing account: ${acct.accountId}.`);
+        logger.info(`Removing transactions for account: ${acct.accountId}.`);
+        // @ts-ignore
+        const trans: Transaction[] = await new Parse.Query(Transaction).includeAll().equalTo('account', acct).find(SUDO);
+        trans.forEach(async (tran) => {
+            await tran.destroy(SUDO);
+        });
         await acct.destroy(SUDO)
 
         // @ts-ignore
