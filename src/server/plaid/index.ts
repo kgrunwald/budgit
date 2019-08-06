@@ -7,6 +7,7 @@ import Account from '../../models/Account';
 import Transaction from '../../models/Transaction';
 import { subDays, format} from 'date-fns';
 import PlaidCategoryMapping from '../../models/PlaidCategoryMapping';
+import { set, get } from 'lodash';
 
 const CLIENT_ID = process.env.PLAID_CLIENT_ID || '';
 const PLAID_SECRET = process.env.PLAID_SECRET || '';
@@ -68,11 +69,7 @@ plaidRouter.post('/login', async (req: Request, res: Response) => {
         const { username, password } = req.body;
         const user = await Parse.User.logIn(username, password);
         logger.info("User", user);
-        res.cookie('token', user.getSessionToken(), {
-            maxAge: 60 * 60 * 1000,
-            signed: true,
-            httpOnly: true
-        });
+        set(req, 'session.token', user.getSessionToken());
         res.json(user);
     } catch (err) {
         if (err.message === 'Invalid username/password.') {
@@ -84,14 +81,20 @@ plaidRouter.post('/login', async (req: Request, res: Response) => {
 });
 
 plaidRouter.use(async (req: Request, res: Response, next: NextFunction) => {
-    const user = await new Parse.Query(Parse.User).first({ sessionToken: req.signedCookies.token });
+    const user = await new Parse.Query(Parse.User).first({ sessionToken: get(req, 'session.token', '') });
     if (!user) {
-        res.status(401).json({message: 'user not found'});
+        req.session && req.session.destroy(() => logger.info('Session destroyed'));
+        res.redirect('/login');
         return
     };
 
     req.user = user;
     next();
+});
+
+plaidRouter.get('/logout', (req, res) => {
+    req.session && req.session.destroy(() => logger.info('Session destroyed'));
+    res.json({ message: 'ok' });
 });
 
 plaidRouter.post('/getAccessToken', async (req: Request, res: Response) => {
@@ -276,7 +279,7 @@ async function handleTransactionWebhook(payload: TransactionWebhook): Promise<vo
 async function handleItemWebhook(payload: ItemWebhook) {
     if (payload.webhook_code === 'ERROR' && payload.error.error_code === 'ITEM_LOGIN_REQUIRED') {
         logger.info(`Login required for ${payload.item_id}`);
-        const item = await get(Item, 'itemId', payload.item_id);
+        const item = await fetch(Item, 'itemId', payload.item_id);
         await markItemTokenExpired(item as Item);
     }
 }
@@ -303,7 +306,7 @@ async function savePlaidTransaction(plaidTxn: plaid.Transaction, account: Accoun
     txn.date = new Date(plaidTxn.date);
     txn.amount = (plaidTxn.amount || 0) * -1;
     if (plaidTxn.category_id) {
-        const categoryMap = await get(PlaidCategoryMapping, 'plaidCategoryId', plaidTxn.category_id);
+        const categoryMap = await fetch(PlaidCategoryMapping, 'plaidCategoryId', plaidTxn.category_id);
         if (categoryMap) {
             txn.category = categoryMap.category;
         }
@@ -355,12 +358,12 @@ async function getOrCreate<T>(classType: Queryable<T>, idField: string, id: stri
     return inst;
 }
 
-async function get<T>(classType: Queryable<T>, idField: string, id: string): Promise<T | null> {
+async function fetch<T>(classType: Queryable<T>, idField: string, id: string): Promise<T | null> {
     let inst: T | null = null;
     try {
         inst = await new Parse.Query(classType.name).includeAll().equalTo(idField, id).first(SUDO) as any as T;
     } catch (e) {
-        logger.info(`Class ${classType.name} did not exist. Skipping due to get().`);
+        logger.info(`Class ${classType.name} did not exist. Skipping due to fetch().`);
     }
 
     return inst;

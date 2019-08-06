@@ -1,7 +1,8 @@
 import express from 'express';
 import dotenv from 'dotenv';
 import http from 'http';
-import cookieParser from 'cookie-parser';
+import session from 'express-session';
+import createMongoStore from 'connect-mongo';
 import bodyParser from 'body-parser';
 import { resolve } from 'path';
 
@@ -41,7 +42,18 @@ logger.info('Config', {
     PORT, APP_ID, SERVER_URL, STATIC_PATH, CLOUD_CODE
 })
 
-app.use(cookieParser(COOKIE_SECRET));
+const MongoStore = createMongoStore(session);
+app.use(session({
+    cookie: {
+        secure: NODE_ENV === 'production',
+    },
+    secret: COOKIE_SECRET,
+    saveUninitialized: false,
+    resave: false,
+    store: new MongoStore({
+        url: MONGODB_URI,
+    })
+}));
 app.use(bodyParser.json());
 
 const ParseServer = require('parse-server').ParseServer;
