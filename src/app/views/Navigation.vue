@@ -58,7 +58,7 @@ export default class Navigation extends Vue {
             fetch('/api/logout'),
         ]);
 
-        this.$router.push('/login');
+        location.reload();
     }
 }
 </script>
