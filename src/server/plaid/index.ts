@@ -184,6 +184,7 @@ plaidRouter.post('/removeAccount', async (req: Request, res: Response) => {
 
         if (accts.length === 0) {
             logger.info(`Removing item: ${item.itemId}.`);
+            await client.removeItem(item.accessToken);
             await item.destroy(SUDO)
         }
 
@@ -268,8 +269,15 @@ async function handleTransactionWebhook(payload: TransactionWebhook): Promise<vo
             logger.info(`Processing transaction ${plaidTxn.transaction_id}`);
 
             // @ts-ignore
-            const acct: Account = await new Parse.Query(Account).equalTo('accountId', plaidTxn.account_id).first(SUDO);
-            await savePlaidTransaction(plaidTxn, acct, item.user);
+            const acctQuery = new Parse.Query(Account).equalTo('accountId', plaidTxn.account_id);
+            const exists = await acctQuery.count(SUDO)
+            logger.info(`Found matching account for transaction: ${exists}`);
+            if (exists) {
+                const acct: Account = await acctQuery.first(SUDO);
+                logger.info(`Saving transaction to account ${acct.accountId}`)
+                await savePlaidTransaction(plaidTxn, acct, item.user);
+            }
+            
         })
     } else if (payload.webhook_code === 'TRANSACTIONS_REMOVED') {
         logger.info('Removing transactions');
