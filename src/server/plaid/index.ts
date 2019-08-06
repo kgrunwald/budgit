@@ -93,6 +93,7 @@ plaidRouter.use(async (req: Request, res: Response, next: NextFunction) => {
 });
 
 plaidRouter.get('/logout', (req, res) => {
+    logger.info('Logout route', req.session);
     req.session && req.session.destroy(() => logger.info('Session destroyed'));
     res.json({ message: 'ok' });
 });

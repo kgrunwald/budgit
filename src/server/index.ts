@@ -42,10 +42,13 @@ logger.info('Config', {
     PORT, APP_ID, SERVER_URL, STATIC_PATH, CLOUD_CODE
 })
 
+const isProduction = NODE_ENV === 'production';
+
 const MongoStore = createMongoStore(session);
 app.use(session({
     cookie: {
-        secure: NODE_ENV === 'production',
+        secure: isProduction,
+        domain: isProduction ? 'jk-budgit.herokuapp.com' : 'localhost',
     },
     secret: COOKIE_SECRET,
     saveUninitialized: false,
