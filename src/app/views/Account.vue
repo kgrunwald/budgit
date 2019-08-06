@@ -48,7 +48,7 @@
                 </div>
             </div>
         </b-card>
-        <b-card no-body="">
+        <b-card no-body="" class="account-table-container">
             <b-table
                 striped 
                 hover 
@@ -256,9 +256,11 @@ export default class Account extends Vue {
 .account-container {
     width: 100%;
     height: 100%;
-    padding: 10px;
+    padding: 5px;
     background-color: #fafafa;
     overflow-y: scroll;
+    display: flex;
+    flex-direction: column;
 
     .account-header {
         display: flex;
@@ -311,89 +313,86 @@ export default class Account extends Vue {
             }
 
             .summary {
-                display: flex;                
+                display: flex; 
+                
+                .actions {
+                    margin-bottom: 5px;
+                    display: flex;
+                    flex-direction: column;
+                    font-size: 12px;
+
+                    .action {
+                        padding: 0 8px 0 8px;
+                        display: flex;
+                        height: 20px;
+                        align-items: center;
+                        margin-right: 5px;
+                        font-size: 12px;
+
+                        &:first-child {
+                            margin-bottom: 8px;
+                        }
+
+                        svg {
+                            margin-right: 5px;
+                        }
+                    }
+                }
+
+                .separator {
+                    border-right: 1px solid #ddd;
+                    margin: 0 16px;
+                }
             }
         }
     }
-}
+    .account-table-container {
 
-.positive {
-    color: $green;
-}
-
-.negative {
-    color: $red;
-}
-
-.actions {
-    margin-bottom: 5px;
-    display: flex;
-    flex-direction: column;
-    font-size: 12px;
-
-    .action {
-        padding: 0 8px 0 8px;
-        display: flex;
-        height: 20px;
-        align-items: center;
-        margin-right: 5px;
-        font-size: 12px;
-
-        &:first-child {
-            margin-bottom: 8px;
+        .ack-icon {
+            margin: 0 0 0 4px;
+            cursor: pointer;
+            color: $secondary;
         }
 
-        svg {
-            margin-right: 5px;
+        .view-category {
+            display: flex;
+            align-items: center;
         }
+
+        tr {
+            height: 40px;
+
+            td, th {
+                vertical-align: middle;
+
+            &:first-child {
+                padding-left: 10px;
+            }
+
+            &:last-child {
+                padding-right: 10px;
+            }
+            }
+
+            &:last-child {
+                border-bottom: 1px solid #ddd;
+            }
+      }
     }
-}
 
-.card {
-    margin-bottom: 5px;
-
-    .card-body {
-        padding: 0.75rem;
+    .positive {
+        color: $green;
     }
-}
 
-.separator {
-    border-right: 1px solid #ddd;
-    margin: 0 16px;
-}
-
-.category-popover {
-    width: 400px;
-
-    .category {
-        width: 100%;
-        cursor: pointer;
-
-        &:hover {
-            background-color: lighten($primary, 55%);
-        }
+    .negative {
+        color: $red;
     }
-}
 
-.ack-icon {
-    margin: 0 0 0 4px;
-    cursor: pointer;
-    color: $secondary;
-}
+    .card {
+        margin: 5px;
 
-.view-category {
-    width: 100%;
-    height: 100%;
-}
-
-.account-row-class {
-    height: 40px;
-
-    td {
-        vertical-align: middle;
-
-        i {
-            color: lighten(black, 55%);
+        .card-body {
+            padding: 0.75rem;
         }
     }
 }

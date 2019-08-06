@@ -55,7 +55,7 @@
       </b-card>
       <div class=budget-body-container>
         <div class="budget-groups">
-          <b-card v-for="group in groups" :key="group.id" body-class="budget-group-card-body">
+          <b-card no-body="" v-for="group in groups" :key="group.id" body-class="budget-group-card-body">
             <b-table
               striped 
               hover 
@@ -145,7 +145,6 @@ import Parse from '../../models/Parse';
 import CategoryGroup from '../../models/CategoryGroup';
 import Transaction from '../../models/Transaction';
 import formatter from 'currency-formatter';
-
 
 @Component
 export default class Budget extends Vue {
@@ -248,7 +247,6 @@ export default class Budget extends Vue {
 @import '@/app/styles/custom.scss';
 
 .budget-container {
-  width: 100%;
   height: 100%;
   padding: 5px;
   background-color: #fafafa;
@@ -324,7 +322,7 @@ export default class Budget extends Vue {
         align-items: center;
 
         .budget-icon {
-          margin: 5px 20px 0 10px;
+          margin: 5px 20px 0 0;
           color: $secondary;
         }
       }
@@ -406,59 +404,71 @@ export default class Budget extends Vue {
     .budget-groups {
       flex: 1 1 auto;
 
+      .balance-header {
+        float: right;
+      }
+
+      .balance {
+        font-size: 20px;
+        float: right;
+      }
+
+      .dollar-icon {
+        width: 24px;
+        height: 31px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #e9ecef;
+        border-radius: 5px 0 0 5px;
+        text-align: center;
+        color: $secondary;
+        border: 1px solid #ced4da;
+      } 
+
+      tr {
+        height: 40px;
+
+        td, th {
+          vertical-align: middle;
+
+          &:first-child {
+            padding-left: 10px;
+          }
+
+          &:last-child {
+            padding-right: 10px;
+          }
+        }
+
+        &:last-child {
+          border-bottom: 1px solid #ddd;
+        }
+      }
+
+      .budget-group-header {
+          padding: 10px;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        }
+
       .budget-group-card-body {
         padding: 0 10px !important;
-
-        .budget-group-header {
-          display: flex;
-          justify-content: space-between
-        }
       }
     }
     .budget-actions-container {
-        flex: 0 1 auto;
-        width: 300px;
-        display: flex;
-        flex-direction: column;
-
-        .budget-actions {
-          flex: 1 1 auto;
-        }
-      }
-  }
-
-  .dollar-icon {
-      width: 24px;
-      height: 31px;
+      flex: 0 1 auto;
+      width: 300px;
       display: flex;
-      align-items: center;
-      justify-content: center;
-      background: #e9ecef;
-      border-radius: 5px 0 0 5px;
-      text-align: center;
-      color: $secondary;
-      border: 1px solid #ced4da;
-  }
+      flex-direction: column;
 
-  .balance {
-    font-size: 20px;
-    float: right;
-  }
-
-  .balance-header {
-    float: right;
-  }
-
-  .budget-row-class {
-      height: 40px;
-
-      td {
-          vertical-align: middle;
+      .budget-actions {
+        flex: 1 1 auto;
       }
+    }
   }
 }
-
-
 
 </style>
 
