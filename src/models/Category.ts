@@ -23,6 +23,14 @@ class Category extends PrivateModel {
         return this.get('group');
     }
 
+    public set isPayment(isPayment: boolean) {
+        this.set('isPayment', isPayment);
+    }
+
+    public get isPayment(): boolean {
+        return this.get('isPayment') || false;
+    }
+
     public static getKey(month: Date): string {
         return format(month, 'YYYYMM');
     }
@@ -79,14 +87,6 @@ class Category extends PrivateModel {
 
     public getFormattedBalance(month: Date): string {
         return formatter.format(this.getBalance(month), { code: 'USD' });
-    }
-
-    public set isPayment(isPayment: boolean) {
-        this.set('isPayment', isPayment);
-    }
-
-    public get isPayment(): boolean {
-        return this.get('isPayment');
     }
 }
 
