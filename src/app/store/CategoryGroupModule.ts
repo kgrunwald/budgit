@@ -1,5 +1,5 @@
 import { Module, VuexModule, Action, Mutation, getModule } from 'vuex-module-decorators';
-import { values, omit } from 'lodash';
+import { values, omit, remove } from 'lodash';
 import Store from './index';
 import CategoryGroup from '@/models/CategoryGroup';
 import Parse from '@/models/Parse';
@@ -79,7 +79,11 @@ class CategoryGroupModule extends VuexModule {
     }
 
     get groups(): CategoryGroup[] {
-        return values(this.groupsById);
+        const groups = values(this.groupsById);
+        return [
+            ...remove(groups, {name: 'Credit Cards'}),
+            ...groups,
+        ];
     }
 
     @Action({ commit: 'add' })

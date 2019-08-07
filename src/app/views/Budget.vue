@@ -71,12 +71,12 @@
                     <b-form-input
                       class="group-title-input"
                       autofocus
-                      v-if="groupNameEdit"
+                      v-if="groupNameEdit === group.id"
                       v-model="group.name"
                       @blur="setGroupName(group, group.name)"
                       @keydown.enter.native="setGroupName(group, group.name)"
                     />
-                    <div class="group-title" v-else @click="editGroupName()">
+                    <div class="group-title" v-else @click="editGroupName(group)">
                       {{ group.name }}
                     </div>
                   </div>
@@ -109,7 +109,7 @@
                   @blur="setCategoryName(data.item, data.item.name)"
                   @keydown.enter.native="setCategoryName(data.item, data.item.name)"
                 />
-                <div v-else @click="editCategoryName(data.item.id)">{{ data.item.name }}</div>
+                <div v-else @click="editCategoryName(data.item)">{{ data.item.name }}</div>
               </template>
               <template slot="budget" slot-scope="data">
                 <b-input-group>
@@ -157,7 +157,7 @@
 
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
-import { get, keys } from 'lodash';
+import { get, keys, remove } from 'lodash';
 import { format, addMonths } from 'date-fns';
 import CategoryModule from '../store/CategoryModule';
 import CategoryGroupModule from '../store/CategoryGroupModule';
@@ -174,7 +174,7 @@ export default class Budget extends Vue {
   public newGroup: string = '';
   public ready: boolean = false;
   public availableCashGroup!: CategoryGroup;
-  public groupNameEdit: boolean = false;
+  public groupNameEdit: string = '';
   public categoryNameEdit: string = '';
   public fields = [
     'name',
@@ -187,16 +187,18 @@ export default class Budget extends Vue {
     this.ready = true;
   }
 
-  public editGroupName() {
-    this.groupNameEdit = true;
+  public editGroupName(group: CategoryGroup) {
+    this.groupNameEdit = group.id;
   }
 
   public uneditGroupName() {
-    this.groupNameEdit = false;
+    this.groupNameEdit = '';
   }
 
-  public editCategoryName(name: string) {
-    this.categoryNameEdit = name;
+  public editCategoryName(category: Category) {
+    if (!category.isPayment) {
+      this.categoryNameEdit = category.id;
+    }
   }
 
   public uneditCategoryName() {
@@ -456,6 +458,8 @@ export default class Budget extends Vue {
     flex: 1 1 auto;
 
     .budget-groups {
+      display: flex;
+      flex-direction: column;
       flex: 1 1 auto;
 
       .balance-header {
