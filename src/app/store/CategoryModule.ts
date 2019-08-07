@@ -54,6 +54,12 @@ class CategoryModule extends VuexModule {
             return filter(this.categories, (category) => category.group.id === group.id);
         };
     }
+
+    @Action({ commit: 'add' })
+    public async update(category: Category) {
+        await category.save();
+        return category;
+    }
 }
 
 export default getModule(CategoryModule);

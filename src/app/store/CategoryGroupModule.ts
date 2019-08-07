@@ -81,6 +81,12 @@ class CategoryGroupModule extends VuexModule {
     get groups(): CategoryGroup[] {
         return values(this.groupsById);
     }
+
+    @Action({ commit: 'add' })
+    public async update(group: CategoryGroup) {
+        await group.save();
+        return group;
+    }
 }
 
 export default getModule(CategoryGroupModule);

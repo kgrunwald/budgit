@@ -67,8 +67,17 @@
             >
               <template slot="table-caption">
                 <div class="budget-group-header">
-                  <div>
-                    {{ group.name }}
+                  <div class="group-title-container">
+                    <b-form-input
+                        autofocus
+                        v-if="groupNameEdit"
+                        v-model="group.name"
+                        @blur="setGroupName(group, group.name)"
+                        @keydown.enter.native="setGroupName(group, group.name)"
+                    />
+                    <div class="group-title" v-else @click="editGroupName()">
+                      {{ group.name }}
+                    </div>
                   </div>
                   <b-button 
                     pill 
@@ -90,6 +99,18 @@
               <col slot="table-colgroup" width="20%" />
               <col slot="table-colgroup" width="20%" />
               <col slot="table-colgroup" width="20%" />
+              <template slot="name" slot-scope="data">
+                <b-form-input
+                  class="category-name-input"
+                  autofocus
+                  size="sm"
+                  v-if="categoryNameEdit === data.item.id"
+                  v-model="data.item.name"
+                  @blur="setCategoryName(data.item, data.item.name)"
+                  @keydown.enter.native="setCategoryName(data.item, data.item.name)"
+                />
+                <div v-else @click="editCategoryName(data.item.id)">{{ data.item.name }}</div>
+              </template>
               <template slot="budget" slot-scope="data">
                 <b-input-group>
                   <b-input-group-prepend size="sm">
@@ -153,6 +174,8 @@ export default class Budget extends Vue {
   public newGroup: string = '';
   public ready: boolean = false;
   public availableCashGroup!: CategoryGroup;
+  public groupNameEdit: boolean = false;
+  public categoryNameEdit: string = '';
   public fields = [
     'name',
     'budget',
@@ -162,6 +185,22 @@ export default class Budget extends Vue {
   public async mounted() {
     this.availableCashGroup = await CategoryGroupModule.loadAvailableGroup();
     this.ready = true;
+  }
+
+  public editGroupName() {
+    this.groupNameEdit = true;
+  }
+
+  public uneditGroupName() {
+    this.groupNameEdit = false;
+  }
+
+  public editCategoryName(name: string) {
+    this.categoryNameEdit = name;
+  }
+
+  public uneditCategoryName() {
+    this.categoryNameEdit = '';
   }
 
   get availableCategory() {
@@ -216,6 +255,18 @@ export default class Budget extends Vue {
 
   public nextMonth() {
     this.currentMonth = addMonths(this.currentMonth, 1);
+  }
+
+  public async setGroupName(group: CategoryGroup, name: string) {
+    group.name = name;
+    await CategoryGroupModule.update(group);
+    this.uneditGroupName();
+  }
+
+  public async setCategoryName(category: Category, name: string) {
+    category.name = name;
+    await CategoryModule.update(category);
+    this.uneditCategoryName();
   }
 
   public async setBudget(category: Category, value: string) {
@@ -427,7 +478,11 @@ export default class Budget extends Vue {
         text-align: center;
         color: $secondary;
         border: 1px solid #ced4da;
-      } 
+      }
+
+      .category-name-input {
+        margin-left: -5px;
+      }
 
       tr {
         height: 40px;
@@ -450,10 +505,21 @@ export default class Budget extends Vue {
       }
 
       .budget-group-header {
-          padding: 10px;
+          height: 40px;
+          padding: 0 10px;
           display: flex;
           justify-content: space-between;
           align-items: center;
+
+          .group-title-container {
+            width: 200px;
+
+            .group-title {
+              padding-left: 13px;
+            }
+          }
+
+          
         }
 
       .budget-group-card-body {
