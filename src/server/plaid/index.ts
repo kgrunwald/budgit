@@ -245,8 +245,7 @@ async function createInitialTransaction(user: Parse.User, newAcct: Account, acco
     logger.info('Loaded cash category', {category});
     initialTxn.category = category;
 
-    initialTxn.setACL(new Parse.ACL(user));
-    await initialTxn.save(null, SUDO);
+    await initialTxn.commit(user);
 }
 
 async function createCreditCardCategory(user: Parse.User, newAcct: Account) {
@@ -283,7 +282,7 @@ async function getTransactions(user: Parse.User, account: Account): Promise<void
         });
 
         account.expired = false;
-        await account.save(null, SUDO);
+        await account.commit(user);
     } catch(err) {
         logger.error("Error loading transactions", err.message)
         throw err;
@@ -373,9 +372,7 @@ async function savePlaidTransaction(plaidTxn: plaid.Transaction, account: Accoun
         }
     }
     txn.account = account;
-    
-    txn.setACL(new Parse.ACL(user));
-    await txn.save(null, SUDO);
+    await txn.commit(user);
     return txn;
 }
 
