@@ -8,6 +8,8 @@ import Transaction from '../../models/Transaction';
 import { subDays, format} from 'date-fns';
 import PlaidCategoryMapping from '../../models/PlaidCategoryMapping';
 import { set, get } from 'lodash';
+import Category from '../../models/Category';
+import CategoryGroup from '../../models/CategoryGroup';
 
 const CLIENT_ID = process.env.PLAID_CLIENT_ID || '';
 const PLAID_SECRET = process.env.PLAID_SECRET || '';
@@ -205,7 +207,13 @@ async function getAccounts(user: Parse.User, item: Item): Promise<void> {
         response.accounts.forEach(async (account) => {
             if (validTypes.includes(account.type || '')) {
                 logger.info("Saving account", account);
-                await savePlaidAccount(account, response.item.institution_id, item, user);
+                const newAcct = await savePlaidAccount(account, response.item.institution_id, item, user);
+
+                if (account.type !== 'credit') {
+                    await createInitialTransaction(user, newAcct, account);
+                } else {
+                    await createCreditCardCategory(user, newAcct);
+                }
             }
         })
     } catch (err) {
@@ -216,6 +224,46 @@ async function getAccounts(user: Parse.User, item: Item): Promise<void> {
             logger.error('Error updating accounts:', err);
         }
     }
+}
+
+async function createInitialTransaction(user: Parse.User, newAcct: Account, account: plaid.Account) {
+    logger.info('Creating transaction for initial balance');
+    const initialTxn = new Transaction();
+    initialTxn.account = newAcct;
+    initialTxn.acknowledged = false;
+    initialTxn.amount = account.balances.available || account.balances.current || 0;
+    initialTxn.currency = account.balances.iso_currency_code || 'USD';
+    initialTxn.date = new Date();
+    initialTxn.merchant = `${newAcct.name} Initial Balance`;
+    initialTxn.transactionId = newAcct.accountId;
+
+    // @ts-ignore
+    const category = await new Parse.Query(Category)
+        .equalTo('name', 'Available Cash')
+        .equalTo('user', user)
+        .first(SUDO);
+    logger.info('Loaded cash category', {category});
+    initialTxn.category = category;
+
+    initialTxn.setACL(new Parse.ACL(user));
+    await initialTxn.save(null, SUDO);
+}
+
+async function createCreditCardCategory(user: Parse.User, newAcct: Account) {
+    // @ts-ignore
+    let group = await new Parse.Query(CategoryGroup).equalTo('name', 'Credit Cards').equalTo('user', user).first(SUDO);
+    if (!group) {
+        logger.info('Creating credit card group for user ' + user.getUsername());
+        group = new CategoryGroup();
+        group.name = 'Credit Cards';
+        await group.commit(user);
+    }
+
+    const category = new Category();
+    category.name = `Payment: ${newAcct.name}`;
+    category.group = group;
+    category.isPayment = true;
+    await category.commit(user);
 }
 
 async function getTransactions(user: Parse.User, account: Account): Promise<void> {
@@ -255,9 +303,9 @@ async function markItemTokenExpired(item: Item): Promise<void> {
 
 async function handleTransactionWebhook(payload: TransactionWebhook): Promise<void> {
     logger.info('Processing transaction webhook', payload);
-    if (payload.webhook_code === 'HISTORICAL_UPDATE') {
-        logger.info('Skipping historical update');
-    } else if (payload.webhook_code === 'INITIAL_UPDATE' || payload.webhook_code === 'DEFAULT_UPDATE') {
+    if (payload.webhook_code === 'HISTORICAL_UPDATE' || payload.webhook_code === 'INITIAL_UPDATE') {
+        logger.info('Skipping historical/initial update');
+    } else if (payload.webhook_code === 'DEFAULT_UPDATE') {
         logger.info(`Loading transactions: ${payload.webhook_code} for item ${payload.item_id}`);
         // @ts-ignore
         const item: Item = await new Parse.Query(Item).includeAll().equalTo('itemId', payload.item_id).first(SUDO);
@@ -277,8 +325,7 @@ async function handleTransactionWebhook(payload: TransactionWebhook): Promise<vo
                 logger.info(`Saving transaction to account ${acct.accountId}`)
                 await savePlaidTransaction(plaidTxn, acct, item.user);
             }
-            
-        })
+        });
     } else if (payload.webhook_code === 'TRANSACTIONS_REMOVED') {
         logger.info('Removing transactions');
         payload.removed_transactions.forEach(async (txnId) => {
@@ -336,11 +383,13 @@ async function savePlaidAccount(account: plaid.Account, institutionId: string, i
     const getAccount = getOrCreate(Account, 'accountId', account.account_id);
     const getInstitution = client.getInstitutionById<InstitutionWithInstitutionData>(institutionId, {include_optional_metadata: true});
     
+    const creditMultiplier = account.type === 'credit' ? -1 : 1;
+
     const [acct, { institution }] = await Promise.all([getAccount, getInstitution]);
     acct.accountId = account.account_id;
     acct.item = item
-    acct.availableBalance = account.balances.available || 0;
-    acct.currentBalance = account.balances.current || 0;
+    acct.availableBalance = creditMultiplier * (account.balances.available || 0);
+    acct.currentBalance = creditMultiplier * (account.balances.current || 0);
     acct.name = account.name || '<no name>';
     acct.subType = account.subtype || '';
     acct.type = account.type || '';
