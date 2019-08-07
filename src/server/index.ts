@@ -50,6 +50,7 @@ app.use(session({
         secure: isProduction,
         domain: isProduction ? 'jk-budgit.herokuapp.com' : 'localhost',
     },
+    proxy: isProduction,
     secret: COOKIE_SECRET,
     saveUninitialized: false,
     resave: false,

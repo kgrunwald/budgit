@@ -90,7 +90,7 @@ plaidRouter.get('/logout', (req, res) => {
 });
 
 plaidRouter.use(async (req: Request, res: Response, next: NextFunction) => {
-    const user = await new Parse.Query(Parse.User).first({ sessionToken: get(req, 'session.token', '') });
+    const user = await new Parse.Query(Parse.User).first({ ...SUDO, sessionToken: get(req, 'session.token', '') });
     if (!user) {
         req.session && req.session.destroy(() => logger.info('Session destroyed'));
         res.redirect('/login');
