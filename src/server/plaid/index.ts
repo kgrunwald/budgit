@@ -14,6 +14,7 @@ import CategoryGroup from '../../models/CategoryGroup';
 const CLIENT_ID = process.env.PLAID_CLIENT_ID || '';
 const PLAID_SECRET = process.env.PLAID_SECRET || '';
 const PUBLIC_KEY = process.env.PLAID_PUBLIC_KEY || '';
+const PLAID_ENV = process.env.PLAID_ENV || '';
 
 const SUDO = { useMasterKey: true };
 
@@ -21,7 +22,7 @@ const client = new plaid.Client(
     CLIENT_ID,
     PLAID_SECRET,
     PUBLIC_KEY,    
-    plaid.environments.sandbox,
+    PLAID_ENV,
     {version: '2019-05-29'},
 );
 
