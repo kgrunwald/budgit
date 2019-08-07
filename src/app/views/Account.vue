@@ -8,6 +8,7 @@
                 <div class="account-info">
                     <div class="account-title">
                         <b-form-input
+                            class="account-title-input"
                             autofocus
                             v-if="accountNameEdit"
                             v-model="account.name"
@@ -91,8 +92,8 @@
                         </div>
                         <div v-if="transactionMerchantEdit === data.item.id">
                             <b-form-input
+                                class="merchant-input"
                                 autofocus
-                                size="sm"
                                 v-model="data.item.merchant"
                                 @blur="setMerchant(data.item, data.item.merchant)"
                                 @keydown.enter.native="setMerchant(data.item, data.item.merchant)"
@@ -280,6 +281,7 @@ export default class Account extends Vue {
         width: 100%;
         flex-direction: row;
         align-items: center;
+        height: 80px;
 
         .account-icon {
             display: flex;
@@ -297,6 +299,7 @@ export default class Account extends Vue {
             width: 100%;
             display: flex;
             justify-content: space-between;
+            align-items: center;
 
             .account-title {
                 display: flex;
@@ -304,11 +307,21 @@ export default class Account extends Vue {
                 font-size: 18px;
                 font-weight: 500;
 
+                .account-title-input {
+                    padding-left: 4px; 
+                    margin-left: -5px;
+                    width: 400px;
+                    font-size: 18px;
+                    font-weight: 500;
+                }
+
+                .title {
+                    padding: 7px 0 7px 0;
+                }
+
             }
 
-            .title {
-                margin: 6px 0 5px 0;
-            }
+            
 
             .info {
                 display: flex;
@@ -371,6 +384,12 @@ export default class Account extends Vue {
         .view-category {
             display: flex;
             align-items: center;
+        }
+
+        .merchant-input{
+            margin-left: -5px;
+            padding: 4px;
+            height: 30px;
         }
 
         tr {

@@ -69,11 +69,12 @@
                 <div class="budget-group-header">
                   <div class="group-title-container">
                     <b-form-input
-                        autofocus
-                        v-if="groupNameEdit"
-                        v-model="group.name"
-                        @blur="setGroupName(group, group.name)"
-                        @keydown.enter.native="setGroupName(group, group.name)"
+                      class="group-title-input"
+                      autofocus
+                      v-if="groupNameEdit"
+                      v-model="group.name"
+                      @blur="setGroupName(group, group.name)"
+                      @keydown.enter.native="setGroupName(group, group.name)"
                     />
                     <div class="group-title" v-else @click="editGroupName()">
                       {{ group.name }}
@@ -103,7 +104,6 @@
                 <b-form-input
                   class="category-name-input"
                   autofocus
-                  size="sm"
                   v-if="categoryNameEdit === data.item.id"
                   v-model="data.item.name"
                   @blur="setCategoryName(data.item, data.item.name)"
@@ -482,6 +482,8 @@ export default class Budget extends Vue {
 
       .category-name-input {
         margin-left: -5px;
+        padding: 4px;
+        height: 30px;
       }
 
       tr {
@@ -515,7 +517,14 @@ export default class Budget extends Vue {
             width: 200px;
 
             .group-title {
-              padding-left: 13px;
+              padding-left: 5px;
+              font-size: 18px;
+              font-weight: 500;
+            }
+            .group-title-input {
+              padding-left: 4px; 
+              font-size: 18px;
+              font-weight: 500;
             }
           }
 
