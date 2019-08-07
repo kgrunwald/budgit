@@ -20,6 +20,9 @@ Parse.Cloud.afterSave(Transaction, async (req): Promise<void> => {
     if (origCatId) {
         console.log('[CLOUD] Calculating activity for OLD transaction');
         await setCategoryActivity(orig);
+    } else {
+        console.log('[CLOUD] No previous category for txn. Updating account balance.')
+        await updateAccountBalance(update);
     }
     
     if (updateCatId) {
@@ -63,4 +66,20 @@ const setCategoryActivity = async (txn: Transaction) => {
 
     ctg.setActivity(begin, activity);
     await ctg.save(null, { useMasterKey: true });
+}
+
+const updateAccountBalance = async (txn: Transaction) => {
+    // @ts-ignore
+    const txns = await new Parse.Query(Transaction).equalTo('account', txn.account).find({ useMasterKey: true });
+    const balance = reduce(txns, (val, txn) => val + txn.amount, 0);
+
+    // @ts-ignore
+    const acct = await new Parse.Query(Account).get(txn.account.id, { useMasterKey: true }) as Account;
+    if (acct.currentBalance !== balance) {
+        console.log(`[CLOUD] Setting account balance for ${acct.accountId}: ${balance}`, balance);
+        acct.currentBalance = balance;
+        return await acct.save(null, { useMasterKey: true });
+    } else {
+        console.log('[CLOUD] Account balance did not change.')
+    }
 }
