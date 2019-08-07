@@ -80,6 +80,14 @@ class Category extends PrivateModel {
     public getFormattedBalance(month: Date): string {
         return formatter.format(this.getBalance(month), { code: 'USD' });
     }
+
+    public set isPayment(isPayment: boolean) {
+        this.set('isPayment', isPayment);
+    }
+
+    public get isPayment(): boolean {
+        return this.get('isPayment');
+    }
 }
 
 Parse.Object.registerSubclass('Category', Category);
