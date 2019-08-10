@@ -1,5 +1,5 @@
 {
-  "name": "budgit",
+  "name": "Budgit",
   "version": "0.1.0",
   "private": true,
   "engines": {
@@ -10,7 +10,7 @@
     "start:db": "docker run --rm -d -p 27017-27019:27017-27019 --name mongodb mongo",
     "stop:db": "docker kill mongodb",
     "start:db:dash": "parse-dashboard --config parse-dashboard-config.json --port 4041",
-    "start:db:prod": "parse-dashboard --config parse-dashboard-prod.json --port 4041",
+    "start:db:prod": "parse-dashboard --config parse-dashboard-prod.json --port 4042",
     "start:client": "yarn serve",
     "start:server": "yarn start:db:dash & nodemon",
     "start:prod": "node dist/server/server/index.js",
