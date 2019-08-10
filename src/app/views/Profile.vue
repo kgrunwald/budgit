@@ -37,9 +37,6 @@ export default class Profile extends Vue {
     flex: 0 1 auto;
     display: flex;
 
-    .profile-title {
-
-    }
   }
 
   .profile-details-card {
