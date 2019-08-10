@@ -495,6 +495,7 @@ export default class Budget extends Vue {
 
         td, th {
           vertical-align: middle;
+          white-space: nowrap;
 
           &:first-child {
             padding-left: 10px;

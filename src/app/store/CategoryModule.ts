@@ -42,7 +42,7 @@ class CategoryModule extends VuexModule {
 
     @Mutation
     public remove(category: Category) {
-        return omit(this.categoriesById, category.id);
+        this.categoriesById = omit(this.categoriesById, category.id);
     }
 
     get categories(): Category[] {

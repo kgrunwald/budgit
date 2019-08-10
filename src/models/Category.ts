@@ -2,12 +2,16 @@ import Parse from './Parse';
 import PrivateModel from './PrivateModel';
 import formatter from 'currency-formatter';
 import CategoryGroup from './CategoryGroup';
+import Account from './Account';
 import { reduce, has } from 'lodash';
 import { format } from 'date-fns';
 
 class Category extends PrivateModel {
 
     get name(): string {
+        if (this.isPayment) {
+            return `Payment: ${this.paymentAccount.name}`;
+        }
         return this.get('name');
     }
 
@@ -23,12 +27,16 @@ class Category extends PrivateModel {
         return this.get('group');
     }
 
-    public set isPayment(isPayment: boolean) {
-        this.set('isPayment', isPayment);
+    set paymentAccount(acct: Account) {
+        this.set('paymentAccount', acct);
     }
 
-    public get isPayment(): boolean {
-        return this.get('isPayment') || false;
+    get paymentAccount(): Account {
+        return this.get('paymentAccount');
+    }
+
+    get isPayment(): boolean {
+        return !!this.paymentAccount;
     }
 
     public static getKey(month: Date): string {

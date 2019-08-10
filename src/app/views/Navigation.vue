@@ -24,8 +24,8 @@
                 <!-- Right aligned nav items -->
                 <b-navbar-nav class="ml-auto">
                     <b-nav-item-dropdown right>
-                        <template slot="button-content">Account</template>
-                        <b-dropdown-item href="#">Profile</b-dropdown-item>
+                        <template slot="button-content">Settings</template>
+                        <b-dropdown-item @click="(() => this.$router.push('profile'))">Profile</b-dropdown-item>
                         <b-dropdown-item @click="signOut">Sign Out</b-dropdown-item>
                     </b-nav-item-dropdown>
                 </b-navbar-nav>

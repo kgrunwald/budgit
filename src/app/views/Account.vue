@@ -82,6 +82,9 @@
                             @click="acknowledge(data.item)"
                         />
                     </template>
+                    <template slot="formattedDate" slot-scope="data">
+                        <div class="formatted-date">{{ data.item.formattedDate }}</div>
+                    </template>
                     <template slot="merchant" slot-scope="data">
                         <div
                             class="view-category"
@@ -272,13 +275,13 @@ export default class Account extends Vue {
     height: 100%;
     padding: 5px;
     background-color: #fafafa;
-    overflow-y: scroll;
+    overflow-x: scroll;
     display: flex;
     flex-direction: column;
 
     .account-header {
+        overflow-x: scroll;
         display: flex;
-        width: 100%;
         flex-direction: row;
         align-items: center;
         height: 80px;
@@ -386,6 +389,10 @@ export default class Account extends Vue {
             align-items: center;
         }
 
+        .formatted-date {
+            padding-right: 10px;
+        }
+
         .merchant-input{
             margin-left: -5px;
             padding: 4px;
@@ -397,6 +404,8 @@ export default class Account extends Vue {
 
             td, th {
                 vertical-align: middle;
+                white-space: nowrap;
+
 
             &:first-child {
                 padding-left: 10px;

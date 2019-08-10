@@ -3,6 +3,7 @@ import Parse from 'parse';
 import Router, { NavigationGuard, Route } from 'vue-router';
 import Accounts from './views/Accounts.vue';
 import Budget from './views/Budget.vue';
+import Profile from './views/Profile.vue';
 import Login from './views/Login.vue';
 
 Vue.use(Router);
@@ -35,6 +36,12 @@ export default new Router({
       name: 'accounts',
       beforeEnter: loginGuard,
       component: Accounts,
+    },
+    {
+      path: '/profile',
+      name: 'profile',
+      beforeEnter: loginGuard,
+      component: Profile,
     },
     {
       path: '/login',

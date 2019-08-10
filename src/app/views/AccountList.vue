@@ -92,9 +92,13 @@ export default class AccountList extends Vue {
     }
 
     .account-items {
+        display: flex;
+        flex-direction: column;
         overflow-y: scroll;
+        height: 100%;
 
         .account-item {
+            white-space: nowrap;
             display: flex;
             flex-direction: row;
             justify-content: space-between;
@@ -102,7 +106,6 @@ export default class AccountList extends Vue {
             padding: 4px 8px;
             font-weight: 300;
             cursor: pointer;
-            display: flex;
 
             &:hover {
                 background-color: lighten($primary, 5%);

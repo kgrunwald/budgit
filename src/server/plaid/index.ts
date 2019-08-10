@@ -179,6 +179,11 @@ plaidRouter.post('/removeAccount', async (req: Request, res: Response) => {
         trans.forEach(async (tran) => {
             await tran.destroy(SUDO);
         });
+        // @ts-ignore
+        const categories: Category[] = await new Parse.Query(Category).includeAll().equalTo('paymentAccount', acct).find(SUDO);
+        categories.forEach(async (category) => {
+            await category.destroy(SUDO);
+        });
         await acct.destroy(SUDO)
 
         // @ts-ignore
@@ -262,7 +267,7 @@ async function createCreditCardCategory(user: Parse.User, newAcct: Account) {
     const category = new Category();
     category.name = `Payment: ${newAcct.name}`;
     category.group = group;
-    category.isPayment = true;
+    category.paymentAccount = newAcct;
     await category.commit(user);
 }
 
