@@ -5,14 +5,14 @@ class PrivateModel extends Parse.Object {
         super(className);
     }
 
-    public async commit(user?: Parse.User): Promise<void> {
+    public async commit(user?: Parse.User, options?: any): Promise<void> {
         if (!user) {
             user = Parse.User.current();
         }
 
         this.set('user', user);
         this.setACL(new Parse.ACL(user));
-        await super.save();
+        await super.save(null, options);
     }
 }
 

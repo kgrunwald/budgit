@@ -251,7 +251,7 @@ async function createInitialTransaction(user: Parse.User, newAcct: Account, acco
     logger.info('Loaded cash category', {category});
     initialTxn.category = category;
 
-    await initialTxn.commit(user);
+    await initialTxn.commit(user, SUDO);
 }
 
 async function createCreditCardCategory(user: Parse.User, newAcct: Account) {
@@ -261,14 +261,14 @@ async function createCreditCardCategory(user: Parse.User, newAcct: Account) {
         logger.info('Creating credit card group for user ' + user.getUsername());
         group = new CategoryGroup();
         group.name = 'Credit Cards';
-        await group.commit(user);
+        await group.commit(user, SUDO);
     }
 
     const category = new Category();
     category.name = `Payment: ${newAcct.name}`;
     category.group = group;
     category.paymentAccount = newAcct;
-    await category.commit(user);
+    await category.commit(user, SUDO);
 }
 
 async function getTransactions(user: Parse.User, account: Account): Promise<void> {
@@ -288,7 +288,7 @@ async function getTransactions(user: Parse.User, account: Account): Promise<void
         });
 
         account.expired = false;
-        await account.commit(user);
+        await account.commit(user, SUDO);
     } catch(err) {
         logger.error("Error loading transactions", err.message)
         throw err;
@@ -378,7 +378,7 @@ async function savePlaidTransaction(plaidTxn: plaid.Transaction, account: Accoun
         }
     }
     txn.account = account;
-    await txn.commit(user);
+    await txn.commit(user, SUDO);
     return txn;
 }
 
@@ -400,8 +400,7 @@ async function savePlaidAccount(account: plaid.Account, institutionId: string, i
     acct.logo = institution.logo
     acct.expired = false;
 
-    acct.setACL(new Parse.ACL(user));
-    await acct.save(null, SUDO);
+    await acct.commit(user, SUDO);
     return acct;
 }
 

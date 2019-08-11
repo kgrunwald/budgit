@@ -39,33 +39,59 @@ const setCategoryActivity = async (txn: Transaction) => {
         return;
     }
 
+    // @ts-ignore
+    const acct = await new Parse.Query(Account).get(txn.account.id, { useMasterKey: true }) as Account;
     if (ctg.isPayment) {
         console.log(`[CLOUD] Transaction ${txn.transactionId} is marked as a payment. Looking up corresponding account.`);
-        // @ts-ignore
-        const acct = await new Parse.Query(Account).get(txn.account.id, { useMasterKey: true }) as Account;
         if (acct && acct.type !== 'credit') {
             console.log(`[CLOUD] Account ${acct.accountId} associated with transaction ${txn.transactionId} is not a credit account, skipping`);
             return;
         }
     }
-
+    
     const begin = setDate(txn.date, 1);
     const end = addMonths(begin, 1);
-    console.log(`[CLOUD] Loading transactions between: ${Category.getKey(begin)} and ${Category.getKey(end)} for ${ctg.name}`);
 
+    console.log(`[CLOUD] Loading transactions between: ${Category.getKey(begin)} and ${Category.getKey(end)} for ${ctg.name}`);
     // @ts-ignore
     const txns = await new Parse.Query(Transaction)
         .equalTo('category', ctg)
         .greaterThanOrEqualTo('date', begin)
         .lessThan('date', end)
         .find({ useMasterKey: true });
-
     const activity = reduce(txns, (val, txn) => val + txn.amount, 0);
     console.log(`[CLOUD] Total for ${txns.length} transactions: $${activity}`);
     console.log(`[CLOUD] Setting activity for key: ${Category.getKey(begin)}`);
 
     ctg.setActivity(begin, activity);
     await ctg.save(null, { useMasterKey: true });
+
+    if (acct.type === 'credit') {
+        await setCreditActivity(txn, acct);
+    }
+}
+
+const setCreditActivity = async (txn: Transaction, acct: Account) => {
+    const begin = setDate(txn.date, 1);
+    const end = addMonths(begin, 1);
+
+    // @ts-ignore
+    const paymentCtg = await new Parse.Query(Category).equalTo('paymentAccount', acct).first({ useMasterKey: true });
+    if (paymentCtg) {
+        // @ts-ignore
+        const txns = await new Parse.Query(Transaction)
+            .equalTo('account', acct)
+            .greaterThanOrEqualTo('date', begin)
+            .lessThan('date', end)
+            .find({ useMasterKey: true });
+
+        const activity = reduce(txns, (val, txn) => val - txn.amount, 0);
+        paymentCtg.setActivity(begin, activity);
+        console.log('[CLOUD] Setting payment activity for credit category: ' + paymentCtg.id + ' ' + activity);
+        await paymentCtg.save(null, { useMasterKey: true });
+    } else {
+        console.error('[CLOUD] No payment category found for account ' + acct.accountId);
+    }
 }
 
 const updateAccountBalance = async (txn: Transaction) => {
