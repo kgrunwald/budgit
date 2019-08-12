@@ -361,7 +361,7 @@ async function handleItemWebhook(payload: ItemWebhook) {
 }
 
 async function savePlaidItem(token: plaid.TokenResponse, user: Parse.User): Promise<Item> {
-    logger.info('Saving Plaid Item', { token });
+    logger.info('Saving Plaid Item', { token, user });
     const item = await getOrCreate(Item, 'itemId', token.item_id);
     item.accessToken = token.access_token;
     item.itemId = token.item_id;
@@ -372,7 +372,7 @@ async function savePlaidItem(token: plaid.TokenResponse, user: Parse.User): Prom
     acl.setPublicWriteAccess(false);
     item.setACL(acl);
     
-    await item.save();
+    await item.save(null, SUDO);
     logger.info('Plaid item saved');
     return item;
 }
