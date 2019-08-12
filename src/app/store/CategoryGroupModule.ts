@@ -88,7 +88,7 @@ class CategoryGroupModule extends VuexModule {
 
     @Action({ commit: 'add' })
     public async update(group: CategoryGroup) {
-        await group.save();
+        await group.commit();
         return group;
     }
 }

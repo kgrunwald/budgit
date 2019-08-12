@@ -67,7 +67,7 @@ class TransactionModule extends VuexModule {
 
     @Action({ commit: 'add' })
     public async update(txn: Transaction) {
-        await txn.save();
+        await txn.commit();
         return txn;
     }
 }

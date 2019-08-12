@@ -75,7 +75,7 @@ class AccountModule extends VuexModule {
 
     @Action({ commit: 'add' })
     public async update(acct: Account) {
-        await acct.save();
+        await acct.commit();
         return acct;
     }
 

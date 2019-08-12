@@ -57,7 +57,7 @@ class CategoryModule extends VuexModule {
 
     @Action({ commit: 'add' })
     public async update(category: Category) {
-        await category.save();
+        await category.commit();
         return category;
     }
 }
