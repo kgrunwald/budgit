@@ -121,13 +121,21 @@ plaidRouter.post('/refreshToken', async (req: Request, res: Response) => {
         const { user } = req;
         logger.info('Got refreshToken request from: ' + user.getUsername());
         
-        const { accountId } = req.body;
-        // @ts-ignore
-        const acct: Account = await new Parse.Query(Account).include('item').equalTo('accountId', accountId).first(SUDO);
-        logger.info(`Loaded account: ${acct.accountId}. Refreshing token for item: ${acct.item.itemId}`);
+        const { accountId, itemId } = req.body;
+        let item;
 
-        const response = await client.createPublicToken(acct.item.accessToken);
-        logger.info("Got new public token for account.", response);
+        if (accountId) {
+            // @ts-ignore
+            const acct: Account = await new Parse.Query(Account).include('item').equalTo('accountId', accountId).first(SUDO);
+            logger.info(`Loaded account: ${acct.accountId}. Refreshing token for item: ${acct.item.itemId}`);
+            item = acct.item;
+        } else if (itemId) {
+            // @ts-ignore
+            item = await new Parse.Query(Item).get(itemId, SUDO);
+        }
+
+        const response = await client.createPublicToken(item.accessToken);
+        logger.info("Got new public token for account/item.", response);
         res.json({ publicToken: response.public_token });
     } catch (err) {
         logger.error("Error exchanging public token.", err);

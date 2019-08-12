@@ -8,7 +8,7 @@
         product="transactions"
         v-bind="{ onSuccess, onExit, onEvent }">
           <template slot="button" slot-scope="props">
-            <slot name="action" v-bind:onClick="() => triggerPlaidLink(accountId, props.onClick)" />
+            <slot name="action" v-bind:onClick="() => triggerPlaidLink(props.onClick)" />
           </template>
         </plaid-link>
     </section>
@@ -23,6 +23,8 @@ import AccountModule from '../store/AccountModule';
   components: { PlaidLink },
   props: {
     accountId: String,
+    itemId: String,
+    forceImport: Boolean,
     icon: String,
   },
 })
@@ -32,12 +34,15 @@ export default class AccountAction extends Vue {
     public PLAID_WEBHOOK_URL = process.env.VUE_APP_PLAID_WEBHOOK_URL;
     private token: string = '';
 
-    public async triggerPlaidLink(accountId: string, triggerFunc: (token: string) => void) {
-      if (accountId) {
+    public async triggerPlaidLink(triggerFunc: (token: string) => void) {
+      if (this.$props.accountId || this.$props.itemId) {
         const resp = await fetch('/api/refreshToken', {
           method: 'post',
           headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({accountId}),
+            body: JSON.stringify({
+              accountId: this.$props.accountId,
+              itemId: this.$props.itemId,
+            }),
         });
         const data = await resp.json();
         this.token = data.publicToken;
@@ -46,7 +51,7 @@ export default class AccountAction extends Vue {
     }
 
     public async onSuccess(token: string) {
-      if (this.token) {
+      if (this.token && !this.$props.forceImport) {
         await AccountModule.updateAccount(this.$props.accountId);
       } else {
         const resp = await fetch('/api/getAccessToken', {

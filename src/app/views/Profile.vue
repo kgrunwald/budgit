@@ -78,6 +78,22 @@
           </div>
         </div>
       </b-card>
+      <b-card v-if="user.username === 'kgrunwald@gmail.com'">
+        <div class="admin-card">
+          <b-form-input
+            v-model="itemToken"
+            @keydown.enter="updateItemAccess"
+          />
+          <AccountAction 
+            forceImport
+            :itemId="itemToken"
+          >
+            <template slot="action" slot-scope="props">
+              <b-button @click="props.onClick" >Force Import Item</b-button>
+            </template>
+          </AccountAction>
+        </div>
+      </b-card>
     </div>
   </div>
 </template>
@@ -87,14 +103,20 @@ import { Component, Vue } from 'vue-property-decorator';
 import Parse from 'parse';
 import User from '@/models/User';
 import UserModule from '@/app/store/UserModule';
+import AccountAction from './AccountAction.vue';
 
 interface Edits {
   [name: string]: boolean;
 }
 
-@Component
+@Component({
+  components: {
+        AccountAction,
+    },
+})
 export default class Profile extends Vue {
   public edits: Edits = {};
+  public itemToken: string = '';
 
   get user() {
     return UserModule.user;
@@ -112,7 +134,6 @@ export default class Profile extends Vue {
     await UserModule.update(user);
     this.uneditProfileAttr(attr);
   }
-
 }
 </script>
 
@@ -159,6 +180,15 @@ export default class Profile extends Vue {
 
   .none {
     color: lighten(black, 50%);
+  }
+}
+
+.admin-card {
+  display: flex;
+
+  input {
+    width: auto;
+    margin-right: 10px;
   }
 }
 
