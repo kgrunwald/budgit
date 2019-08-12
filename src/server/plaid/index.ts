@@ -106,12 +106,14 @@ plaidRouter.post('/getAccessToken', async (req: Request, res: Response) => {
         const { user } = req;
         logger.info('Got request for access token from: ' + user.getUsername());
         const tokenResponse = await client.exchangePublicToken(req.body.public_token);
+        logger.info('Exchanged public token');
         
         const item = await savePlaidItem(tokenResponse, user);
         await getAccounts(user, item);
 
         res.json({'error': false});
     } catch (err) {
+        logger.error('Error saving item or accounts', err);
         res.status(500).json({ error: err.message });
     }
 });
@@ -359,6 +361,7 @@ async function handleItemWebhook(payload: ItemWebhook) {
 }
 
 async function savePlaidItem(token: plaid.TokenResponse, user: Parse.User): Promise<Item> {
+    logger.info('Saving Plaid Item', { token });
     const item = await getOrCreate(Item, 'itemId', token.item_id);
     item.accessToken = token.access_token;
     item.itemId = token.item_id;
@@ -370,6 +373,7 @@ async function savePlaidItem(token: plaid.TokenResponse, user: Parse.User): Prom
     item.setACL(acl);
     
     await item.save();
+    logger.info('Plaid item saved');
     return item;
 }
 
