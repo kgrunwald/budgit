@@ -121,8 +121,6 @@
                   <b-form-input
                     placeholder="0.00"
                     size="sm"
-                    type="number"
-                    number
                     :value="data.item.getBudget(currentMonth)"
                     @change="setBudget(data.item, ...arguments)"
                   />
@@ -159,6 +157,7 @@
 import { Component, Vue } from 'vue-property-decorator';
 import { get, keys, remove } from 'lodash';
 import { format, addMonths } from 'date-fns';
+import { evaluate } from 'mathjs';
 import CategoryModule from '../store/CategoryModule';
 import CategoryGroupModule from '../store/CategoryGroupModule';
 import Category from '../../models/Category';
@@ -272,7 +271,8 @@ export default class Budget extends Vue {
   }
 
   public async setBudget(category: Category, value: string) {
-    category.setBudget(this.currentMonth, parseFloat(value));
+    const result = evaluate(value);
+    category.setBudget(this.currentMonth, parseFloat(result));
     await category.commit();
   }
 
