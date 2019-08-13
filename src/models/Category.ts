@@ -54,7 +54,7 @@ class Category extends PrivateModel {
 
     public getBudget(month: Date): number {
         const budget = this.get('budget') || {};
-        return (budget[Category.getKey(month)] || 0.0).toFixed(2);
+        return (budget[Category.getKey(month)] || 0.0);
     }
 
     public setActivity(month: Date, amount: number) {

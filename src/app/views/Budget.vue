@@ -133,9 +133,20 @@
               </template>
               <template slot="balance" slot-scope="data">
                 <span class="balance">
-                  <b-badge pill :variant="data.item.getBalance(currentMonth) != 0 ? data.item.getBalance(currentMonth) > 0 ? 'success' : 'danger' : 'dark'">
+                  <b-badge 
+                    pill
+                    :id="`balance-${data.item.id}`" 
+                    :variant="data.item.getBalance(currentMonth) != 0 ? data.item.getBalance(currentMonth) > 0 ? 'success' : 'danger' : 'dark'">
                     {{ formatCurrency(data.item.getBalance(currentMonth)) }}
                   </b-badge>
+                  <b-popover
+                    :ref="`popover-${data.item.id}`"
+                    :target="`balance-${data.item.id}`" 
+                    title="Cover Overspending"
+                    placement="bottom"
+                  >
+                    <CategoryDropdown :onChange="(ctg) => handleOverspending(data.item, ctg)"/>
+                  </b-popover>
                 </span>
               </template>
               <template slot="activity" slot-scope="data">
@@ -158,6 +169,7 @@ import { Component, Vue } from 'vue-property-decorator';
 import { get, keys, remove } from 'lodash';
 import { format, addMonths } from 'date-fns';
 import { evaluate } from 'mathjs';
+import CategoryDropdown from './CategoryDropdown.vue';
 import CategoryModule from '../store/CategoryModule';
 import CategoryGroupModule from '../store/CategoryGroupModule';
 import Category from '../../models/Category';
@@ -166,7 +178,11 @@ import CategoryGroup from '../../models/CategoryGroup';
 import Transaction from '../../models/Transaction';
 import formatter from 'currency-formatter';
 
-@Component
+@Component({
+  components: {
+    CategoryDropdown,
+  },
+})
 export default class Budget extends Vue {
   public currentMonth: Date = new Date();
   public newCategory: string = '';
@@ -296,6 +312,18 @@ export default class Budget extends Vue {
     this.$bvModal.hide(`add-category-${group.id}`);
   }
 
+  public async handleOverspending(targetCategory: Category, sourceCategory: Category) {
+    const balance = Math.abs(targetCategory.getBalance(this.currentMonth));
+    let budget = targetCategory.getBudget(this.currentMonth);
+    targetCategory.setBudget(this.currentMonth, budget + balance);
+
+    budget = sourceCategory.getBudget(this.currentMonth);
+    sourceCategory.setBudget(this.currentMonth, budget - balance);
+    await Promise.all([targetCategory.commit(), sourceCategory.commit()]);
+
+    // @ts-ignore
+    this.$refs[`popover-${targetCategory.id}`][0].$emit('close');
+  }
 }
 </script>
 
