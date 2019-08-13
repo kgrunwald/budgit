@@ -32,7 +32,7 @@
                                 @click="removeAccount()"
                             >
                                 <font-awesome-icon icon="trash-alt"/>
-                                Remove
+                                <div class="action-title">Remove</div>
                             </b-button>
                             <b-button 
                                 pill
@@ -42,14 +42,14 @@
                                 @click="AccountModule.updateAccount(account.accountId)"
                             >
                                 <font-awesome-icon icon="cloud-download-alt"/>
-                                Import
+                                <div class="action-title">Import</div>
                             </b-button>
                             <AccountAction :accountId="account.accountId" v-if="account.expired">
                                 <template slot="action" slot-scope="props">
                                     <!-- <font-awesome-icon icon="sync" @click="props.onClick" /> -->
                                     <b-button pill class="action" variant="outline-danger" @click="props.onClick">
                                         <font-awesome-icon icon="exclamation-triangle"/>
-                                        Refresh
+                                        <div class="action-title">Refresh</div>
                                     </b-button>
                                 </template>
                             </AccountAction>
@@ -58,6 +58,90 @@
                 </div>
             </div>
         </b-card>
+        <div class="trans-actions">
+            <b-button 
+                pill
+                variant="outline-success"
+                class="action"
+                v-b-modal.add-trans
+            >
+                <font-awesome-icon icon="plus-circle"/>
+                Add Transaction
+            </b-button>
+            <b-modal 
+                id="add-trans" 
+                title="Add Transaction"
+                ok-title="Save"
+                @ok="addTransaction()"
+                header-bg-variant='primary'
+                header-text-variant='light'
+            >
+                <div>
+                    <b-form>
+                        <b-form-group id="input-group-date">
+                            <b-form-checkbox class="deposit-switch" size="lg" v-model="newTransactionDeposit" switch>
+                                <div class="deposit-switch-label">{{ newTransactionDeposit ? 'Deposit' : 'Expense' }}</div>
+                            </b-form-checkbox>
+                        </b-form-group>
+                        <b-form-group id="input-group-date" label="Date of Transaction: " label-for="input-date">
+                            <b-form-input
+                            id="input-date"
+                            v-model="newTransaction.date"
+                            type="date"
+                            required
+                            placeholder="Enter Date"
+                            />
+                        </b-form-group>
+                        <b-form-group id="input-group-merchant" label="Merchant:" label-for="input-merchant">
+                            <b-form-input
+                            id="input-merchant"
+                            v-model="newTransaction.merchant"
+                            required
+                            placeholder="Enter Merchant"
+                            />
+                        </b-form-group>
+                        <b-form-group id="input-group-category" label="Category:" label-for="input-category">
+                            <b-dropdown
+                                :text="newTransactionCategoryName"
+                                split
+                                split-variant="outline-primary"
+                                variant="primary"
+                            >
+                                <b-dropdown-form>
+                                    <b-form-input
+                                        v-model="filter"
+                                    />
+                                </b-dropdown-form>
+                                <b-dropdown-item 
+                                    v-for="category in categories" 
+                                    :key="category.id"
+                                    @click="setNewTransactionCategory(category)"
+                                >
+                                    {{ category.name }}
+                                </b-dropdown-item>
+                            </b-dropdown>
+                        </b-form-group>
+                        <b-form-group id="input-group-amount" label="Amount:" label-for="input-amount">
+                            <b-input-group>
+                                <b-input-group-prepend is-text>
+                                    <font-awesome-icon v-if="newTransactionDeposit" :class="{positive: newTransactionDeposit, negative: !newTransactionDeposit, 'sign-icon': true}" icon="plus"/>
+                                    <font-awesome-icon v-else :class="{positive: newTransactionDeposit, negative: !newTransactionDeposit, 'sign-icon': true}" icon="minus"/>
+                                </b-input-group-prepend>
+                                <div :class="{positive: newTransactionDeposit, negative: !newTransactionDeposit, 'new-trans-amount-sign': true}">$</div>
+                                <b-form-input
+                                    :class="{positive: newTransactionDeposit, negative: !newTransactionDeposit, 'new-trans-amount': true}"
+                                    id="input-amount"
+                                    v-model="newTransaction.amount"
+                                    number
+                                    type="number"
+                                    required
+                                ></b-form-input>
+                            </b-input-group>
+                        </b-form-group>
+                    </b-form>
+                </div>
+            </b-modal>
+        </div>
         <b-card no-body="" class="account-table-container">
             <b-table
                 striped 
@@ -81,6 +165,7 @@
                             v-if="!data.item.acknowledged" 
                             @click="acknowledge(data.item)"
                         />
+                        <div v-else />
                     </template>
                     <template slot="formattedDate" slot-scope="data">
                         <div class="formatted-date">{{ data.item.formattedDate }}</div>
@@ -119,7 +204,6 @@
                                 split
                                 split-variant="outline-primary"
                                 variant="primary"
-                                size="sm"
                                 @hide="uneditCategory(data.item.id)"
                                 @shown="focusCategorySearch(data.item.id)"
                             >
@@ -127,7 +211,6 @@
                                     <b-form-input
                                         class="testing"
                                         :ref="'input-' + data.item.id"
-                                        size="sm"
                                         v-model="filter"
                                     />
                                 </b-dropdown-form>
@@ -151,8 +234,9 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue } from 'vue-property-decorator';
+import { Component, Vue, Watch } from 'vue-property-decorator';
 import { filter, startsWith, map, find } from 'lodash';
+import uuid from 'uuid/v4';
 import formatter from 'currency-formatter';
 import { format } from 'date-fns';
 import CategoryModule from '@/app/store/CategoryModule';
@@ -186,6 +270,9 @@ export default class Account extends Vue {
     public transactionMerchantEdit: string = '';
     public filter: string = '';
     public AccountModule = AccountModule;
+    public newTransaction: Transaction = new Transaction();
+    public newTransactionCategoryName: string = 'Select Category';
+    public newTransactionDeposit: boolean = false;
 
     public editAccountName() {
         this.accountNameEdit = true;
@@ -262,7 +349,32 @@ export default class Account extends Vue {
     }
 
     public async removeAccount() {
-        await AccountModule.removeAccount(this.$props.account.accountId);
+        const res = await this.$bvModal.msgBoxConfirm('Are you sure you want to delete this account?', {
+          title: 'Delete Account',
+          size: 'md',
+          okVariant: 'danger',
+          okTitle: 'Delete',
+          cancelVariant: 'light',
+          centered: true,
+          headerBgVariant: 'primary',
+          headerTextVariant: 'light',
+        });
+        if (res) { await AccountModule.removeAccount(this.$props.account.accountId); }
+    }
+
+    public setNewTransactionCategory(cat: Category) {
+        this.newTransactionCategoryName = cat.name;
+        this.newTransaction.category = cat;
+    }
+
+    public async addTransaction() {
+        const amount = this.newTransaction.amount;
+        this.newTransaction.amount = this.newTransactionDeposit ? amount : amount * -1;
+        this.newTransaction.date = new Date(this.newTransaction.date);
+        this.newTransaction.transactionId = uuid();
+        this.newTransaction.account = this.$props.account;
+        await this.newTransaction.commit();
+        this.newTransaction = new Transaction();
     }
 }
 </script>
@@ -302,7 +414,7 @@ export default class Account extends Vue {
             width: 100%;
             display: flex;
             justify-content: space-between;
-            align-items: center;
+            align-items: stretch;
 
             .account-title {
                 display: flex;
@@ -324,8 +436,6 @@ export default class Account extends Vue {
 
             }
 
-            
-
             .info {
                 display: flex;
                 flex-direction: column;
@@ -336,9 +446,11 @@ export default class Account extends Vue {
                 margin-bottom: 5px;
             }
 
-            .balance > div {
-                width: 100%;
-                text-align: right;
+            .balance {
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: flex-end;
             }
 
             .summary {
@@ -349,24 +461,8 @@ export default class Account extends Vue {
                     display: flex;
                     flex-direction: column;
                     font-size: 12px;
-                    justify-content: center;
+                    justify-content: space-evenly;
 
-                    .action {
-                        padding: 0 8px 0 8px;
-                        display: flex;
-                        height: 20px;
-                        align-items: center;
-                        margin-right: 5px;
-                        font-size: 12px;
-
-                        &:first-child {
-                            margin-bottom: 8px;
-                        }
-
-                        svg {
-                            margin-right: 5px;
-                        }
-                    }
                 }
 
                 .separator {
@@ -375,6 +471,9 @@ export default class Account extends Vue {
                 }
             }
         }
+    }
+    .trans-actions {
+        margin: 5px;
     }
     .account-table-container {
 
@@ -393,10 +492,20 @@ export default class Account extends Vue {
             padding-right: 10px;
         }
 
-        .merchant-input{
+        .merchant-input {
             margin-left: -5px;
             padding: 4px;
             height: 30px;
+        }
+
+        .category-dropdown{
+            margin-left: -5px;
+            padding: 0px;
+            height: 30px;
+
+            button {
+                padding: 0 5px;
+            }
         }
 
         tr {
@@ -422,14 +531,6 @@ export default class Account extends Vue {
       }
     }
 
-    .positive {
-        color: $green;
-    }
-
-    .negative {
-        color: $red;
-    }
-
     .card {
         margin: 5px;
 
@@ -437,6 +538,73 @@ export default class Account extends Vue {
             padding: 0.75rem;
         }
     }
+    .action {
+        padding: 0 8px 0 8px;
+        display: flex;
+        height: 20px;
+        align-items: center;
+        margin-right: 5px;
+        font-size: 12px;
+
+        .action-title {
+            flex: 1 0 auto;
+            display: flex;
+            justify-content:flex-start;
+        }
+
+        svg {
+            width: 15px;
+            margin-right: 5px;
+        }
+    }
+}
+
+.deposit-switch {
+    .custom-control-label::before {
+        background-color:$red;
+        border: $red;
+    }
+
+    .custom-control-label::after {
+        background-color: $white !important;
+    }
+
+    .custom-control-input:checked ~ .custom-control-label::before {
+        background-color:$green;
+        border: $green;
+    }
+
+    .deposit-switch-label { 
+        font-size: 20px; 
+    }
+}
+
+.new-trans-amount {
+    padding-left: 14px !important;
+    margin-left: -14px;
+    border-left: 0 !important;
+    color: red;
+}
+
+.new-trans-amount-sign {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding-left: 5px;
+    z-index: 5;
+}
+
+.positive {
+    color: $green !important;
+}
+
+.negative {
+    color: $red !important;
+}
+
+.sign-icon {
+    color: $secondary;
 }
 
 </style>

@@ -113,10 +113,8 @@
               </template>
               <template slot="budget" slot-scope="data">
                 <b-input-group>
-                  <b-input-group-prepend size="sm">
-                    <div class="dollar-icon">
-                        <font-awesome-icon icon="dollar-sign"/>
-                    </div>
+                  <b-input-group-prepend size="sm" is-text>
+                      <font-awesome-icon class="dollar-icon" icon="dollar-sign"/>
                   </b-input-group-prepend>
                   <b-form-input
                     placeholder="0.00"
@@ -472,16 +470,7 @@ export default class Budget extends Vue {
       }
 
       .dollar-icon {
-        width: 24px;
-        height: 31px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: #e9ecef;
-        border-radius: 5px 0 0 5px;
-        text-align: center;
         color: $secondary;
-        border: 1px solid #ced4da;
       }
 
       .category-name-input {
