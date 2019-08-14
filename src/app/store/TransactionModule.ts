@@ -70,6 +70,7 @@ class TransactionModule extends VuexModule {
         await txn.commit();
         return txn;
     }
+
 }
 
 export default getModule(TransactionModule);

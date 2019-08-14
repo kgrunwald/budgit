@@ -68,6 +68,16 @@
                 <font-awesome-icon icon="plus-circle"/>
                 Add Transaction
             </b-button>
+            <b-button
+                v-if="transactionsSelected"
+                pill
+                variant="outline-danger"
+                class="action"
+                @click="removeTransactions"
+            >
+                <font-awesome-icon icon="trash-alt"/>
+                Remove Transactions
+            </b-button>
             <b-modal 
                 id="add-trans" 
                 title="Add Transaction"
@@ -154,10 +164,25 @@
                 :sort-desc.sync="sortDesc"
             >
                     <col slot="table-colgroup" width="3%" />
+                    <col slot="table-colgroup" width="3%" />
                     <col slot="table-colgroup" width="10%" />
                     <col slot="table-colgroup" width="40%" />
                     <col slot="table-colgroup" width="40%" />
                     <col slot="table-colgroup" width="10%">
+                    <template slot="HEAD_selected">
+                        <b-form-checkbox
+                            :checked="selectAll"
+                            :indeterminate="selectAllIndeterminate"
+                            @change="changeSelectAll"
+                            >
+                        </b-form-checkbox>
+                    </template>
+                    <template slot="selected" slot-scope="data">
+                        <b-form-checkbox
+                            v-model="selected[data.item.id]"
+                            >
+                        </b-form-checkbox>
+                    </template>
                     <template slot="acknowledged" slot-scope="data">
                         <font-awesome-icon 
                             class="ack-icon" 
@@ -235,7 +260,7 @@
 
 <script lang="ts">
 import { Component, Vue, Watch } from 'vue-property-decorator';
-import { filter, startsWith, map, find } from 'lodash';
+import { filter, startsWith, map, find, pickBy, keys, reduce, includes } from 'lodash';
 import uuid from 'uuid/v4';
 import formatter from 'currency-formatter';
 import { format } from 'date-fns';
@@ -257,12 +282,16 @@ import AccountModule from '../store/AccountModule';
 })
 export default class Account extends Vue {
     public fields = [
+        { key: 'selected', label: ''},
         { key: 'acknowledged', label: ''},
         { key: 'formattedDate', label: 'Date', sortable: true},
         { key: 'merchant', label: 'Merchant', sortable: true},
         { key: 'categoryName', label: 'Category'},
         { key: 'formattedAmount', label: 'Amount'},
     ];
+    public selected = {};
+    public selectAll = false;
+    public selectAllIndeterminate = false;
     public sortBy = 'date';
     public sortDesc = true;
     public accountNameEdit: boolean = false;
@@ -270,9 +299,35 @@ export default class Account extends Vue {
     public transactionMerchantEdit: string = '';
     public filter: string = '';
     public AccountModule = AccountModule;
-    public newTransaction: Transaction = new Transaction();
+    public newTransaction: {[key: string]: any} = {};
     public newTransactionCategoryName: string = 'Select Category';
     public newTransactionDeposit: boolean = false;
+
+    @Watch('selected', { deep: true })
+    public async onSelectedChanged(val: object) {
+        const checked = keys(pickBy(val, (value) => value === true));
+        const unchecked = keys(pickBy(val, (value) => value === false));
+        if (checked.length === this.transactions.length) {
+            this.selectAllIndeterminate = false;
+            this.selectAll = true;
+        } else if (unchecked.length === this.transactions.length) {
+            this.selectAllIndeterminate = false;
+            this.selectAll = false;
+        } else if ( checked.length ) {
+            this.selectAllIndeterminate = true;
+        } else {
+            this.selectAllIndeterminate = false;
+            this.selectAll = false;
+        }
+    }
+
+    public changeSelectAll(checked: boolean) {
+        const selected = reduce(this.transactions, (result: {[key: string]: any}, trans: Transaction) => {
+            result[trans.id] = checked;
+            return result;
+        }, {});
+        this.selected = selected;
+    }
 
     public editAccountName() {
         this.accountNameEdit = true;
@@ -307,6 +362,15 @@ export default class Account extends Vue {
 
     public uneditMerchant() {
         this.transactionMerchantEdit = '';
+    }
+
+    get transactionsSelected(): boolean {
+        return !!this.selectedTransactions.length;
+    }
+
+    get selectedTransactions(): Transaction[] {
+        const transIds: string[] = keys(pickBy(this.selected, (value) => value === true));
+        return filter(this.transactions, (v) => includes(transIds, v.id));
     }
 
     get currentBalance(): string {
@@ -368,13 +432,39 @@ export default class Account extends Vue {
     }
 
     public async addTransaction() {
+        const tran = new Transaction();
         const amount = this.newTransaction.amount;
-        this.newTransaction.amount = this.newTransactionDeposit ? amount : amount * -1;
-        this.newTransaction.date = new Date(this.newTransaction.date);
-        this.newTransaction.transactionId = uuid();
-        this.newTransaction.account = this.$props.account;
-        await this.newTransaction.commit();
-        this.newTransaction = new Transaction();
+        tran.amount = this.newTransactionDeposit ? amount : amount * -1;
+        tran.date = new Date(this.newTransaction.date);
+        tran.transactionId = uuid();
+        tran.account = this.$props.account;
+        tran.category = this.newTransaction.category;
+        tran.merchant = this.newTransaction.merchant;
+        tran.acknowledged = true;
+        tran.currency = 'USD';
+        await tran.commit();
+        this.newTransaction = {};
+    }
+
+    public async removeTransactions() {
+        const trans = this.selectedTransactions;
+        const res = await this.$bvModal.msgBoxConfirm(
+            `Are you sure you want to remove ${trans.length} transaction${trans.length > 1 ? 's' : ''}?`, {
+            title: `Delete Transaction${trans.length > 1 ? 's' : ''}`,
+            size: 'md',
+            okVariant: 'danger',
+            okTitle: 'Delete',
+            cancelVariant: 'light',
+            centered: true,
+            headerBgVariant: 'primary',
+            headerTextVariant: 'light',
+        });
+        if (res) {
+            trans.forEach((tran) => {
+                tran.destroy();
+            });
+            this.selected = {};
+        }
     }
 }
 </script>
@@ -473,6 +563,7 @@ export default class Account extends Vue {
         }
     }
     .trans-actions {
+        display: flex;
         margin: 5px;
     }
     .account-table-container {
