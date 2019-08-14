@@ -1,15 +1,10 @@
 import { Module, VuexModule, Action, Mutation, getModule } from 'vuex-module-decorators';
-import Store from './index';
+import store from './index';
 import User from '@/models/User';
 import Parse from '@/models/Parse';
 import Subscriber from './Subscriber';
 
-@Module({
-    dynamic: true,
-    store: Store,
-    name: 'User',
-    namespaced: true,
-})
+@Module({ name: 'user', store, namespaced: true, dynamic: true })
 class UserModule extends VuexModule {
     public user: User = new User({});
 

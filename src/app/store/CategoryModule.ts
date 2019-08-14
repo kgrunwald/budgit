@@ -1,6 +1,6 @@
 import { Module, VuexModule, Action, Mutation, getModule } from 'vuex-module-decorators';
 import { values, omit, filter } from 'lodash';
-import Store from './index';
+import store from './index';
 import Category from '@/models/Category';
 import CategoryGroup from '@/models/CategoryGroup';
 import Parse from '@/models/Parse';
@@ -10,12 +10,7 @@ interface CategoriesById {
     [id: string]: Category;
 }
 
-@Module({
-    dynamic: true,
-    store: Store,
-    name: 'Categories',
-    namespaced: true,
-})
+@Module({ name: 'category', store, namespaced: true, dynamic: true })
 class CategoryModule extends VuexModule {
     public categoriesById: CategoriesById = {};
 

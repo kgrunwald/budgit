@@ -185,8 +185,6 @@ export default class Budget extends Vue {
   public currentMonth: Date = new Date();
   public newCategory: string = '';
   public newGroup: string = '';
-  public ready: boolean = false;
-  public availableCashGroup!: CategoryGroup;
   public groupNameEdit: string = '';
   public categoryNameEdit: string = '';
   public fields = [
@@ -195,9 +193,12 @@ export default class Budget extends Vue {
     'activity',
     { key: 'balance', label: 'Balance', tdClass: 'balance-cell', thClass: 'balance-cell'}];
 
-  public async mounted() {
-    this.availableCashGroup = await CategoryGroupModule.loadAvailableGroup();
-    this.ready = true;
+  get ready(): boolean {
+    return !!this.availableCashGroup;
+  }
+
+  get availableCashGroup(): CategoryGroup {
+    return CategoryGroupModule.availableGroup;
   }
 
   public editGroupName(group: CategoryGroup) {

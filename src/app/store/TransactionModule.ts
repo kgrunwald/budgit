@@ -1,22 +1,16 @@
 import { Module, VuexModule, Mutation, Action, getModule, MutationAction } from 'vuex-module-decorators';
+import store from './index';
 import { omit, pickBy, values, sortBy, reverse } from 'lodash';
 import Parse from 'parse';
 import Account from '@/models/Account';
 import Transaction from '@/models/Transaction';
-import Store from './index';
-import Category from '@/models/Category';
 import Subscriber from './Subscriber';
 
 interface TxnMap {
     [k: string]: Transaction;
 }
 
-@Module({
-    dynamic: true,
-    store: Store,
-    name: 'Transactions',
-    namespaced: true,
-})
+@Module({ name: 'transaction', store, namespaced: true, dynamic: true })
 class TransactionModule extends VuexModule {
     public txnsByid: TxnMap = {};
 
