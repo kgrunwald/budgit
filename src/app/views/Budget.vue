@@ -1,5 +1,4 @@
 <template>
-  <div v-if="ready">
     <div class="budget-container">
       <b-card>
         <div class="budget-header">
@@ -159,7 +158,6 @@
         </div>
       </div>
     </div>
-  </div>
 </template>
 
 <script lang="ts">
@@ -193,10 +191,6 @@ export default class Budget extends Vue {
     'activity',
     { key: 'balance', label: 'Balance', tdClass: 'balance-cell', thClass: 'balance-cell'}];
 
-  get ready(): boolean {
-    return !!this.availableCashGroup;
-  }
-
   get availableCashGroup(): CategoryGroup {
     return CategoryGroupModule.availableGroup;
   }
@@ -220,7 +214,9 @@ export default class Budget extends Vue {
   }
 
   get availableCategory() {
-      return get(CategoryModule.categoriesByGroup(this.availableCashGroup), '[0]');
+      if (this.availableCashGroup) {
+        return get(CategoryModule.categoriesByGroup(this.availableCashGroup), '[0]');
+      }
   }
 
   public formatCurrency(amount: number): string {
