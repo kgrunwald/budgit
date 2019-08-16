@@ -303,9 +303,9 @@ async function getTransactions(user: Parse.User, account: Account): Promise<void
             account_ids: [account.accountId]
         });
 
-        response.transactions.forEach(async (transaction) => {
-            logger.info(`Processing transaction ${transaction.transaction_id}`);
-            await savePlaidTransaction(transaction, account, user);
+        response.transactions.forEach(async (plaidTxn) => {
+            logger.info(`Processing transaction ${plaidTxn.transaction_id}`);
+            await savePlaidTransaction(plaidTxn, account, user);
         });
 
         account.expired = false;
@@ -341,11 +341,6 @@ async function handleTransactionWebhook(payload: TransactionWebhook): Promise<vo
         const txnsResp = await client.getTransactions(item.accessToken, startDate, endDate, { count: payload.new_transactions });
         txnsResp.transactions.forEach(async (plaidTxn) => {
             logger.info(`Processing transaction ${plaidTxn.transaction_id}`);
-
-            if (plaidTxn.pending) {
-                logger.info(`Transaction ${plaidTxn.transaction_id} is pending, skipping.`);
-                return;
-            }
 
             // @ts-ignore
             const acctQuery = new Parse.Query(Account).equalTo('accountId', plaidTxn.account_id);
@@ -393,7 +388,12 @@ async function savePlaidItem(token: plaid.TokenResponse, user: Parse.User): Prom
     return item;
 }
 
-async function savePlaidTransaction(plaidTxn: plaid.Transaction, account: Account, user: Parse.User): Promise<Transaction> {
+async function savePlaidTransaction(plaidTxn: plaid.Transaction, account: Account, user: Parse.User): Promise<void> {
+    if (plaidTxn.pending) {
+        logger.info(`Transaction ${plaidTxn.transaction_id} is pending, skipping.`);
+        return;
+    }
+
     const txn = await getOrCreate(Transaction, 'transactionId', plaidTxn.transaction_id);
     txn.transactionId = plaidTxn.transaction_id;
     txn.merchant = plaidTxn.name || '';
@@ -407,7 +407,6 @@ async function savePlaidTransaction(plaidTxn: plaid.Transaction, account: Accoun
     }
     txn.account = account;
     await txn.commit(user, SUDO);
-    return txn;
 }
 
 async function savePlaidAccount(account: plaid.Account, institutionId: string, item: Item, user: Parse.User): Promise<Account> {
