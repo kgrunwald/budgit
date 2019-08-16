@@ -63,6 +63,7 @@
               tbody-tr-class="budget-row-class"
               :fields="fields"
               :items="categoriesForGroup(group)"
+              @row-clicked="rowClicked"
             >
               <template slot="table-caption">
                 <div class="budget-group-header">
@@ -154,6 +155,7 @@
         </div>
         <div class=budget-actions-container>
           <b-card class=budget-actions>
+            <Goal v-if="categoryClicked" :categoryId="selectedCategory.id" :month="currentMonth"/>
           </b-card>
         </div>
       </div>
@@ -166,6 +168,7 @@ import { get, keys, reject } from 'lodash';
 import { format, addMonths } from 'date-fns';
 import { evaluate } from 'mathjs';
 import CategoryDropdown from './CategoryDropdown.vue';
+import Goal from './Goal.vue';
 import CategoryModule from '../store/CategoryModule';
 import CategoryGroupModule, {AVAILABLE_CASH_GROUP} from '../store/CategoryGroupModule';
 import Category from '../../models/Category';
@@ -177,10 +180,13 @@ import formatter from 'currency-formatter';
 @Component({
   components: {
     CategoryDropdown,
+    Goal,
   },
 })
 export default class Budget extends Vue {
   public currentMonth: Date = new Date();
+  public selectedCategory: Category = new Category();
+  public categoryClicked = false;
   public newCategory: string = '';
   public newGroup: string = '';
   public groupNameEdit: string = '';
@@ -318,6 +324,11 @@ export default class Budget extends Vue {
 
     // @ts-ignore
     this.$refs[`popover-${targetCategory.id}`][0].$emit('close');
+  }
+
+  public rowClicked(item: Category) {
+    this.selectedCategory = item;
+    this.categoryClicked = true;
   }
 }
 </script>

@@ -96,6 +96,14 @@ class Category extends PrivateModel {
     public getFormattedBalance(month: Date): string {
         return formatter.format(this.getBalance(month), { code: 'USD' });
     }
+
+    public set goal(goal: number) {
+        this.set('goal', goal);
+    }
+
+    public get goal(): number {
+        return this.get('goal');
+    }
 }
 
 Parse.Object.registerSubclass('Category', Category);
