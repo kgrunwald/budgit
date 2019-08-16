@@ -162,12 +162,12 @@
 
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
-import { get, keys, remove } from 'lodash';
+import { get, keys, reject } from 'lodash';
 import { format, addMonths } from 'date-fns';
 import { evaluate } from 'mathjs';
 import CategoryDropdown from './CategoryDropdown.vue';
 import CategoryModule from '../store/CategoryModule';
-import CategoryGroupModule from '../store/CategoryGroupModule';
+import CategoryGroupModule, {AVAILABLE_CASH_GROUP} from '../store/CategoryGroupModule';
 import Category from '../../models/Category';
 import Parse from '../../models/Parse';
 import CategoryGroup from '../../models/CategoryGroup';
@@ -250,7 +250,7 @@ export default class Budget extends Vue {
   }
 
   get groups() {
-    return CategoryGroupModule.groups;
+    return reject(CategoryGroupModule.groups, {name: AVAILABLE_CASH_GROUP});
   }
 
   get categoriesForGroup() {

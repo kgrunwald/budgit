@@ -10,7 +10,7 @@ interface CategoryGroupsById {
     [key: string]: CategoryGroup;
 }
 
-const AVAILABLE_CASH_GROUP = 'Available Cash';
+export const AVAILABLE_CASH_GROUP = 'Available Cash';
 
 @Module({ name: 'categoryGroup', store, namespaced: true, dynamic: true })
 class CategoryGroupModule extends VuexModule {
@@ -19,7 +19,8 @@ class CategoryGroupModule extends VuexModule {
     @Action({ rawError: true })
     public async loadCategoryGroups() {
         // @ts-ignore
-        const query = new Parse.Query(CategoryGroup).notEqualTo('name', AVAILABLE_CASH_GROUP).include('categories');
+        const query = new Parse.Query(CategoryGroup).notEqualTo(
+            'name', AVAILABLE_CASH_GROUP).include('categories');
         const sub = new Subscriber(query, this);
         await sub.subscribe();
 

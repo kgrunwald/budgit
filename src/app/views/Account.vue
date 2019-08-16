@@ -341,7 +341,7 @@ export default class Account extends Vue {
         const newSelected = {...this.selected};
 
         if (!shift) {
-            this.selected[id] = checked;
+            this.selected = {...this.selected, [id]: checked};
         } else {
             if (this.lastSelectedIndex !== -1) {
                 const lastSelectedState = this.selected[lastSelectedTransaction.id];
