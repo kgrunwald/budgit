@@ -1,6 +1,6 @@
 import { Module, VuexModule, Action, Mutation, getModule } from 'vuex-module-decorators';
 import { values, omit, remove } from 'lodash';
-import Store from './index';
+import store from './index';
 import CategoryGroup from '@/models/CategoryGroup';
 import Parse from '@/models/Parse';
 import Subscriber from './Subscriber';
@@ -12,15 +12,9 @@ interface CategoryGroupsById {
 
 const AVAILABLE_CASH_GROUP = 'Available Cash';
 
-@Module({
-    dynamic: true,
-    store: Store,
-    name: 'CategoryGroups',
-    namespaced: true,
-})
+@Module({ name: 'categoryGroup', store, namespaced: true, dynamic: true })
 class CategoryGroupModule extends VuexModule {
     public groupsById: CategoryGroupsById = {};
-    public availableGroup!: CategoryGroup;
 
     @Action({ rawError: true })
     public async loadCategoryGroups() {
@@ -39,10 +33,6 @@ class CategoryGroupModule extends VuexModule {
 
     @Action({ rawError: true })
     public async loadAvailableGroup() {
-        if (this.availableGroup) {
-            return this.availableGroup;
-        }
-
         const availQuery = new Parse.Query(CategoryGroup).equalTo('name', AVAILABLE_CASH_GROUP);
         let availableGroup = await availQuery.first();
         if (!availableGroup) {
@@ -57,12 +47,18 @@ class CategoryGroupModule extends VuexModule {
         }
 
         this.setAvailableGroup(availableGroup);
-        return availableGroup;
     }
 
     @Mutation
     public setAvailableGroup(group: CategoryGroup) {
-        this.availableGroup = group;
+        this.groupsById = {
+            ...this.groupsById,
+            CASH: group,
+        };
+    }
+
+    get availableGroup(): CategoryGroup {
+        return this.groupsById.CASH;
     }
 
     @Mutation

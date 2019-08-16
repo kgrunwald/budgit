@@ -1,22 +1,16 @@
 import { Module, VuexModule, Mutation, Action, getModule, MutationAction } from 'vuex-module-decorators';
 import { omit, values } from 'lodash';
+import store from './index';
 import Parse from 'parse';
 import Account from '@/models/Account';
-import Store from './index';
 import TransactionModule from './TransactionModule';
 import Subscriber from './Subscriber';
-import Transaction from '@/models/Transaction';
 
 interface AccountsById {
     [key: string]: Account;
 }
 
-@Module({
-    dynamic: true,
-    store: Store,
-    name: 'Accounts',
-    namespaced: true,
-})
+@Module({ name: 'account', store, namespaced: true, dynamic: true })
 class AccountModule extends VuexModule {
     public accountsById: AccountsById = {};
     public selectedAccountId: string = 'init';

@@ -5,7 +5,7 @@ import logger from '../logger';
 import Item from '../../models/Item';
 import Account from '../../models/Account';
 import Transaction from '../../models/Transaction';
-import { subDays, format} from 'date-fns';
+import { subDays, format, isBefore } from 'date-fns';
 import PlaidCategoryMapping from '../../models/PlaidCategoryMapping';
 import { set, get } from 'lodash';
 import Category from '../../models/Category';
@@ -73,6 +73,7 @@ plaidRouter.post('/login', async (req: Request, res: Response) => {
         const user = await Parse.User.logIn(username, password);
         logger.info("User", user);
         set(req, 'session.token', user.getSessionToken());
+        refreshAccounts(user);
         res.json(user);
     } catch (err) {
         if (err.message === 'Invalid username/password.') {
@@ -281,12 +282,22 @@ async function createCreditCardCategory(user: Parse.User, newAcct: Account) {
     await category.commit(user, SUDO);
 }
 
+async function refreshAccounts(user: Parse.User) {
+    logger.info(`Refreshing account for user ${user.getUsername()}`);
+    // @ts-ignore
+    const accts: Account[] = await new Parse.Query(Account).includeAll().equalTo('user', user).find(SUDO);
+    accts.forEach((acct) => getTransactions(user, acct));
+}
+
 async function getTransactions(user: Parse.User, account: Account): Promise<void> {
     try {
         logger.info("Getting transactions for user: " + user.getUsername() + " and account: " + account.accountId);
 
         const endDate = format(Date(), DATE_FORMAT);
-        const startDate = format(subDays(endDate, 30), DATE_FORMAT);
+        const thirtyDays = subDays(endDate, 30);
+        const createdDate = account.get('createdAt');
+        const startDate = format(isBefore(createdDate, thirtyDays) ? thirtyDays : createdDate, DATE_FORMAT);
+
         logger.info(`Loading transactions from ${startDate} to ${endDate}`);
         const response = await client.getTransactions(account.item.accessToken, startDate, endDate, {
             account_ids: [account.accountId]
@@ -330,6 +341,11 @@ async function handleTransactionWebhook(payload: TransactionWebhook): Promise<vo
         const txnsResp = await client.getTransactions(item.accessToken, startDate, endDate, { count: payload.new_transactions });
         txnsResp.transactions.forEach(async (plaidTxn) => {
             logger.info(`Processing transaction ${plaidTxn.transaction_id}`);
+
+            if (plaidTxn.pending) {
+                logger.info(`Transaction ${plaidTxn.transaction_id} is pending, skipping.`);
+                return;
+            }
 
             // @ts-ignore
             const acctQuery = new Parse.Query(Account).equalTo('accountId', plaidTxn.account_id);
