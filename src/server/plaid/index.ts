@@ -331,6 +331,11 @@ async function handleTransactionWebhook(payload: TransactionWebhook): Promise<vo
         txnsResp.transactions.forEach(async (plaidTxn) => {
             logger.info(`Processing transaction ${plaidTxn.transaction_id}`);
 
+            if (plaidTxn.pending) {
+                logger.info(`Transaction ${plaidTxn.transaction_id} is pending, skipping.`);
+                return;
+            }
+
             // @ts-ignore
             const acctQuery = new Parse.Query(Account).equalTo('accountId', plaidTxn.account_id);
             const exists = await acctQuery.count(SUDO)
