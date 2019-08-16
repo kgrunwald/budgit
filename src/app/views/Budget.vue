@@ -490,11 +490,13 @@ export default class Budget extends Vue {
   .budget-body-container {
     display: flex;
     flex: 1 1 auto;
+    overflow-y: scroll;
 
     .budget-groups {
       display: flex;
       flex-direction: column;
       flex: 1 1 auto;
+      overflow-y: scroll;
 
       .balance-header {
         float: right;

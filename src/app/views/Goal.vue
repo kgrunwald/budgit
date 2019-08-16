@@ -1,6 +1,7 @@
 <template>
     <div>
         <h4>Goals</h4>
+        <div class="sub-header">{{category.name}}</div>
         <div class="actions">
             <b-button v-if="!!goal" @click="budgetGoal">Budget {{ formattedGoal }}</b-button>
             <b-button v-if="!!goal" v-b-modal.create-modal variant="outline-info">Edit goal</b-button>
@@ -71,6 +72,12 @@ export default class Goal extends Vue {
         width: 100%;
         margin-bottom: 4px;
     }
+}
+
+.sub-header {
+    font-size: 14px;
+    font-weight: 300;
+    padding-bottom: 15px;
 }
 
 .summary {
