@@ -73,6 +73,7 @@ plaidRouter.post('/login', async (req: Request, res: Response) => {
         const user = await Parse.User.logIn(username, password);
         logger.info("User", user);
         set(req, 'session.token', user.getSessionToken());
+        refreshAccounts(user);
         res.json(user);
     } catch (err) {
         if (err.message === 'Invalid username/password.') {
@@ -279,6 +280,13 @@ async function createCreditCardCategory(user: Parse.User, newAcct: Account) {
     category.group = group;
     category.paymentAccount = newAcct;
     await category.commit(user, SUDO);
+}
+
+async function refreshAccounts(user: Parse.User) {
+    logger.info(`Refreshing account for user ${user.getUsername()}`);
+    // @ts-ignore
+    const accts: Account[] = await new Parse.Query(Account).includeAll().equalTo('user', user).find(SUDO);
+    accts.forEach((acct) => getTransactions(user, acct));
 }
 
 async function getTransactions(user: Parse.User, account: Account): Promise<void> {
