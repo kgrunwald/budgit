@@ -44,6 +44,12 @@ class CategoryModule extends VuexModule {
         return values(this.categoriesById);
     }
 
+    get byId() {
+        return (id: string): Category => {
+            return this.categoriesById[id];
+        };
+    }
+
     get categoriesByGroup() {
         return (group: CategoryGroup): Category[] => {
             return filter(this.categories, (category) => category.group.id === group.id);

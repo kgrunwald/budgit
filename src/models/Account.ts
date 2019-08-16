@@ -1,7 +1,6 @@
 import Parse from './Parse';
 import PrivateModel from './PrivateModel';
 import Item from './Item';
-import Transaction from './Transaction';
 
 export class Account extends PrivateModel {
     constructor() {
