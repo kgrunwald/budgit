@@ -158,6 +158,7 @@
                 hover 
                 small 
                 tbody-tr-class="account-row-class"
+                v-model="sortedTransactions"
                 :items="transactions" 
                 :fields="fields" 
                 :sort-by.sync="sortBy" 
@@ -178,10 +179,13 @@
                         </b-form-checkbox>
                     </template>
                     <template slot="selected" slot-scope="data">
-                        <b-form-checkbox
-                            v-model="selected[data.item.id]"
-                            >
-                        </b-form-checkbox>
+                        <div @click.shift.prevent.stop="transactionSelected(data.item.id, $event)" @mousedown.prevent>
+                            <b-form-checkbox
+                                :checked="selected[data.item.id]"
+                                @change="transactionSelected(data.item.id, undefined, $event)"
+                                >
+                            </b-form-checkbox>
+                        </div>
                     </template>
                     <template slot="acknowledged" slot-scope="data">
                         <font-awesome-icon 
@@ -260,7 +264,7 @@
 
 <script lang="ts">
 import { Component, Vue, Watch } from 'vue-property-decorator';
-import { filter, startsWith, map, find, pickBy, keys, reduce, includes } from 'lodash';
+import { filter, startsWith, map, find, pickBy, keys, reduce, includes, findIndex, each } from 'lodash';
 import uuid from 'uuid/v4';
 import formatter from 'currency-formatter';
 import { format } from 'date-fns';
@@ -289,7 +293,9 @@ export default class Account extends Vue {
         { key: 'categoryName', label: 'Category'},
         { key: 'formattedAmount', label: 'Amount'},
     ];
-    public selected = {};
+    public selected: {[key: string]: boolean} = {};
+    public sortedTransactions: Transaction[] = [];
+    public lastSelectedIndex = -1;
     public selectAll = false;
     public selectAllIndeterminate = false;
     public sortBy = 'date';
@@ -329,6 +335,27 @@ export default class Account extends Vue {
         this.selected = selected;
     }
 
+    public async transactionSelected(id: string, shift: Event, checked: boolean) {
+        const transIndex = this.getTransactionIndex(id);
+        const lastSelectedTransaction: Transaction = this.sortedTransactions[this.lastSelectedIndex];
+        const newSelected = {...this.selected};
+
+        if (!shift) {
+            this.selected[id] = checked;
+        } else {
+            if (this.lastSelectedIndex !== -1) {
+                const lastSelectedState = this.selected[lastSelectedTransaction.id];
+                const indexes = [this.lastSelectedIndex, transIndex].sort();
+                const changeTransactionStates = this.sortedTransactions.slice(indexes[0], indexes[1] + 1);
+                each(changeTransactionStates, ((transaction) => {
+                    newSelected[transaction.id] = lastSelectedState;
+                }));
+                this.selected = newSelected;
+            }
+        }
+        this.lastSelectedIndex = transIndex;
+    }
+
     public editAccountName() {
         this.accountNameEdit = true;
     }
@@ -362,6 +389,10 @@ export default class Account extends Vue {
 
     public uneditMerchant() {
         this.transactionMerchantEdit = '';
+    }
+
+    public getTransactionIndex(id: string) {
+        return findIndex(this.transactions, {id});
     }
 
     get transactionsSelected(): boolean {
