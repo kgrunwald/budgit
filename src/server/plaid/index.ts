@@ -5,7 +5,7 @@ import logger from '../logger';
 import Item from '../../models/Item';
 import Account from '../../models/Account';
 import Transaction from '../../models/Transaction';
-import { subDays, format} from 'date-fns';
+import { subDays, format, isBefore } from 'date-fns';
 import PlaidCategoryMapping from '../../models/PlaidCategoryMapping';
 import { set, get } from 'lodash';
 import Category from '../../models/Category';
@@ -286,7 +286,10 @@ async function getTransactions(user: Parse.User, account: Account): Promise<void
         logger.info("Getting transactions for user: " + user.getUsername() + " and account: " + account.accountId);
 
         const endDate = format(Date(), DATE_FORMAT);
-        const startDate = format(subDays(endDate, 30), DATE_FORMAT);
+        const thirtyDays = subDays(endDate, 30);
+        const createdDate = account.get('createdAt');
+        const startDate = format(isBefore(createdDate, thirtyDays) ? thirtyDays : createdDate, DATE_FORMAT);
+
         logger.info(`Loading transactions from ${startDate} to ${endDate}`);
         const response = await client.getTransactions(account.item.accessToken, startDate, endDate, {
             account_ids: [account.accountId]
