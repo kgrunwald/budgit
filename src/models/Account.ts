@@ -1,6 +1,7 @@
 import Parse from './Parse';
 import PrivateModel from './PrivateModel';
 import Item from './Item';
+import { formatMoney, moneyAsFloat } from './Money';
 
 export class Account extends PrivateModel {
     constructor() {
@@ -24,19 +25,23 @@ export class Account extends PrivateModel {
     }
 
     get availableBalance(): number {
-        return this.get('available');
+        return moneyAsFloat(this.get('available'));
     }
 
     set availableBalance(balance: number) {
-        this.set('available', balance);
+        this.set('available', moneyAsFloat(balance));
     }
 
     get currentBalance(): number {
-        return this.get('current');
+        return moneyAsFloat(this.get('current'));
     }
 
     set currentBalance(balance: number) {
-        this.set('current', balance);
+        this.set('current', moneyAsFloat(balance));
+    }
+
+    get formattedCurrentBalance(): string {
+        return formatMoney(this.currentBalance);
     }
 
     get name(): string {

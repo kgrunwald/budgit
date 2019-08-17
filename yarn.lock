@@ -986,11 +986,6 @@
   dependencies:
     "@types/express" "*"
 
-"@types/currency-formatter@^1.3.0":
-  version "1.3.0"
-  resolved "https://registry.yarnpkg.com/@types/currency-formatter/-/currency-formatter-1.3.0.tgz#f71f69dc6c65a3beeb75536bb650c3b02baed9aa"
-  integrity sha512-yaxqWMj+rURyuV/wliA6Ec5ZVHXagM3ybmaPdPoNkIcdfv6Rv1SJmpW/NQfXdZHaPc7QcTiGR+XIjNS/5TzU5g==
-
 "@types/dotenv@^6.1.1":
   version "6.1.1"
   resolved "https://registry.yarnpkg.com/@types/dotenv/-/dotenv-6.1.1.tgz#f7ce1cc4fe34f0a4373ba99fefa437b0bec54b46"
@@ -1093,6 +1088,11 @@
   version "3.0.3"
   resolved "https://registry.yarnpkg.com/@types/minimatch/-/minimatch-3.0.3.tgz#3dca0e3f33b200fc7d1139c0cd96c1268cadfd9d"
   integrity sha512-tHq6qdbT9U1IRSGf14CL0pUlULksvY9OZ+5eEgl1N7t+OA3tGvNpxJCzuKQlsNgCVwbAs670L1vcVQi8j9HjnA==
+
+"@types/money-math@^2.5.0":
+  version "2.5.0"
+  resolved "https://registry.yarnpkg.com/@types/money-math/-/money-math-2.5.0.tgz#5dbd660cd750025805dfad9aacf1293ea6255f0a"
+  integrity sha512-hblNifa1pdny86dW5fDeEyPiqcA4QyetyX6MNVXl65bHV5ikgWKoPPYEQvMw+zZCmQPB05Y4qQMwo7GJCCs8ag==
 
 "@types/mongodb@*":
   version "3.1.31"
@@ -1657,11 +1657,6 @@ accepts@^1.3.5, accepts@~1.3.4, accepts@~1.3.5, accepts@~1.3.7:
   dependencies:
     mime-types "~2.1.24"
     negotiator "0.6.2"
-
-accounting@^0.4.1:
-  version "0.4.1"
-  resolved "https://registry.yarnpkg.com/accounting/-/accounting-0.4.1.tgz#87dd4103eff7f4460f1e186f5c677ed6cf566883"
-  integrity sha1-h91BA+/39EYPHhhvXGd+1s9WaIM=
 
 acorn-dynamic-import@^3.0.0:
   version "3.0.0"
@@ -4074,15 +4069,6 @@ cuid@^1.3.8:
     browser-fingerprint "0.0.1"
     core-js "^1.1.1"
     node-fingerprint "0.0.2"
-
-currency-formatter@^1.5.4:
-  version "1.5.4"
-  resolved "https://registry.yarnpkg.com/currency-formatter/-/currency-formatter-1.5.4.tgz#115ebd438a3f94ab335516ce27ef9511a5e05c02"
-  integrity sha512-8qyGfrJO2ulabrlP4AidcV4kXpuTMqWJ61NW16QK3u+1L/9R0x7XM4f4hQ8HVlJyzBcxJV4SZMYx7zYoAhpArA==
-  dependencies:
-    accounting "^0.4.1"
-    locale-currency "0.0.2"
-    object-assign "^4.1.1"
 
 current-script-polyfill@^1.0.0:
   version "1.0.0"
@@ -7544,6 +7530,11 @@ js-yaml@^3.10.0, js-yaml@^3.13.1, js-yaml@^3.7.0:
     argparse "^1.0.7"
     esprima "^4.0.0"
 
+jsbn@^1.1.0:
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/jsbn/-/jsbn-1.1.0.tgz#b01307cb29b618a1ed26ec79e911f803c4da0040"
+  integrity sha1-sBMHyym2GKHtJux56RH4A8TaAEA=
+
 jsbn@~0.1.0:
   version "0.1.1"
   resolved "https://registry.yarnpkg.com/jsbn/-/jsbn-0.1.1.tgz#a5e654c2e5a2deb5f201d96cefbca80c0ef2f513"
@@ -8009,11 +8000,6 @@ loader-utils@^1.0.1, loader-utils@^1.0.2, loader-utils@^1.1.0:
     big.js "^5.2.2"
     emojis-list "^2.0.0"
     json5 "^1.0.1"
-
-locale-currency@0.0.2:
-  version "0.0.2"
-  resolved "https://registry.yarnpkg.com/locale-currency/-/locale-currency-0.0.2.tgz#e2c90607563ce47a59f9559e45a70e24e4db4b6d"
-  integrity sha1-4skGB1Y85HpZ+VWeRacOJOTbS20=
 
 locate-path@^2.0.0:
   version "2.0.0"
@@ -8692,6 +8678,13 @@ moment@2.24.0, moment@^2.11.2:
   version "2.24.0"
   resolved "https://registry.yarnpkg.com/moment/-/moment-2.24.0.tgz#0d055d53f5052aa653c9f6eb68bb5d12bf5c2b5b"
   integrity sha512-bV7f+6l2QigeBBZSM/6yTNq4P2fNpSWj/0e7jQcy87A8e7o2nAfP/34/2ky5Vw4B9S446EtIhodAzkFCcR4dQg==
+
+money-math@^2.5.1:
+  version "2.5.1"
+  resolved "https://registry.yarnpkg.com/money-math/-/money-math-2.5.1.tgz#9dd5a329b1f6a21fce7e3d2a3a705c23b56b7cf9"
+  integrity sha1-ndWjKbH2oh/Ofj0qOnBcI7VrfPk=
+  dependencies:
+    jsbn "^1.1.0"
 
 mongodb-core@3.2.7:
   version "3.2.7"

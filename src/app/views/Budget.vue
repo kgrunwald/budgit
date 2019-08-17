@@ -193,7 +193,7 @@ import Category from '../../models/Category';
 import Parse from '../../models/Parse';
 import CategoryGroup from '../../models/CategoryGroup';
 import Transaction from '../../models/Transaction';
-import formatter from 'currency-formatter';
+import { formatMoney, addMoney, subMoney, isMoneyNegative, multiplyMoney, moneyAsFloat } from '@/models/Money';
 
 interface SelectedCategory {
   category: Category;
@@ -274,7 +274,7 @@ export default class Budget extends Vue {
   }
 
   public formatCurrency(amount: number): string {
-    return formatter.format(amount, { code: 'USD' });
+    return formatMoney(amount);
   }
 
   public getAvailableCash(month: Date): number {
@@ -341,8 +341,8 @@ export default class Budget extends Vue {
   }
 
   public async setBudget(category: Category, value: string) {
-    const result = evaluate(value);
-    category.setBudget(this.currentMonth, parseFloat(result));
+    const result = evaluate(value || '0');
+    category.setBudget(this.currentMonth, result);
     await category.commit();
   }
 
