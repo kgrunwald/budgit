@@ -4,6 +4,7 @@ import Account from '../../models/Account';
 import Category from '../../models/Category';
 import { reduce, get } from 'lodash';
 import { setDate, addMonths } from 'date-fns'
+import { addMoney, moneyAsFloat } from '../../models/Money';
 
 Parse.Cloud.afterSave(Transaction, async (req): Promise<void> => {
     const orig = req.original as unknown as Transaction;
@@ -59,7 +60,7 @@ const setCategoryActivity = async (txn: Transaction) => {
         .greaterThanOrEqualTo('date', begin)
         .lessThan('date', end)
         .find({ useMasterKey: true });
-    const activity = reduce(txns, (val, txn) => val + txn.amount, 0);
+    const activity = reduce(txns, (val, txn) => addMoney(val, txn.amount), '0.00');
     console.log(`[CLOUD] Total for ${txns.length} transactions: $${activity}`);
     console.log(`[CLOUD] Setting activity for key: ${Category.getKey(begin)}`);
 
@@ -85,8 +86,9 @@ const setCreditActivity = async (txn: Transaction, acct: Account) => {
             .lessThan('date', end)
             .find({ useMasterKey: true });
 
-        const activity = reduce(txns, (val, txn) => val - txn.amount, 0);
+        const activity = reduce(txns, (val, txn) => addMoney(val, txn.amount), '0.00');
         paymentCtg.setActivity(begin, activity);
+
         console.log('[CLOUD] Setting payment activity for credit category: ' + paymentCtg.id + ' ' + activity);
         await paymentCtg.save(null, { useMasterKey: true });
     } else {
@@ -97,7 +99,7 @@ const setCreditActivity = async (txn: Transaction, acct: Account) => {
 const updateAccountBalance = async (txn: Transaction) => {
     // @ts-ignore
     const txns = await new Parse.Query(Transaction).equalTo('account', txn.account).find({ useMasterKey: true });
-    const balance = reduce(txns, (val, txn) => val + txn.amount, 0);
+    const balance = moneyAsFloat(reduce(txns, (val, txn) => addMoney(val, txn.amount), '0.00'));
 
     // @ts-ignore
     const acct = await new Parse.Query(Account).get(txn.account.id, { useMasterKey: true }) as Account;
