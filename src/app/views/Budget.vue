@@ -175,7 +175,7 @@ import Category from '../../models/Category';
 import Parse from '../../models/Parse';
 import CategoryGroup from '../../models/CategoryGroup';
 import Transaction from '../../models/Transaction';
-import { formatMoney, addMoney, subMoney, isMoneyNegative, multiplyMoney } from '@/models/Money';
+import { formatMoney, addMoney, subMoney, isMoneyNegative, multiplyMoney, moneyAsFloat } from '@/models/Money';
 
 @Component({
   components: {
@@ -288,7 +288,7 @@ export default class Budget extends Vue {
   }
 
   public async setBudget(category: Category, value: string) {
-    const result = evaluate(value);
+    const result = evaluate(value || '0');
     category.setBudget(this.currentMonth, result);
     await category.commit();
   }
@@ -314,16 +314,12 @@ export default class Budget extends Vue {
   }
 
   public async handleOverspending(targetCategory: Category, sourceCategory: Category) {
-    let balance = targetCategory.getBalance(this.currentMonth);
-    if (isMoneyNegative(balance)) {
-      balance = multiplyMoney('-1.00', balance);
-    }
-
+    const balance = Math.abs(targetCategory.getBalance(this.currentMonth));
     let budget = targetCategory.getBudget(this.currentMonth);
-    targetCategory.setBudget(this.currentMonth, addMoney(budget, balance));
+    targetCategory.setBudget(this.currentMonth, budget + balance);
 
     budget = sourceCategory.getBudget(this.currentMonth);
-    sourceCategory.setBudget(this.currentMonth, subMoney(budget, balance));
+    sourceCategory.setBudget(this.currentMonth, budget - balance);
     await Promise.all([targetCategory.commit(), sourceCategory.commit()]);
 
     // @ts-ignore

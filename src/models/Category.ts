@@ -46,18 +46,18 @@ class Category extends PrivateModel {
         return !!this.paymentAccount;
     }
 
-    public setBudget(month: Date, amount: string) {
+    public setBudget(month: Date, amount: number) {
         const budget = this.get('budget') || {};
         budget[Category.getKey(month)] = moneyAsFloat(amount);
         this.set('budget', budget);
     }
 
-    public getBudget(month: Date): string {
+    public getBudget(month: Date): number {
         const budget = this.get('budget') || {};
-        return sanitizeMoney((budget[Category.getKey(month)] || 0.0));
+        return moneyAsFloat((budget[Category.getKey(month)] || 0.0));
     }
 
-    public setActivity(month: Date, amount: string | number) {
+    public setActivity(month: Date, amount: number | number) {
         const activity = this.get('activity') || {};
         activity[Category.getKey(month)] = moneyAsFloat(amount);
         this.set('activity', activity);
@@ -67,42 +67,42 @@ class Category extends PrivateModel {
         return has(this.get('activity'), Category.getKey(month));
     }
 
-    public getActivity(month: Date): string {
+    public getActivity(month: Date): number {
         const activity = this.get('activity') || {};
-        return sanitizeMoney(activity[Category.getKey(month)] || 0);
+        return moneyAsFloat(activity[Category.getKey(month)] || 0);
     }
 
     public getFormattedActivity(month: Date): string {
         return formatMoney(this.getActivity(month));
     }
 
-    public getBalance(month: Date): string {
+    public getBalance(month: Date): number {
         const budget = this.get('budget');
         const activity = this.get('activity');
         const monthKey = Category.getKey(month);
 
-        const accumulatePrevious = (total: string, val: string, key: string) => {
+        const accumulatePrevious = (total: number, val: number, key: string) => {
             if (key <= monthKey) {
-                total = addMoney(total, sanitizeMoney(val));
+                total += val;
             }
             return total;
         };
 
-        const totalBudget = reduce(budget, accumulatePrevious, sanitizeMoney(0));
-        const totalActivity = reduce(activity, accumulatePrevious, sanitizeMoney(0));
-        return addMoney(totalBudget, totalActivity);
+        const totalBudget = reduce(budget, accumulatePrevious, 0);
+        const totalActivity = reduce(activity, accumulatePrevious, 0);
+        return moneyAsFloat(totalBudget + totalActivity);
     }
 
     public getFormattedBalance(month: Date): string {
-        return this.format(this.getBalance(month));
+        return formatMoney(this.getBalance(month));
     }
 
-    public set goal(goal: string) {
+    public set goal(goal: number) {
         this.set('goal', moneyAsFloat(goal));
     }
 
-    public get goal(): string {
-        return sanitizeMoney(this.get('goal'));
+    public get goal(): number {
+        return moneyAsFloat(this.get('goal'));
     }
 
     public get hasGoal(): boolean {

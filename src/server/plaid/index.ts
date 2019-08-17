@@ -248,7 +248,7 @@ async function createInitialTransaction(user: Parse.User, newAcct: Account, acco
     const initialTxn = new Transaction();
     initialTxn.account = newAcct;
     initialTxn.acknowledged = false;
-    initialTxn.setAmount(account.balances.available || account.balances.current || 0);
+    initialTxn.amount = account.balances.available || account.balances.current || 0;
     initialTxn.currency = account.balances.iso_currency_code || 'USD';
     initialTxn.date = new Date();
     initialTxn.merchant = `${newAcct.name} Initial Balance`;
@@ -398,7 +398,7 @@ async function savePlaidTransaction(plaidTxn: plaid.Transaction, account: Accoun
     txn.transactionId = plaidTxn.transaction_id;
     txn.merchant = plaidTxn.name || '';
     txn.date = new Date(plaidTxn.date);
-    txn.setAmount((plaidTxn.amount || 0) * -1);
+    txn.amount = (plaidTxn.amount || 0) * -1;
 
     if (plaidTxn.category_id) {
         const categoryMap = await fetch(PlaidCategoryMapping, 'plaidCategoryId', plaidTxn.category_id);

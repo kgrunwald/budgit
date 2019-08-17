@@ -26,6 +26,7 @@
 import { Component, Vue } from 'vue-property-decorator';
 import Category from '@/models/Category';
 import CategoryModule from '../store/CategoryModule';
+import { moneyAsFloat } from '../../models/Money';
 
 @Component({
     props: {
@@ -40,8 +41,7 @@ export default class Goal extends Vue {
         return CategoryModule.byId(this.$props.categoryId);
     }
 
-    get goal(): string {
-        console.log('Category goal', this.category.name, this.category.goal, this.category.hasGoal);
+    get goal(): number {
         return this.category.goal;
     }
 
@@ -61,7 +61,7 @@ export default class Goal extends Vue {
 
     public async createGoal(evt: Event) {
         try {
-            this.category.goal = this.goalAmount;
+            this.category.goal = moneyAsFloat(this.goalAmount);
             await this.category.commit();
         } catch (e) {
             evt.preventDefault();

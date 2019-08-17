@@ -25,15 +25,11 @@ class Transaction extends PrivateModel {
         this.set('merchant', merchant);
     }
 
-    get amount(): string {
-        return sanitizeMoney(this.get('amount'));
+    get amount(): number {
+        return moneyAsFloat(this.get('amount'));
     }
 
-    set amount(amount: string) {
-        this.setAmount(amount);
-    }
-
-    public setAmount(amount: string | number) {
+    set amount(amount: number) {
         this.set('amount', moneyAsFloat(amount));
     }
 
