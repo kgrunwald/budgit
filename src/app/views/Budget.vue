@@ -55,107 +55,125 @@
       <div class=budget-body-container>
         <div class="budget-groups">
           <b-card no-body="" v-for="group in groups" :key="group.id" body-class="budget-group-card-body">
-            <b-table
-              striped 
-              hover 
-              small 
-              caption-top
-              tbody-tr-class="budget-row-class"
-              :fields="fields"
-              :items="categoriesForGroup(group)"
-              @row-clicked="rowClicked"
-            >
-              <template slot="table-caption">
-                <div class="budget-group-header">
-                  <div class="group-title-container">
-                    <b-form-input
-                      class="group-title-input"
-                      autofocus
-                      v-if="groupNameEdit === group.id"
-                      v-model="group.name"
-                      @blur="setGroupName(group, group.name)"
-                      @keydown.enter.native="setGroupName(group, group.name)"
-                    />
-                    <div class="group-title" v-else @click="editGroupName(group)">
-                      {{ group.name }}
-                    </div>
-                  </div>
-                  <b-button 
-                    pill 
-                    variant="outline-secondary" 
-                    class="action"
-                    v-b-modal="'add-category-' + group.id"
-                  >
-                    Add Category
-                  </b-button>
-                  <b-modal :id="`add-category-${group.id}`" title="Add Category" @ok="createCategory(group)">
-                    <b-form-input 
-                      v-model="newCategory" 
-                      placeholder="Enter category"
-                    />
-                  </b-modal>
-                </div>
-              </template>
-              <col slot="table-colgroup" width="40%" />
-              <col slot="table-colgroup" width="20%" />
-              <col slot="table-colgroup" width="20%" />
-              <col slot="table-colgroup" width="20%" />
-              <template slot="name" slot-scope="data">
-                <b-form-input
-                  class="category-name-input"
-                  autofocus
-                  v-if="categoryNameEdit === data.item.id"
-                  v-model="data.item.name"
-                  @blur="setCategoryName(data.item, data.item.name)"
-                  @keydown.enter.native="setCategoryName(data.item, data.item.name)"
+            <div class="budget-group-header">
+              <div class="group-title-container">
+                <font-awesome-icon
+                  class="collapse-button" 
+                  :icon="group.hidden ? 'chevron-circle-down' : 'chevron-circle-up'"
+                  @click="categoriesForGroup(group).length && setGroupHidden(group, !group.hidden)"
                 />
-                <div v-else @click="editCategoryName(data.item)">{{ data.item.name }}</div>
-              </template>
-              <template slot="budget" slot-scope="data">
-                <b-input-group>
-                  <b-input-group-prepend size="sm" is-text>
-                      <font-awesome-icon class="dollar-icon" icon="dollar-sign"/>
-                  </b-input-group-prepend>
+                <b-form-input
+                  class="group-title-input"
+                  autofocus
+                  v-if="groupNameEdit === group.id"
+                  v-model="group.name"
+                  @blur="setGroupName(group, group.name)"
+                  @keydown.enter.native="setGroupName(group, group.name)"
+                />
+                <div class="group-title" v-else @click="editGroupName(group)">
+                  {{ group.name }}
+                </div>
+              </div>
+              <div class="group-actions">
+                <b-button 
+                  pill 
+                  variant="outline-secondary" 
+                  class="action"
+                  v-b-modal="'add-category-' + group.id"
+                >
+                  Add Category
+                </b-button>
+              </div>
+              <b-modal :id="`add-category-${group.id}`" title="Add Category" @ok="createCategory(group)">
+                <b-form-input 
+                  v-model="newCategory" 
+                  placeholder="Enter category"
+                />
+              </b-modal>
+            </div>
+            <b-collapse 
+              :id="`group-collapse-${group.id}`" 
+              :visible="!group.hidden && categoriesForGroup(group).length > 0"
+            >
+              <b-table
+                :ref="`${group.id}-table`"
+                striped
+                hover
+                small
+                caption-top
+                selectable
+                select-mode="single"
+                tbody-tr-class="budget-row-class"
+                :fields="fields"
+                :items="categoriesForGroup(group)"
+                @row-clicked="rowClicked(group, ...arguments)"
+              >
+                <template slot="table-caption">
+                  
+                </template>
+                <col slot="table-colgroup" width="40%" />
+                <col slot="table-colgroup" width="20%" />
+                <col slot="table-colgroup" width="20%" />
+                <col slot="table-colgroup" width="20%" />
+                <template slot="name" slot-scope="data">
                   <b-form-input
-                    placeholder="0.00"
-                    size="sm"
-                    :value="data.item.getBudget(currentMonth)"
-                    @change="setBudget(data.item, ...arguments)"
+                    class="category-name-input"
+                    autofocus
+                    v-if="categoryNameEdit === data.item.id"
+                    v-model="data.item.name"
+                    @blur="setCategoryName(data.item, data.item.name)"
+                    @keydown.enter.native="setCategoryName(data.item, data.item.name)"
                   />
-                </b-input-group>
-              </template>
-              <template slot="HEAD_balance">
-                <span class="balance-header">
-                  Balance
-                </span>
-              </template>
-              <template slot="balance" slot-scope="data">
-                <span class="balance">
-                  <b-badge 
-                    pill
-                    :id="`balance-${data.item.id}`" 
-                    :variant="data.item.getBalance(currentMonth) != 0 ? data.item.getBalance(currentMonth) > 0 ? 'success' : 'danger' : 'dark'">
-                    {{ formatCurrency(data.item.getBalance(currentMonth)) }}
-                  </b-badge>
-                  <b-popover
-                    :ref="`popover-${data.item.id}`"
-                    :target="`balance-${data.item.id}`" 
-                    title="Cover Overspending"
-                    placement="bottom"
-                  >
-                    <CategoryDropdown :onChange="(ctg) => handleOverspending(data.item, ctg)"/>
-                  </b-popover>
-                </span>
-              </template>
-              <template slot="activity" slot-scope="data">
-                {{ formatCurrency(data.item.getActivity(currentMonth)) }}
-              </template>
-            </b-table>
+                  <span v-else @click="editCategoryName(data.item)">{{ data.item.name }}</span>
+                </template>
+                <template slot="budget" slot-scope="data">
+                  <b-input-group>
+                    <b-input-group-prepend size="sm" is-text>
+                        <font-awesome-icon class="dollar-icon" icon="dollar-sign"/>
+                    </b-input-group-prepend>
+                    <b-form-input
+                      placeholder="0.00"
+                      size="sm"
+                      :value="data.item.getBudget(currentMonth)"
+                      @change="setBudget(data.item, ...arguments)"
+                    />
+                  </b-input-group>
+                </template>
+                <template slot="HEAD_balance">
+                  <span class="balance-header">
+                    Balance
+                  </span>
+                </template>
+                <template slot="balance" slot-scope="data">
+                  <span class="balance">
+                    <b-badge 
+                      pill
+                      :id="`balance-${data.item.id}`" 
+                      :variant="data.item.getBalance(currentMonth) != 0 ? data.item.getBalance(currentMonth) > 0 ? 'success' : 'danger' : 'dark'">
+                      {{ formatCurrency(data.item.getBalance(currentMonth)) }}
+                    </b-badge>
+                    <b-popover
+                      v-if="data.item.getBalance(currentMonth) < 0"
+                      :ref="`popover-${data.item.id}`"
+                      :target="`balance-${data.item.id}`"
+                      title="Cover Overspending"
+                      placement="bottom"
+                      triggers="click"
+                    >
+                      <CategoryDropdown :onChange="(ctg) => handleOverspending(data.item, ctg)"/>
+                    </b-popover>
+                  </span>
+                </template>
+                <template slot="activity" slot-scope="data">
+                  {{ formatCurrency(data.item.getActivity(currentMonth)) }}
+                </template>
+              </b-table>
+            </b-collapse>
           </b-card>
         </div>
         <div class=budget-actions-container>
           <b-card class=budget-actions>
-            <Goal v-if="categoryClicked" :categoryId="selectedCategory.id" :month="currentMonth"/>
+            <Goal v-if="categorySelected" :categoryId="selectedCategory.category.id" :month="currentMonth"/>
           </b-card>
         </div>
       </div>
@@ -163,19 +181,25 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue } from 'vue-property-decorator';
-import { get, keys, reject } from 'lodash';
+import { Component, Vue, Watch } from 'vue-property-decorator';
+import { get, keys, reject, each, find } from 'lodash';
 import { format, addMonths } from 'date-fns';
 import { evaluate } from 'mathjs';
 import CategoryDropdown from './CategoryDropdown.vue';
 import Goal from './Goal.vue';
 import CategoryModule from '../store/CategoryModule';
-import CategoryGroupModule, {AVAILABLE_CASH_GROUP} from '../store/CategoryGroupModule';
+import CategoryGroupModule from '../store/CategoryGroupModule';
 import Category from '../../models/Category';
 import Parse from '../../models/Parse';
 import CategoryGroup from '../../models/CategoryGroup';
 import Transaction from '../../models/Transaction';
 import formatter from 'currency-formatter';
+
+interface SelectedCategory {
+  category: Category;
+  index: number;
+  group: CategoryGroup;
+}
 
 @Component({
   components: {
@@ -185,7 +209,12 @@ import formatter from 'currency-formatter';
 })
 export default class Budget extends Vue {
   public currentMonth: Date = new Date();
-  public selectedCategory: Category = new Category();
+  public selectedCategory: SelectedCategory = {
+    category: new Category(),
+    index: -1,
+    group: new CategoryGroup(),
+  };
+  public selectedGroup: CategoryGroup = new CategoryGroup();
   public categoryClicked = false;
   public newCategory: string = '';
   public newGroup: string = '';
@@ -197,12 +226,31 @@ export default class Budget extends Vue {
     'activity',
     { key: 'balance', label: 'Balance', tdClass: 'balance-cell', thClass: 'balance-cell'}];
 
+  public mounted() {
+    this.groupsChanged();
+  }
+
+  @Watch('groups', { deep: true })
+  public groupsChanged() {
+    if (!this.categorySelected && this.groups.length) {
+      each(this.groups, (group) => {
+        const cats = this.categoriesForGroup(group);
+        if (group.id !== CategoryGroupModule.creditCardGroup.id && cats.length) {
+          this.rowClicked(group, cats[0], 0, undefined);
+          return false;
+        }
+      });
+    }
+  }
+
   get availableCashGroup(): CategoryGroup {
     return CategoryGroupModule.availableGroup;
   }
 
   public editGroupName(group: CategoryGroup) {
-    this.groupNameEdit = group.id;
+    if (!find(CategoryGroupModule.specialGroups, {id: group.id})) {
+      this.groupNameEdit = group.id;
+    }
   }
 
   public uneditGroupName() {
@@ -256,7 +304,7 @@ export default class Budget extends Vue {
   }
 
   get groups() {
-    return reject(CategoryGroupModule.groups, {name: AVAILABLE_CASH_GROUP});
+    return reject(CategoryGroupModule.groups, {id: CategoryGroupModule.availableGroup.id});
   }
 
   get categoriesForGroup() {
@@ -279,6 +327,11 @@ export default class Budget extends Vue {
     group.name = name;
     await CategoryGroupModule.update(group);
     this.uneditGroupName();
+  }
+
+  public async setGroupHidden(group: CategoryGroup, hidden: boolean) {
+    group.hidden = hidden;
+    await CategoryGroupModule.update(group);
   }
 
   public async setCategoryName(category: Category, name: string) {
@@ -326,8 +379,26 @@ export default class Budget extends Vue {
     this.$refs[`popover-${targetCategory.id}`][0].$emit('close');
   }
 
-  public rowClicked(item: Category) {
-    this.selectedCategory = item;
+  get categorySelected(): boolean {
+    return !!this.selectedCategory.category.id;
+  }
+
+  public rowClicked(group: CategoryGroup, item: Category, index: any, event: any) {
+    if (this.selectedCategory.index !== -1) {
+      // @ts-ignore
+      this.$refs[`${this.selectedCategory.group.id}-table`][0].unselectRow(this.selectedCategory.index);
+    }
+
+    this.$nextTick(() => {
+      // @ts-ignore
+      this.$refs[`${group.id}-table`][0].selectRow(index);
+    });
+
+    this.selectedCategory = {
+      category: item,
+      index,
+      group,
+    };
     this.categoryClicked = true;
   }
 }
@@ -479,10 +550,6 @@ export default class Budget extends Vue {
     margin-right: 5px;
     font-size: 12px;
 
-    &:first-child {
-      margin-bottom: 8px;
-    }
-
     svg {
       margin-right: 5px;
     }
@@ -519,6 +586,7 @@ export default class Budget extends Vue {
 
       tr {
         height: 40px;
+        outline: none;
 
         td, th {
           vertical-align: middle;
@@ -539,14 +607,22 @@ export default class Budget extends Vue {
       }
 
       .budget-group-header {
-          height: 40px;
+          color: grey;
+          height: 70px;
           padding: 0 10px;
           display: flex;
           justify-content: space-between;
           align-items: center;
 
           .group-title-container {
+            display: flex;
+            align-items: center;
             width: 200px;
+
+            .collapse-button {
+              font-size: 20px;
+              margin-right: 5px;
+            }
 
             .group-title {
               padding-left: 5px;
@@ -560,7 +636,11 @@ export default class Budget extends Vue {
             }
           }
 
-          
+          .group-actions {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+          }
         }
 
       .budget-group-card-body {

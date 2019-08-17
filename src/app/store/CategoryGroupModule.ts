@@ -1,5 +1,5 @@
 import { Module, VuexModule, Action, Mutation, getModule } from 'vuex-module-decorators';
-import { values, omit, remove } from 'lodash';
+import { values, omit, remove, find } from 'lodash';
 import store from './index';
 import CategoryGroup from '@/models/CategoryGroup';
 import Parse from '@/models/Parse';
@@ -10,7 +10,9 @@ interface CategoryGroupsById {
     [key: string]: CategoryGroup;
 }
 
-export const AVAILABLE_CASH_GROUP = 'Available Cash';
+const AVAILABLE_CASH_GROUP = 'Available Cash';
+const CREDIT_CARD_GROUP = 'Credit Cards';
+const HIDDEN_GROUP = 'Hidden';
 
 @Module({ name: 'categoryGroup', store, namespaced: true, dynamic: true })
 class CategoryGroupModule extends VuexModule {
@@ -19,8 +21,7 @@ class CategoryGroupModule extends VuexModule {
     @Action({ rawError: true })
     public async loadCategoryGroups() {
         // @ts-ignore
-        const query = new Parse.Query(CategoryGroup).notEqualTo(
-            'name', AVAILABLE_CASH_GROUP).include('categories');
+        const query = new Parse.Query(CategoryGroup).include('categories');
         const sub = new Subscriber(query, this);
         await sub.subscribe();
 
@@ -29,37 +30,45 @@ class CategoryGroupModule extends VuexModule {
             this.add(group);
         });
 
-        this.loadAvailableGroup();
+        this.loadSpecialGroups();
     }
 
     @Action({ rawError: true })
-    public async loadAvailableGroup() {
-        const availQuery = new Parse.Query(CategoryGroup).equalTo('name', AVAILABLE_CASH_GROUP);
-        let availableGroup = await availQuery.first();
-        if (!availableGroup) {
-            availableGroup = new CategoryGroup();
-            availableGroup.name = AVAILABLE_CASH_GROUP;
-            await availableGroup.commit();
+    public async loadSpecialGroups() {
+        [AVAILABLE_CASH_GROUP, HIDDEN_GROUP, CREDIT_CARD_GROUP].forEach(async (groupName) => {
+            const query = new Parse.Query(CategoryGroup).equalTo('name', groupName);
+            let group = await query.first();
+            if (!group) {
+                group = new CategoryGroup();
+                group.name = groupName;
+                await group.commit();
 
-            const availableCashCategory = new Category();
-            availableCashCategory.group = availableGroup;
-            availableCashCategory.name = AVAILABLE_CASH_GROUP;
-            await availableCashCategory.commit();
-        }
-
-        this.setAvailableGroup(availableGroup);
-    }
-
-    @Mutation
-    public setAvailableGroup(group: CategoryGroup) {
-        this.groupsById = {
-            ...this.groupsById,
-            CASH: group,
-        };
+                switch (groupName) {
+                    case AVAILABLE_CASH_GROUP:
+                        const availableCashCategory = new Category();
+                        availableCashCategory.group = group;
+                        availableCashCategory.name = AVAILABLE_CASH_GROUP;
+                        await availableCashCategory.commit();
+                        break;
+                }
+                this.add(group);
+            }
+        });
     }
 
     get availableGroup(): CategoryGroup {
-        return this.groupsById.CASH;
+        return find(this.groupsById, {
+            name: AVAILABLE_CASH_GROUP}) as CategoryGroup || new CategoryGroup();
+    }
+
+    get creditCardGroup(): CategoryGroup {
+        return find(this.groupsById, {
+            name: CREDIT_CARD_GROUP}) as CategoryGroup || new CategoryGroup();
+    }
+
+    get hiddenGroup(): CategoryGroup {
+        return find(this.groupsById, {
+            name: HIDDEN_GROUP}) as CategoryGroup || new CategoryGroup();
     }
 
     @Mutation
@@ -77,9 +86,20 @@ class CategoryGroupModule extends VuexModule {
 
     get groups(): CategoryGroup[] {
         const groups = values(this.groupsById);
+        const ccGroup = remove(groups, {name: CREDIT_CARD_GROUP});
+        const hiddenGroup = remove(groups, {name: HIDDEN_GROUP});
         return [
-            ...remove(groups, {name: 'Credit Cards'}),
+            ...ccGroup,
             ...groups,
+            ...hiddenGroup,
+        ];
+    }
+
+    get specialGroups() {
+        return [
+            this.availableGroup,
+            this.creditCardGroup,
+            this.hiddenGroup,
         ];
     }
 
