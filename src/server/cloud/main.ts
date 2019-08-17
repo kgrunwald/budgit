@@ -4,7 +4,7 @@ import Account from '../../models/Account';
 import Category from '../../models/Category';
 import { reduce, get } from 'lodash';
 import { setDate, addMonths } from 'date-fns'
-import { addMoney, moneyAsFloat } from '../../models/Money';
+import { addMoney, moneyAsFloat, subMoney } from '../../models/Money';
 
 Parse.Cloud.afterSave(Transaction, async (req): Promise<void> => {
     const orig = req.original as unknown as Transaction;
@@ -86,7 +86,7 @@ const setCreditActivity = async (txn: Transaction, acct: Account) => {
             .lessThan('date', end)
             .find({ useMasterKey: true });
 
-        const activity = reduce(txns, (val, txn) => addMoney(val, txn.amount), '0.00');
+        const activity = reduce(txns, (val, txn) => subMoney(val, txn.amount), '0.00');
         paymentCtg.setActivity(begin, activity);
 
         console.log('[CLOUD] Setting payment activity for credit category: ' + paymentCtg.id + ' ' + activity);
