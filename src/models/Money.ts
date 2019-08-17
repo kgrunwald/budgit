@@ -9,6 +9,10 @@ export const isMoneyNegative = (amount: string): boolean => {
     return money.isNegative(amount);
 };
 
+export const isMoneyPositive = (amount: string): boolean => {
+    return money.isPositive(amount);
+};
+
 export const sanitizeMoney = (amount: string | number): string => {
     if (typeof amount === 'number') {
         return money.floatToAmount(amount);

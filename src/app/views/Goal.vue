@@ -3,9 +3,9 @@
         <h4>Goals</h4>
         <div class="sub-header">{{category.name}}</div>
         <div class="actions">
-            <b-button v-if="!!goal" @click="budgetGoal">Budget {{ formattedGoal }}</b-button>
-            <b-button v-if="!!goal" v-b-modal.create-modal variant="outline-info">Edit goal</b-button>
-            <b-button v-if="!goal" v-b-modal.create-modal>Create Goal</b-button>
+            <b-button v-if="hasGoal" @click="budgetGoal">Budget {{ formattedGoal }}</b-button>
+            <b-button v-if="hasGoal" v-b-modal.create-modal variant="outline-info">Edit goal</b-button>
+            <b-button v-if="!hasGoal" v-b-modal.create-modal>Create Goal</b-button>
             <b-modal id="create-modal" title="Create Goal" @ok="createGoal">
                 Enter the monthly funding goal.
                 <b-form-input
@@ -16,7 +16,7 @@
             </b-modal>
         </div>
         <div class="summary">
-            <span v-if="!!goal">The current funding goal for this category is {{ formattedGoal }} per month.</span>
+            <span v-if="hasGoal">The current funding goal for this category is {{ formattedGoal }} per month.</span>
             <span v-else>Click above to create a monthly funding goal for this category.</span>
         </div>
     </div>
@@ -40,11 +40,17 @@ export default class Goal extends Vue {
         return CategoryModule.byId(this.$props.categoryId);
     }
 
-    get goal() {
+    get goal(): string {
+        console.log('Category goal', this.category.name, this.category.goal, this.category.hasGoal);
         return this.category.goal;
     }
 
+    get hasGoal(): boolean {
+        return this.category.hasGoal;
+    }
+
     get formattedGoal(): string {
+        console.log('Category goal', this.category.name, this.category.goal, this.category.hasGoal);
         return this.category.formattedGoal;
     }
 

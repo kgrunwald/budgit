@@ -4,7 +4,7 @@ import CategoryGroup from './CategoryGroup';
 import Account from './Account';
 import { reduce, has } from 'lodash';
 import { format } from 'date-fns';
-import { formatMoney, sanitizeMoney, addMoney, moneyAsFloat } from './Money';
+import { formatMoney, sanitizeMoney, addMoney, moneyAsFloat, isMoneyPositive } from './Money';
 
 class Category extends PrivateModel {
     public static getKey(month: Date): string {
@@ -103,6 +103,10 @@ class Category extends PrivateModel {
 
     public get goal(): string {
         return sanitizeMoney(this.get('goal'));
+    }
+
+    public get hasGoal(): boolean {
+        return this.has('goal');
     }
 
     public get formattedGoal(): string {
