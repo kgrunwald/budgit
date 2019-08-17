@@ -2,7 +2,7 @@ import Parse from './Parse';
 import PrivateModel from './PrivateModel';
 import Account from './Account';
 import Category from './Category';
-import formatter from 'currency-formatter';
+import { formatMoney, sanitizeMoney, moneyAsFloat } from './Money';
 
 class Transaction extends PrivateModel {
     constructor() {
@@ -25,16 +25,20 @@ class Transaction extends PrivateModel {
         this.set('merchant', merchant);
     }
 
-    get amount(): number {
-        return this.get('amount');
+    get amount(): string {
+        return sanitizeMoney(this.get('amount'));
     }
 
-    set amount(amount: number) {
-        this.set('amount', amount);
+    set amount(amount: string) {
+        this.setAmount(amount);
+    }
+
+    public setAmount(amount: string | number) {
+        this.set('amount', moneyAsFloat(amount));
     }
 
     get formattedAmount(): string {
-        return formatter.format(this.amount, { code: this.currency || 'USD' });
+        return formatMoney(this.amount);
     }
 
     set currency(currency: string) {

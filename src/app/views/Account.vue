@@ -266,7 +266,6 @@
 import { Component, Vue, Watch } from 'vue-property-decorator';
 import { filter, startsWith, map, find, pickBy, keys, reduce, includes, findIndex, each } from 'lodash';
 import uuid from 'uuid/v4';
-import formatter from 'currency-formatter';
 import { format } from 'date-fns';
 import CategoryModule from '@/app/store/CategoryModule';
 import TransactionModule from '@/app/store/TransactionModule';
@@ -405,7 +404,7 @@ export default class Account extends Vue {
     }
 
     get currentBalance(): string {
-        return formatter.format(this.$props.account.currentBalance, { code: 'USD' });
+        return this.$props.account.formattedCurrentBalance;
     }
 
     get transactions(): Transaction[] {

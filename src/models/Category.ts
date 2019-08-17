@@ -1,12 +1,19 @@
 import Parse from './Parse';
 import PrivateModel from './PrivateModel';
-import formatter from 'currency-formatter';
 import CategoryGroup from './CategoryGroup';
 import Account from './Account';
 import { reduce, has } from 'lodash';
 import { format } from 'date-fns';
+import { formatMoney, sanitizeMoney, addMoney, moneyAsFloat } from './Money';
 
 class Category extends PrivateModel {
+    public static getKey(month: Date): string {
+        return format(month, 'YYYYMM');
+    }
+
+    constructor() {
+        super('Category');
+    }
 
     get name(): string {
         if (this.isPayment) {
@@ -39,27 +46,20 @@ class Category extends PrivateModel {
         return !!this.paymentAccount;
     }
 
-    public static getKey(month: Date): string {
-        return format(month, 'YYYYMM');
-    }
-    constructor() {
-        super('Category');
-    }
-
-    public setBudget(month: Date, amount: number) {
+    public setBudget(month: Date, amount: string) {
         const budget = this.get('budget') || {};
-        budget[Category.getKey(month)] = amount;
+        budget[Category.getKey(month)] = moneyAsFloat(amount);
         this.set('budget', budget);
     }
 
-    public getBudget(month: Date): number {
+    public getBudget(month: Date): string {
         const budget = this.get('budget') || {};
-        return (budget[Category.getKey(month)] || 0.0);
+        return sanitizeMoney((budget[Category.getKey(month)] || 0.0));
     }
 
-    public setActivity(month: Date, amount: number) {
+    public setActivity(month: Date, amount: string | number) {
         const activity = this.get('activity') || {};
-        activity[Category.getKey(month)] = amount;
+        activity[Category.getKey(month)] = moneyAsFloat(amount);
         this.set('activity', activity);
     }
 
@@ -67,42 +67,46 @@ class Category extends PrivateModel {
         return has(this.get('activity'), Category.getKey(month));
     }
 
-    public getActivity(month: Date): number {
+    public getActivity(month: Date): string {
         const activity = this.get('activity') || {};
-        return activity[Category.getKey(month)] || 0;
+        return sanitizeMoney(activity[Category.getKey(month)] || 0);
     }
 
     public getFormattedActivity(month: Date): string {
-        return formatter.format(this.getActivity(month), { code: 'USD' });
+        return formatMoney(this.getActivity(month));
     }
 
-    public getBalance(month: Date): number {
+    public getBalance(month: Date): string {
         const budget = this.get('budget');
         const activity = this.get('activity');
         const monthKey = Category.getKey(month);
 
-        const accumulatePrevious = (total: number, val: number, key: string) => {
+        const accumulatePrevious = (total: string, val: string, key: string) => {
             if (key <= monthKey) {
-                total += val;
+                total = addMoney(total, sanitizeMoney(val));
             }
             return total;
         };
 
-        const totalBudget = reduce(budget, accumulatePrevious, 0);
-        const totalActivity = reduce(activity, accumulatePrevious, 0);
-        return totalBudget + totalActivity;
+        const totalBudget = reduce(budget, accumulatePrevious, sanitizeMoney(0));
+        const totalActivity = reduce(activity, accumulatePrevious, sanitizeMoney(0));
+        return addMoney(totalBudget, totalActivity);
     }
 
     public getFormattedBalance(month: Date): string {
-        return formatter.format(this.getBalance(month), { code: 'USD' });
+        return this.format(this.getBalance(month));
     }
 
-    public set goal(goal: number) {
-        this.set('goal', goal);
+    public set goal(goal: string) {
+        this.set('goal', moneyAsFloat(goal));
     }
 
-    public get goal(): number {
-        return this.get('goal');
+    public get goal(): string {
+        return sanitizeMoney(this.get('goal'));
+    }
+
+    public get formattedGoal(): string {
+        return formatMoney(this.goal);
     }
 }
 

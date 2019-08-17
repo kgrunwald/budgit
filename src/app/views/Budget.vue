@@ -175,7 +175,7 @@ import Category from '../../models/Category';
 import Parse from '../../models/Parse';
 import CategoryGroup from '../../models/CategoryGroup';
 import Transaction from '../../models/Transaction';
-import formatter from 'currency-formatter';
+import { formatMoney, addMoney, subMoney, isMoneyNegative, multiplyMoney } from '@/models/Money';
 
 @Component({
   components: {
@@ -226,7 +226,7 @@ export default class Budget extends Vue {
   }
 
   public formatCurrency(amount: number): string {
-    return formatter.format(amount, { code: 'USD' });
+    return formatMoney(amount);
   }
 
   public getAvailableCash(month: Date): number {
@@ -289,7 +289,7 @@ export default class Budget extends Vue {
 
   public async setBudget(category: Category, value: string) {
     const result = evaluate(value);
-    category.setBudget(this.currentMonth, parseFloat(result));
+    category.setBudget(this.currentMonth, result);
     await category.commit();
   }
 
@@ -314,12 +314,16 @@ export default class Budget extends Vue {
   }
 
   public async handleOverspending(targetCategory: Category, sourceCategory: Category) {
-    const balance = Math.abs(targetCategory.getBalance(this.currentMonth));
+    let balance = targetCategory.getBalance(this.currentMonth);
+    if (isMoneyNegative(balance)) {
+      balance = multiplyMoney('-1.00', balance);
+    }
+
     let budget = targetCategory.getBudget(this.currentMonth);
-    targetCategory.setBudget(this.currentMonth, budget + balance);
+    targetCategory.setBudget(this.currentMonth, addMoney(budget, balance));
 
     budget = sourceCategory.getBudget(this.currentMonth);
-    sourceCategory.setBudget(this.currentMonth, budget - balance);
+    sourceCategory.setBudget(this.currentMonth, subMoney(budget, balance));
     await Promise.all([targetCategory.commit(), sourceCategory.commit()]);
 
     // @ts-ignore

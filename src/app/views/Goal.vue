@@ -25,7 +25,6 @@
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
 import Category from '@/models/Category';
-import formatter from 'currency-formatter';
 import CategoryModule from '../store/CategoryModule';
 
 @Component({
@@ -46,7 +45,7 @@ export default class Goal extends Vue {
     }
 
     get formattedGoal(): string {
-        return formatter.format(this.goal, { code: 'USD' });
+        return this.category.formattedGoal;
     }
 
     public async budgetGoal() {
@@ -56,8 +55,7 @@ export default class Goal extends Vue {
 
     public async createGoal(evt: Event) {
         try {
-            const amount = parseFloat(this.goalAmount);
-            this.category.goal = amount;
+            this.category.goal = this.goalAmount;
             await this.category.commit();
         } catch (e) {
             evt.preventDefault();
