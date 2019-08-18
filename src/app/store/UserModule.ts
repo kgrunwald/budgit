@@ -34,6 +34,12 @@ class UserModule extends VuexModule {
         await user.save();
         return user;
     }
+
+    @Action
+    public async create(user: User) {
+        await user.save();
+        return user;
+    }
 }
 
 export default getModule(UserModule);

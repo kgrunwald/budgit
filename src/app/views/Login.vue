@@ -1,6 +1,6 @@
 <template>
     <div class="outer">
-        <h1>budgit</h1>
+        <h1>Budgit</h1>
         <div class="login-container">
             <span class="login-text" >Login to your account</span>
             <b-input-group>

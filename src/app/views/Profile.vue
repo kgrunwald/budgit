@@ -78,20 +78,28 @@
           </div>
         </div>
       </b-card>
-      <b-card v-if="user.username === 'kgrunwald@gmail.com'">
-        <div class="admin-card">
-          <b-form-input
-            v-model="itemToken"
-            @keydown.enter="updateItemAccess"
-          />
-          <AccountAction 
-            forceImport
-            :itemId="itemToken"
-          >
-            <template slot="action" slot-scope="props">
-              <b-button @click="props.onClick" >Force Import Item</b-button>
-            </template>
-          </AccountAction>
+      <b-card v-if="['kgrunwald@gmail.com', 'james.korzekwa@gmail.com'].includes(user.username)">
+        <div class="admin-card-container">
+          <div class="item-import">
+            <b-form-input
+              v-model="itemToken"
+              @keydown.enter="updateItemAccess"
+            />
+            <AccountAction 
+              forceImport
+              :itemId="itemToken"
+            >
+              <template slot="action" slot-scope="props">
+                <b-button @click="props.onClick" >Force Import Item</b-button>
+              </template>
+            </AccountAction>
+          </div>
+          <div>
+            <b-button v-b-modal.add-user>Add User</b-button>
+            <b-modal id="add-user" title="Add User" @ok.prevent="saveUser">
+              <AddUser ref="addUser"/>
+            </b-modal>
+          </div>
         </div>
       </b-card>
     </div>
@@ -104,18 +112,17 @@ import Parse from 'parse';
 import User from '@/models/User';
 import UserModule from '@/app/store/UserModule';
 import AccountAction from './AccountAction.vue';
-
-interface Edits {
-  [name: string]: boolean;
-}
+import AddUser from './AddUser.vue';
+import { BvModalEvent } from 'bootstrap-vue';
 
 @Component({
   components: {
         AccountAction,
+        AddUser,
     },
 })
 export default class Profile extends Vue {
-  public edits: Edits = {};
+  public edits: {[name: string]: boolean} = {};
   public itemToken: string = '';
 
   get user() {
@@ -133,6 +140,16 @@ export default class Profile extends Vue {
   public async updateUser(attr: string, user: User) {
     await UserModule.update(user);
     this.uneditProfileAttr(attr);
+  }
+
+  public async saveUser() {
+    try {
+      // @ts-ignore
+      await this.$refs.addUser.saveUser();
+      this.$bvModal.hide('add-user');
+    } catch (e) {
+      console.log('Error creating user: ', e);
+    }
   }
 }
 </script>
@@ -175,6 +192,10 @@ export default class Profile extends Vue {
         margin-left: 7px;
         cursor: pointer;
       }
+
+      .attr-input {
+        margin-left: 3.5px;
+      }
     }
   }
 
@@ -183,12 +204,21 @@ export default class Profile extends Vue {
   }
 }
 
-.admin-card {
+.admin-card-container {
   display: flex;
+  flex-direction: column;
 
-  input {
-    width: auto;
-    margin-right: 10px;
+  & > * {
+    padding: 5px;
+  }
+
+  .item-import {
+    display: flex;
+
+    input {
+      width: auto;
+      margin-right: 10px;
+    }
   }
 }
 

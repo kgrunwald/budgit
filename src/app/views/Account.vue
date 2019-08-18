@@ -111,25 +111,7 @@
                             />
                         </b-form-group>
                         <b-form-group id="input-group-category" label="Category:" label-for="input-category">
-                            <b-dropdown
-                                :text="newTransactionCategoryName"
-                                split
-                                split-variant="outline-primary"
-                                variant="primary"
-                            >
-                                <b-dropdown-form>
-                                    <b-form-input
-                                        v-model="filter"
-                                    />
-                                </b-dropdown-form>
-                                <b-dropdown-item 
-                                    v-for="category in categories" 
-                                    :key="category.id"
-                                    @click="setNewTransactionCategory(category)"
-                                >
-                                    {{ category.name }}
-                                </b-dropdown-item>
-                            </b-dropdown>
+                            <CategoryDropdown :onChange="(category) => setNewTransactionCategory(category)"/>
                         </b-form-group>
                         <b-form-group id="input-group-amount" label="Amount:" label-for="input-amount">
                             <b-input-group>
@@ -275,10 +257,12 @@ import AccountModel from '@/models/Account';
 import AccountAction from './AccountAction.vue';
 import Category from '../../models/Category';
 import AccountModule from '../store/AccountModule';
+import CategoryDropdown from './CategoryDropdown.vue';
 
 @Component({
     components: {
         AccountAction,
+        CategoryDropdown,
     },
     props: {
         account: AccountModel,
@@ -620,7 +604,7 @@ export default class Account extends Vue {
         }
 
         .category-dropdown{
-            margin-left: -5px;
+            margin-left: -6px;
             padding: 0px;
             height: 30px;
 

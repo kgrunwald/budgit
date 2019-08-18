@@ -1,7 +1,7 @@
 <template>
     <b-dropdown
         class="category-dropdown-container"
-        :text="selectedCategoryName"
+        :text="$props.category ? $props.category.categoryName : '- Select Category -'"
         split
         split-variant="outline-primary"
         variant="primary"
@@ -34,11 +34,11 @@ import Category from '@/models/Category';
 
 @Component({
     props: {
+        category: Category,
         onChange: Function,
     },
 })
 export default class CategoryDropdown extends Vue {
-    public selectedCategoryName: string = '- Select Category -';
     public filter: string = '';
 
     get categories(): Category[] {
@@ -49,7 +49,7 @@ export default class CategoryDropdown extends Vue {
     }
 
     public select(category: Category) {
-        this.selectedCategoryName = category.name;
+        this.$props.category = category;
         this.$props.onChange(category);
     }
 }
