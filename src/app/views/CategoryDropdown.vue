@@ -1,6 +1,6 @@
 <template>
     <b-dropdown
-        class="category-dropdown"
+        class="category-dropdown-container"
         :text="selectedCategoryName"
         split
         split-variant="outline-primary"
@@ -14,13 +14,15 @@
                 v-model="filter"
             />
         </b-dropdown-form>
-        <b-dropdown-item 
-            v-for="category in categories" 
-            :key="category.id"
-            @click="select(category)"
-        >
-            {{ category.name }}
-        </b-dropdown-item>
+        <div class="dropdown-items-container">
+            <b-dropdown-item 
+                v-for="category in categories" 
+                :key="category.id"
+                @click="select(category)"
+            >
+                {{ category.name }}
+            </b-dropdown-item>
+        </div>
     </b-dropdown>
 </template>
 
@@ -53,3 +55,13 @@ export default class CategoryDropdown extends Vue {
 }
 </script>
 
+<style lang="scss">
+
+.category-dropdown-container {
+    .dropdown-items-container {
+        max-height: 160px;
+        overflow: scroll;
+    }
+}
+
+</style>

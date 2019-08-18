@@ -238,19 +238,20 @@
                             >
                                 <b-dropdown-form>
                                     <b-form-input
-                                        class="testing"
                                         :ref="'input-' + data.item.id"
                                         v-model="filter"
                                     />
                                 </b-dropdown-form>
-                                <b-dropdown-item 
-                                    v-for="category in categories" 
-                                    :key="category.id"
-                                    @click="setCategory(data.item, category)"
-                                    @blur="uneditCategory(data.item.id)"
-                                >
-                                    {{ category.name}}
-                                </b-dropdown-item>
+                                <div class="category-dropdown-container">
+                                    <b-dropdown-item 
+                                        v-for="category in categories" 
+                                        :key="category.id"
+                                        @click="setCategory(data.item, category)"
+                                        @blur="uneditCategory(data.item.id)"
+                                    >
+                                        {{ category.name}}
+                                    </b-dropdown-item>
+                                </div>
                             </b-dropdown>
                         </div>
                     </template>
@@ -264,7 +265,7 @@
 
 <script lang="ts">
 import { Component, Vue, Watch } from 'vue-property-decorator';
-import { filter, startsWith, map, find, pickBy, keys, reduce, includes, findIndex, each } from 'lodash';
+import { filter, map, find, pickBy, keys, reduce, includes, findIndex, each } from 'lodash';
 import uuid from 'uuid/v4';
 import { format } from 'date-fns';
 import CategoryModule from '@/app/store/CategoryModule';
@@ -417,10 +418,9 @@ export default class Account extends Vue {
     }
 
     get categories(): Category[] {
-        return filter(CategoryModule.categories, (ctg) => startsWith(
-            ctg.name.toUpperCase(),
-            this.filter.toUpperCase(),
-        ));
+        return filter(CategoryModule.categories, (ctg) =>
+            ctg.name.toUpperCase().includes(this.filter.toUpperCase()),
+        );
     }
 
     public async setCategory(txn: Transaction, category: Category) {
@@ -627,7 +627,20 @@ export default class Account extends Vue {
             button {
                 padding: 0 5px;
             }
+
+            .dropdown-menu {
+                display: flex;
+                flex-direction: column;
+                max-height: 190px;
+                
+                .category-dropdown-container {
+                    overflow: scroll;
+                }
+            }
+
         }
+
+        
 
         tr {
             height: 40px;
