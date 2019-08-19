@@ -10,6 +10,7 @@ import PlaidCategoryMapping from '../../models/PlaidCategoryMapping';
 import { set, get } from 'lodash';
 import Category from '../../models/Category';
 import CategoryGroup from '../../models/CategoryGroup';
+import User from '../../models/User';
 
 const CLIENT_ID = process.env.PLAID_CLIENT_ID || '';
 const PLAID_SECRET = process.env.PLAID_SECRET || '';
@@ -29,7 +30,7 @@ const client = new plaid.Client(
 declare global {
     namespace Express {
         interface Request {
-            user: Parse.User
+            user: User
         }
     }
 }
@@ -70,7 +71,7 @@ plaidRouter.post('/webhook', async (req: Request, res: Response) => {
 plaidRouter.post('/login', async (req: Request, res: Response) => {
     try {
         const { username, password } = req.body;
-        const user = await Parse.User.logIn(username, password);
+        const user = await User.logIn(username, password);
         logger.info("User", user);
         set(req, 'session.token', user.getSessionToken());
         refreshAccounts(user);
@@ -91,7 +92,8 @@ plaidRouter.get('/logout', (req, res) => {
 });
 
 plaidRouter.use(async (req: Request, res: Response, next: NextFunction) => {
-    const user = await new Parse.Query(Parse.User).first({ ...SUDO, sessionToken: get(req, 'session.token', '') });
+    // @ts-ignore
+    const user = await new Parse.Query(User).first({ ...SUDO, sessionToken: get(req, 'session.token', '') });
     if (!user) {
         req.session && req.session.destroy(() => logger.info('Session destroyed'));
         res.redirect('/login');
@@ -214,7 +216,7 @@ plaidRouter.post('/removeAccount', async (req: Request, res: Response) => {
     }
 });
 
-async function getAccounts(user: Parse.User, item: Item): Promise<void> {
+async function getAccounts(user: User, item: Item): Promise<void> {
     try {
         logger.info("Getting accounts for user " + user.getUsername());
         const validTypes = ['depository', 'credit'];
@@ -243,7 +245,7 @@ async function getAccounts(user: Parse.User, item: Item): Promise<void> {
     }
 }
 
-async function createInitialTransaction(user: Parse.User, newAcct: Account, account: plaid.Account) {
+async function createInitialTransaction(user: User, newAcct: Account, account: plaid.Account) {
     logger.info('Creating transaction for initial balance');
     const initialTxn = new Transaction();
     initialTxn.account = newAcct;
@@ -265,7 +267,7 @@ async function createInitialTransaction(user: Parse.User, newAcct: Account, acco
     await initialTxn.commit(user, SUDO);
 }
 
-async function createCreditCardCategory(user: Parse.User, newAcct: Account) {
+async function createCreditCardCategory(user: User, newAcct: Account) {
     // @ts-ignore
     let group = await new Parse.Query(CategoryGroup).equalTo('name', 'Credit Cards').equalTo('user', user).first(SUDO);
     if (!group) {
@@ -282,14 +284,14 @@ async function createCreditCardCategory(user: Parse.User, newAcct: Account) {
     await category.commit(user, SUDO);
 }
 
-async function refreshAccounts(user: Parse.User) {
+async function refreshAccounts(user: User) {
     logger.info(`Refreshing account for user ${user.getUsername()}`);
     // @ts-ignore
     const accts: Account[] = await new Parse.Query(Account).includeAll().equalTo('user', user).find(SUDO);
     accts.forEach((acct) => getTransactions(user, acct));
 }
 
-async function getTransactions(user: Parse.User, account: Account): Promise<void> {
+async function getTransactions(user: User, account: Account): Promise<void> {
     try {
         logger.info("Getting transactions for user: " + user.getUsername() + " and account: " + account.accountId);
 
@@ -371,7 +373,7 @@ async function handleItemWebhook(payload: ItemWebhook) {
     }
 }
 
-async function savePlaidItem(token: plaid.TokenResponse, user: Parse.User): Promise<Item> {
+async function savePlaidItem(token: plaid.TokenResponse, user: User): Promise<Item> {
     logger.info('Saving Plaid Item', { token, user });
     const item = await getOrCreate(Item, 'itemId', token.item_id);
     item.accessToken = token.access_token;
@@ -388,7 +390,7 @@ async function savePlaidItem(token: plaid.TokenResponse, user: Parse.User): Prom
     return item;
 }
 
-async function savePlaidTransaction(plaidTxn: plaid.Transaction, account: Account, user: Parse.User): Promise<void> {
+async function savePlaidTransaction(plaidTxn: plaid.Transaction, account: Account, user: User): Promise<void> {
     if (plaidTxn.pending) {
         logger.info(`Transaction ${plaidTxn.transaction_id} is pending, skipping.`);
         return;
@@ -410,7 +412,7 @@ async function savePlaidTransaction(plaidTxn: plaid.Transaction, account: Accoun
     await txn.commit(user, SUDO);
 }
 
-async function savePlaidAccount(account: plaid.Account, institutionId: string, item: Item, user: Parse.User): Promise<Account> {
+async function savePlaidAccount(account: plaid.Account, institutionId: string, item: Item, user: User): Promise<Account> {
     const getAccount = getOrCreate(Account, 'accountId', account.account_id);
     const getInstitution = client.getInstitutionById<InstitutionWithInstitutionData>(institutionId, {include_optional_metadata: true});
     

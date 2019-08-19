@@ -1,5 +1,6 @@
 import Parse from './Parse';
 import PrivateModel from './PrivateModel';
+import User from './User';
 
 class Item extends PrivateModel {
     constructor() {
@@ -22,11 +23,11 @@ class Item extends PrivateModel {
         this.set('itemId', id);
     }
 
-    get user(): Parse.User {
+    get user(): User {
         return this.get('user');
     }
 
-    set user(user: Parse.User) {
+    set user(user: User) {
         this.set('user', user);
     }
 }
