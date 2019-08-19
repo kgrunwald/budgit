@@ -6,7 +6,6 @@ export class User extends Parse.User {
     }
 
     get email(): string {
-        console.log('get email: ', this.get('email'));
         return this.get('email');
     }
 
