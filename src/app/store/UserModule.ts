@@ -15,7 +15,7 @@ class UserModule extends VuexModule {
         const sub = new Subscriber(query, this);
         await sub.subscribe();
 
-        const user = await query.first();
+        const user = await User.current();
         this.add(user);
     }
 
