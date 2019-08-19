@@ -1,13 +1,14 @@
 import Parse from './Parse';
+import User from './User';
 
 class PrivateModel extends Parse.Object {
     constructor(className: string) {
         super(className);
     }
 
-    public async commit(user?: Parse.User, options?: any): Promise<void> {
+    public async commit(user?: User, options?: any): Promise<void> {
         if (!user) {
-            user = Parse.User.current();
+            user = User.current();
         }
 
         this.set('user', user);
