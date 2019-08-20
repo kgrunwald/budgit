@@ -174,6 +174,10 @@
         <div class=budget-actions-container>
           <b-card class=budget-actions>
             <Goal v-if="categorySelected" :categoryId="selectedCategory.category.id" :month="currentMonth"/>
+            <div class="no-goal-message" v-else>
+              <h2>Select a Category</h2>
+              <h2>to set a Goal</h2>
+            </div>
           </b-card>
         </div>
       </div>
@@ -657,6 +661,12 @@ export default class Budget extends Vue {
         flex: 1 1 auto;
       }
     }
+  }
+  .no-goal-message {
+    padding: 30px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
   }
 }
 
