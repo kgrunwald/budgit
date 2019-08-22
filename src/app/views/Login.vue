@@ -9,7 +9,7 @@
                         <font-awesome-icon icon="user"/>
                     </div>
                 </b-input-group-prepend>
-                <b-form-input v-model="username" placeholder="username" :disabled="disabled" @keyup.enter="onSubmit"/>
+                <b-form-input autofocus v-model="username" placeholder="username" :disabled="disabled" @keyup.enter="onSubmit"/>
             </b-input-group>
             <b-input-group>
                 <b-input-group-prepend>
