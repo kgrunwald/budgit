@@ -9,9 +9,11 @@
             <b-modal id="create-modal" title="Create Goal" @ok="createGoal">
                 Enter the monthly funding goal.
                 <b-form-input
+                    autofocus
                     v-model="goalAmount"
                     placeholder="Enter goal amount"
                     type="number"
+                    @keydown.native.enter="createGoal() && $bvModal.hide('create-modal')"
                 />
             </b-modal>
         </div>

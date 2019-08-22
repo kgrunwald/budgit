@@ -82,7 +82,7 @@
                 id="add-trans" 
                 title="Add Transaction"
                 ok-title="Save"
-                @ok="addTransaction()"
+                @ok="addTransaction"
                 header-bg-variant='primary'
                 header-text-variant='light'
             >

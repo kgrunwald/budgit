@@ -40,10 +40,12 @@
               <div class="actions">
                 <b-button v-b-modal.add-group pill variant="outline-secondary" class="action">
                   <font-awesome-icon icon="cloud-download-alt" />Add Group
-                  <b-modal :id="`add-group`" title="Add Group" @ok="createGroup">
+                  <b-modal id="add-group" title="Add Group" @ok="createGroup">
                   <b-form-input 
                     v-model="newGroup" 
                     placeholder="Enter Group Name"
+                    autofocus
+                    @keydown.native.enter="createGroup() && $bvModal.hide(`add-group`)"
                   />
                 </b-modal>
                 </b-button>
@@ -74,7 +76,7 @@
                   {{ group.name }}
                 </div>
               </div>
-              <div class="group-actions">
+              <div v-if="group.id !== creditCardGroup.id" class="group-actions">
                 <b-button 
                   pill 
                   variant="outline-secondary" 
@@ -86,8 +88,10 @@
               </div>
               <b-modal :id="`add-category-${group.id}`" title="Add Category" @ok="createCategory(group)">
                 <b-form-input 
+                  autofocus
                   v-model="newCategory" 
                   placeholder="Enter category"
+                  @keydown.native.enter="createCategory(group) && $bvModal.hide(`add-category-${group.id}`)"
                 />
               </b-modal>
             </div>
@@ -251,6 +255,10 @@ export default class Budget extends Vue {
     return CategoryGroupModule.availableGroup;
   }
 
+  get creditCardGroup(): CategoryGroup {
+    return CategoryGroupModule.creditCardGroup;
+  }
+
   public editGroupName(group: CategoryGroup) {
     if (!find(CategoryGroupModule.specialGroups, {id: group.id})) {
       this.groupNameEdit = group.id;
@@ -351,23 +359,22 @@ export default class Budget extends Vue {
   }
 
   public async createGroup() {
-    const group = new CategoryGroup();
-    group.name = this.newGroup;
-    await group.commit();
-    this.newGroup = '';
+    if (this.newGroup) {
+      const group = new CategoryGroup();
+      group.name = this.newGroup;
+      await group.commit();
+      this.newGroup = '';
+    }
   }
 
   public async createCategory(group: CategoryGroup) {
-    const category = new Category();
-    category.name = this.newCategory;
-    category.group = group;
-    await category.commit();
-    this.newCategory = '';
-  }
-
-  public async submitNewCategory(group: CategoryGroup) {
-    await this.createCategory(group);
-    this.$bvModal.hide(`add-category-${group.id}`);
+    if (this.newCategory) {
+      const category = new Category();
+      category.name = this.newCategory;
+      category.group = group;
+      await category.commit();
+      this.newCategory = '';
+    }
   }
 
   public async handleOverspending(targetCategory: Category, sourceCategory: Category) {
@@ -380,7 +387,10 @@ export default class Budget extends Vue {
     await Promise.all([targetCategory.commit(), sourceCategory.commit()]);
 
     // @ts-ignore
-    this.$refs[`popover-${targetCategory.id}`][0].$emit('close');
+    if (this.$refs[`popover-${targetCategory.id}`][0]) {
+      // @ts-ignore
+      this.$refs[`popover-${targetCategory.id}`][0].$emit('close');
+    }
   }
 
   get categorySelected(): boolean {

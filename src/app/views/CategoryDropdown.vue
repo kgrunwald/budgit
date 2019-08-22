@@ -49,7 +49,6 @@ export default class CategoryDropdown extends Vue {
     }
 
     public select(category: Category) {
-        this.$props.category = category;
         this.$props.onChange(category);
     }
 }
