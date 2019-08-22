@@ -6,12 +6,15 @@
         split-variant="outline-primary"
         variant="primary"
         size="sm"
+        @shown="focusSearch"
     >
         <b-dropdown-form>
             <b-form-input
-                class="testing"
+                autofocus
+                ref="select-input"
                 size="sm"
                 v-model="filter"
+                @keydown.enter.prevent
             />
         </b-dropdown-form>
         <div class="dropdown-items-container">
@@ -50,6 +53,11 @@ export default class CategoryDropdown extends Vue {
 
     public select(category: Category) {
         this.$props.onChange(category);
+    }
+
+    public focusSearch() {
+        // @ts-ignore
+        this.$refs['select-input'].focus();
     }
 }
 </script>
