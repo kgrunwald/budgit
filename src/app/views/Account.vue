@@ -86,7 +86,7 @@
                 header-bg-variant='primary'
                 header-text-variant='light'
             >
-                <div>
+                <div @keydown.enter="addTransaction() && $bvModal.hide('add-trans')">
                     <b-form>
                         <b-form-group id="input-group-date">
                             <b-form-checkbox class="deposit-switch" size="lg" v-model="newTransactionDeposit" switch>
@@ -95,19 +95,20 @@
                         </b-form-group>
                         <b-form-group id="input-group-date" label="Date of Transaction: " label-for="input-date">
                             <b-form-input
-                            id="input-date"
-                            v-model="newTransaction.date"
-                            type="date"
-                            required
-                            placeholder="Enter Date"
+                                autofocus
+                                id="input-date"
+                                v-model="newTransaction.date"
+                                type="date"
+                                required
+                                placeholder="Enter Date"
                             />
                         </b-form-group>
                         <b-form-group id="input-group-merchant" label="Merchant:" label-for="input-merchant">
                             <b-form-input
-                            id="input-merchant"
-                            v-model="newTransaction.merchant"
-                            required
-                            placeholder="Enter Merchant"
+                                id="input-merchant"
+                                v-model="newTransaction.merchant"
+                                required
+                                placeholder="Enter Merchant"
                             />
                         </b-form-group>
                         <b-form-group id="input-group-category" label="Category:" label-for="input-category">
@@ -446,17 +447,19 @@ export default class Account extends Vue {
     }
 
     public async addTransaction() {
-        const tran = new Transaction();
-        const amount = this.newTransaction.amount;
-        tran.amount = this.newTransactionDeposit ? amount : amount * -1;
-        tran.date = new Date(this.newTransaction.date);
-        tran.transactionId = uuid();
-        tran.account = this.$props.account;
-        tran.category = this.newTransaction.category;
-        tran.merchant = this.newTransaction.merchant;
-        tran.acknowledged = true;
-        tran.currency = 'USD';
-        await tran.commit();
+        if (this.newTransaction.amount && this.newTransaction.date) {
+            const tran = new Transaction();
+            const amount = this.newTransaction.amount;
+            tran.amount = this.newTransactionDeposit ? amount : amount * -1;
+            tran.date = new Date(this.newTransaction.date);
+            tran.transactionId = uuid();
+            tran.account = this.$props.account;
+            tran.category = this.newTransaction.category;
+            tran.merchant = this.newTransaction.merchant;
+            tran.acknowledged = true;
+            tran.currency = 'USD';
+            await tran.commit();
+        }
         this.newTransaction = {};
     }
 
