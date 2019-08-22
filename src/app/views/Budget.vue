@@ -163,8 +163,10 @@
                       title="Cover Overspending"
                       placement="bottom"
                       triggers="click"
+                      custom-class="cover-overspending-popover"
+                      @shown="focusCategorySearch"
                     >
-                      <CategoryDropdown :onChange="(ctg) => handleOverspending(data.item, ctg)"/>
+                      <CategorySearch ref="category-search" :onChange="(ctg) => handleOverspending(data.item, ctg)"/>
                     </b-popover>
                   </span>
                 </template>
@@ -193,7 +195,7 @@ import { Component, Vue, Watch } from 'vue-property-decorator';
 import { get, keys, reject, each, find } from 'lodash';
 import { format, addMonths } from 'date-fns';
 import { evaluate } from 'mathjs';
-import CategoryDropdown from './CategoryDropdown.vue';
+import CategorySearch from './CategorySearch.vue';
 import Goal from './Goal.vue';
 import CategoryModule from '../store/CategoryModule';
 import CategoryGroupModule from '../store/CategoryGroupModule';
@@ -211,7 +213,7 @@ interface SelectedCategory {
 
 @Component({
   components: {
-    CategoryDropdown,
+    CategorySearch,
     Goal,
   },
 })
@@ -414,6 +416,11 @@ export default class Budget extends Vue {
       group,
     };
     this.categoryClicked = true;
+  }
+
+  public focusCategorySearch() {
+    // @ts-ignore
+    this.$refs['category-search'][0].focusSearch();
   }
 }
 </script>
@@ -677,6 +684,13 @@ export default class Budget extends Vue {
     display: flex;
     flex-direction: column;
     align-items: center;
+  }
+
+}
+
+.cover-overspending-popover {
+  .popover-body {
+    padding: 0;
   }
 }
 

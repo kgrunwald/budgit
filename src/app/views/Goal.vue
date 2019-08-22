@@ -52,7 +52,6 @@ export default class Goal extends Vue {
     }
 
     get formattedGoal(): string {
-        console.log('Category goal', this.category.name, this.category.goal, this.category.hasGoal);
         return this.category.formattedGoal;
     }
 
