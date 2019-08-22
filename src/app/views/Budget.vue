@@ -162,7 +162,7 @@
                       :target="`balance-${data.item.id}`"
                       title="Cover Overspending"
                       placement="bottom"
-                      triggers="click"
+                      triggers="click blur"
                       custom-class="cover-overspending-popover"
                       @shown="focusCategorySearch"
                     >
@@ -380,13 +380,15 @@ export default class Budget extends Vue {
   }
 
   public async handleOverspending(targetCategory: Category, sourceCategory: Category) {
-    const balance = Math.abs(targetCategory.getBalance(this.currentMonth));
-    let budget = targetCategory.getBudget(this.currentMonth);
-    targetCategory.setBudget(this.currentMonth, budget + balance);
+    if (sourceCategory) {
+      const balance = Math.abs(targetCategory.getBalance(this.currentMonth));
+      let budget = targetCategory.getBudget(this.currentMonth);
+      targetCategory.setBudget(this.currentMonth, budget + balance);
 
-    budget = sourceCategory.getBudget(this.currentMonth);
-    sourceCategory.setBudget(this.currentMonth, budget - balance);
-    await Promise.all([targetCategory.commit(), sourceCategory.commit()]);
+      budget = sourceCategory.getBudget(this.currentMonth);
+      sourceCategory.setBudget(this.currentMonth, budget - balance);
+      await Promise.all([targetCategory.commit(), sourceCategory.commit()]);
+    }
 
     // @ts-ignore
     if (this.$refs[`popover-${targetCategory.id}`][0]) {

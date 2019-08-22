@@ -5,7 +5,6 @@
                 ref="category-filter-input"
                 size="sm"
                 v-model="filter"
-                @keydown.enter="select(categories[0])"
             />
         </div>
         <b-list-group class="category-list-group">
