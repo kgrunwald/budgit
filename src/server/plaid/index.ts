@@ -1,6 +1,7 @@
 import plaid, { InstitutionWithInstitutionData, PlaidEnvironments } from 'plaid';
 import Parse from 'parse/node';
 import { Router, Request, Response, NextFunction } from 'express';
+import {OAuth2Client} from 'google-auth-library';
 import logger from '../logger';
 import Item from '../../models/Item';
 import Account from '../../models/Account';
@@ -11,11 +12,13 @@ import { set, get } from 'lodash';
 import Category from '../../models/Category';
 import CategoryGroup from '../../models/CategoryGroup';
 import User from '../../models/User';
+import { TokenPayload } from 'google-auth-library/build/src/auth/loginticket';
 
 const CLIENT_ID = process.env.PLAID_CLIENT_ID || '';
 const PLAID_SECRET = process.env.PLAID_SECRET || '';
 const PUBLIC_KEY = process.env.PLAID_PUBLIC_KEY || '';
 const PLAID_ENV = process.env.PLAID_ENV || '';
+const GOOGLE_CLIENT_ID = process.env.VUE_APP_GOOGLE_CLIENT_ID || '';
 
 const SUDO = { useMasterKey: true };
 
@@ -52,6 +55,8 @@ interface ItemWebhook extends Webhook  {
 
 const DATE_FORMAT = 'YYYY-MM-DD';
 
+const oathClient = new OAuth2Client(GOOGLE_CLIENT_ID);
+
 const plaidRouter = Router();
 
 plaidRouter.post('/webhook', async (req: Request, res: Response) => {
@@ -70,12 +75,22 @@ plaidRouter.post('/webhook', async (req: Request, res: Response) => {
 
 plaidRouter.post('/login', async (req: Request, res: Response) => {
     try {
-        const { username, password } = req.body;
-        const user = await User.logIn(username, password);
-        logger.info("User", user);
-        set(req, 'session.token', user.getSessionToken());
-        refreshAccounts(user);
-        res.json(user);
+        const { idToken } = req.body;
+        const ticket = await oathClient.verifyIdToken({
+            idToken,
+            audience: GOOGLE_CLIENT_ID,
+        });
+        const payload = (ticket.getPayload() as TokenPayload)
+        // @ts-ignore
+        const user = await new Parse.Query(User).equalTo("username", payload.email).first({ ...SUDO });
+        await user._linkWith('google', {authData: {id: payload['sub'], id_token: idToken}}, { ...SUDO });
+        if (user) {
+            set(req, 'session.token', user.getSessionToken());
+            refreshAccounts(user);
+            res.json(user);
+        } else {
+            throw 'Invalid username/password.'
+        }
     } catch (err) {
         if (err.message === 'Invalid username/password.') {
             res.status(401).json({ error: err.message });

@@ -57,10 +57,17 @@ export default class Navigation extends Vue {
     public async signOut() {
         await Promise.all([
             Parse.User.logOut(),
+            this.googleSignOut(),
             fetch('/api/logout'),
         ]);
 
         location.reload();
+    }
+
+    private async googleSignOut() {
+        // @ts-ignore
+        const auth2 = gapi.auth2.getAuthInstance();
+        await auth2.signOut();
     }
 }
 </script>

@@ -26,6 +26,8 @@
                 />
             </b-input-group>
             <b-button variant="primary" @click="onSubmit"> Log In </b-button>
+            <!-- <div class="g-signin2" :data-onsuccess="onSignIn"></div> -->
+            <div class="google-signin" id="google-signin-btn" />
             <div class="error-container">
                 <span class="error" v-if="error">Invalid username or password.</span>
             </div>
@@ -37,20 +39,26 @@
 import { Component, Vue } from 'vue-property-decorator';
 import Parse from 'parse';
 
-@Component({})
+@Component
 export default class Login extends Vue {
     public username: string = '';
     public password: string = '';
     public error: boolean = false;
     public disabled: boolean = false;
 
-    public mounted() {
-        if (Parse.User.current()) {
-            Parse.User.logOut();
-        }
+    public async mounted() {
+        // @ts-ignore
+        gapi.signin2.render('google-signin-btn', {
+            onsuccess: this.onSubmit,
+            width: '270',
+            longtitle: true,
+        });
     }
 
-    public async onSubmit() {
+    public async onSubmit(googleUser: any) {
+        const profile = googleUser.getBasicProfile();
+        const idToken = googleUser.getAuthResponse().id_token;
+        const id = googleUser.getId();
         try {
             this.disabled = true;
             const response = await fetch('/api/login', {
@@ -58,7 +66,7 @@ export default class Login extends Vue {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ username: this.username, password: this.password }),
+                body: JSON.stringify({ idToken, id }),
             });
             const body = await response.json();
             await Parse.User.become(body.sessionToken);
@@ -89,12 +97,6 @@ h1 {
     margin: 90px 0 50px;
     font-weight: 300;
 }
-
-// .form-control:focus {
-//     border-color: $purple;
-//     box-shadow: 0px 1px 1px rgba(0, 0, 0, 0.075) inset, 0px 1px 8px rgba(211, 100, 255, 0.5);
-// }
-
 
 .login-container {
     height: 400px;

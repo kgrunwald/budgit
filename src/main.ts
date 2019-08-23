@@ -29,6 +29,15 @@ import router from './app/router';
 import store from './app/store';
 import Parse from 'parse';
 
+// @ts-ignore
+gapi.load('auth2', async () => {
+  // @ts-ignore
+  gapi.auth2.init({
+    client_id: process.env.VUE_APP_GOOGLE_CLIENT_ID,
+  });
+});
+
+
 Parse.initialize(process.env.VUE_APP_PARSE_APP_ID || '');
 Parse.serverURL = `${process.env.VUE_APP_BASE_URL}/parse`;
 Parse.liveQueryServerURL = `${process.env.VUE_APP_WS_URL}/parse`;

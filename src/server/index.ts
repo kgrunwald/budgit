@@ -12,7 +12,6 @@ if (NODE_ENV === 'production') {
     dotenvPath = '../../../';
 }
 
-console.log(resolve(__dirname, dotenvPath, '.env'));
 if (NODE_ENV !== 'production') {
     console.log('Loading local env');
     dotenv.config({ path: resolve(__dirname, dotenvPath, '.env.local')});
