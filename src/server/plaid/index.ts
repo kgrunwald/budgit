@@ -75,6 +75,23 @@ plaidRouter.post('/webhook', async (req: Request, res: Response) => {
 
 plaidRouter.post('/login', async (req: Request, res: Response) => {
     try {
+        const { username, password } = req.body;
+        const user = await User.logIn(username, password);
+        logger.info("User", user);
+        set(req, 'session.token', user.getSessionToken());
+        refreshAccounts(user);
+        res.json(user);
+    } catch (err) {
+        if (err.message === 'Invalid username/password.') {
+            res.status(401).json({ error: err.message });
+        } else {
+            res.status(500).json({ error: err.message });
+        }
+    }
+});
+
+plaidRouter.post('/googleauth', async (req: Request, res: Response) => {
+    try {
         const { idToken } = req.body;
         const ticket = await oathClient.verifyIdToken({
             idToken,

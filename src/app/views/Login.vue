@@ -49,19 +49,39 @@ export default class Login extends Vue {
     public async mounted() {
         // @ts-ignore
         gapi.signin2.render('google-signin-btn', {
-            onsuccess: this.onSubmit,
+            onsuccess: this.onGoogleAuthSubmit,
             width: '270',
             longtitle: true,
         });
     }
 
-    public async onSubmit(googleUser: any) {
+    public async onSubmit() {
+        try {
+            this.disabled = true;
+            const response = await fetch('/api/login', {
+                method: 'post',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ username: this.username, password: this.password }),
+            });
+            const body = await response.json();
+            await Parse.User.become(body.sessionToken);
+            this.error = false;
+            this.$router.push('/');
+        } catch (e) {
+            this.disabled = false;
+            this.error = true;
+        }
+    }
+
+    public async onGoogleAuthSubmit(googleUser: any) {
         const profile = googleUser.getBasicProfile();
         const idToken = googleUser.getAuthResponse().id_token;
         const id = googleUser.getId();
         try {
             this.disabled = true;
-            const response = await fetch('/api/login', {
+            const response = await fetch('/api/googleauth', {
                 method: 'post',
                 headers: {
                     'Content-Type': 'application/json',
