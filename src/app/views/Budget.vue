@@ -203,6 +203,7 @@ import { Component, Vue, Watch } from 'vue-property-decorator';
 import { get, keys, reject, each, find } from 'lodash';
 import { format, addMonths } from 'date-fns';
 import { evaluate } from 'mathjs';
+import { BPopover, BTable } from 'bootstrap-vue';
 import CategorySearch from './CategorySearch.vue';
 import Goal from './Goal.vue';
 import CategoryModule from '../store/CategoryModule';
@@ -424,10 +425,10 @@ export default class Budget extends Vue {
       await Promise.all([targetCategory.commit(), sourceCategory.commit()]);
     }
 
-    // @ts-ignore
-    if (this.$refs[`popover-${targetCategory.id}`][0]) {
-      // @ts-ignore
-      this.$refs[`popover-${targetCategory.id}`][0].$emit('close');
+    if ((this.$refs[`popover-${targetCategory.id}`] as Vue[][0]) as BPopover) {
+      ((this.$refs[
+        `popover-${targetCategory.id}`
+      ] as Vue[][0]) as BPopover).$emit('close');
     }
   }
 
@@ -442,15 +443,15 @@ export default class Budget extends Vue {
     event: any
   ) {
     if (this.selectedCategory.index !== -1) {
-      // @ts-ignore
-      this.$refs[`${this.selectedCategory.group.id}-table`][0].unselectRow(
-        this.selectedCategory.index
-      );
+      ((this.$refs[
+        `${this.selectedCategory.group.id}-table`
+      ] as Vue[][0]) as BTable).unselectRow(this.selectedCategory.index);
     }
 
     this.$nextTick(() => {
-      // @ts-ignore
-      this.$refs[`${group.id}-table`][0].selectRow(index);
+      ((this.$refs[`${group.id}-table`] as Vue[][0]) as BTable).selectRow(
+        index
+      );
     });
 
     this.selectedCategory = {
@@ -462,8 +463,9 @@ export default class Budget extends Vue {
   }
 
   public focusCategorySearch() {
-    // @ts-ignore
-    this.$refs['category-search'][0].focusSearch();
+    ((this.$refs[
+      'category-search'
+    ] as Vue[][0]) as CategorySearch).focusSearch();
   }
 }
 </script>

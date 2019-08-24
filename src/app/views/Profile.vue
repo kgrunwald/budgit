@@ -138,8 +138,7 @@ export default class Profile extends Vue {
 
   public async saveUser() {
     try {
-      // @ts-ignore
-      await this.$refs.addUser.saveUser();
+      await (this.$refs.addUser as AddUser).saveUser();
       this.$bvModal.hide('add-user');
     } catch (e) {
       console.log('Error creating user: ', e);

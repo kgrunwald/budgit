@@ -20,6 +20,7 @@ import { Component, Vue } from 'vue-property-decorator';
 import { filter, startsWith } from 'lodash';
 import CategoryModule from '../store/CategoryModule';
 import Category from '@/models/Category';
+import { BFormInput } from 'bootstrap-vue';
 
 @Component({
   props: {
@@ -41,8 +42,7 @@ export default class CategorySearch extends Vue {
   }
 
   public focusSearch() {
-    // @ts-ignore
-    this.$refs['category-filter-input'].focus();
+    (this.$refs['category-filter-input'] as BFormInput).focus();
   }
 }
 </script>

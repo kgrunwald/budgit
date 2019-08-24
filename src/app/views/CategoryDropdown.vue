@@ -26,6 +26,7 @@ import { Component, Vue } from 'vue-property-decorator';
 import { filter, startsWith } from 'lodash';
 import CategoryModule from '../store/CategoryModule';
 import Category from '@/models/Category';
+import { BFormInput } from 'bootstrap-vue';
 
 @Component({
   props: {
@@ -47,8 +48,7 @@ export default class CategoryDropdown extends Vue {
   }
 
   public focusSearch() {
-    // @ts-ignore
-    this.$refs['select-input'].focus();
+    (this.$refs['select-input'] as BFormInput).focus();
   }
 }
 </script>

@@ -269,6 +269,7 @@ import {
 } from 'lodash';
 import uuid from 'uuid/v4';
 import { format } from 'date-fns';
+import { BFormInput, BDropdown } from 'bootstrap-vue';
 import CategoryModule from '@/app/store/CategoryModule';
 import TransactionModule from '@/app/store/TransactionModule';
 import Transaction from '@/models/Transaction';
@@ -378,13 +379,11 @@ export default class Account extends Vue {
 
   public editCategory(transactionId: string) {
     this.transactionCategoryEdit = transactionId;
-    // @ts-ignore
-    this.$refs['dd-' + transactionId].show();
+    (this.$refs['dd-' + transactionId] as BDropdown).show();
   }
 
   public focusCategorySearch(transactionId: string) {
-    // @ts-ignore
-    this.$refs['input-' + transactionId].focus();
+    (this.$refs['input-' + transactionId] as BFormInput).focus();
   }
 
   public editMerchant(transactionId: string) {
