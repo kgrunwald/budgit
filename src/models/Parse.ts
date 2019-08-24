@@ -1,8 +1,8 @@
 // tslint:disable
 if (typeof window === 'undefined') {
-    var Parse = require('parse/node');
+  var Parse = require('parse/node');
 } else {
-    var Parse = require('parse');
+  var Parse = require('parse');
 }
 
 export default Parse;

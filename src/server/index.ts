@@ -9,24 +9,24 @@ import { resolve } from 'path';
 const { NODE_ENV = 'local' } = process.env;
 let dotenvPath = '../../';
 if (NODE_ENV === 'production') {
-    dotenvPath = '../../../';
+  dotenvPath = '../../../';
 }
 
 if (NODE_ENV !== 'production') {
-    console.log('Loading local env');
-    dotenv.config({ path: resolve(__dirname, dotenvPath, '.env.local')});
+  console.log('Loading local env');
+  dotenv.config({ path: resolve(__dirname, dotenvPath, '.env.local') });
 }
-dotenv.config({ path: resolve(__dirname, dotenvPath, '.env')});
+dotenv.config({ path: resolve(__dirname, dotenvPath, '.env') });
 
-const { 
-    PORT = 3000, 
-    APP_ID = 'jk-budgit',
-    MASTER_KEY = 'myMasterKey',
-    SERVER_URL = `http://localhost:${PORT}/parse`,
-    STATIC_PATH = '/../../public',
-    MONGODB_URI = 'mongodb://localhost:27017/dev',
-    CLOUD_CODE = './src/server/cloud/main.ts',
-    COOKIE_SECRET = 'cookieSecret'
+const {
+  PORT = 3000,
+  APP_ID = 'jk-budgit',
+  MASTER_KEY = 'myMasterKey',
+  SERVER_URL = `http://localhost:${PORT}/parse`,
+  STATIC_PATH = '/../../public',
+  MONGODB_URI = 'mongodb://localhost:27017/dev',
+  CLOUD_CODE = './src/server/cloud/main.ts',
+  COOKIE_SECRET = 'cookieSecret',
 } = process.env;
 
 import initializeParseClient from './parse';
@@ -38,38 +38,44 @@ import plaid from './plaid';
 const app = express();
 
 logger.info('Config', {
-    PORT, APP_ID, SERVER_URL, STATIC_PATH, CLOUD_CODE
-})
+  PORT,
+  APP_ID,
+  SERVER_URL,
+  STATIC_PATH,
+  CLOUD_CODE,
+});
 
 const isProduction = NODE_ENV === 'production';
 
 const MongoStore = createMongoStore(session);
-app.use(session({
+app.use(
+  session({
     cookie: {
-        secure: isProduction,
-        domain: isProduction ? 'jk-budgit.herokuapp.com' : 'localhost',
+      secure: isProduction,
+      domain: isProduction ? 'jk-budgit.herokuapp.com' : 'localhost',
     },
     proxy: isProduction,
     secret: COOKIE_SECRET,
     saveUninitialized: false,
     resave: false,
     store: new MongoStore({
-        url: MONGODB_URI,
-    })
-}));
+      url: MONGODB_URI,
+    }),
+  })
+);
 app.use(bodyParser.json());
 
 const ParseServer = require('parse-server').ParseServer;
 const parse = new ParseServer({
-    databaseURI: MONGODB_URI,
-    cloud: CLOUD_CODE,
-    appId: APP_ID,
-    masterKey: MASTER_KEY,
-    liveQuery: {
-        classNames: ['Item', 'Account', 'Transaction', 'CategoryGroup', 'Category'],
-    },
-    serverURL: SERVER_URL,
-    sessionLength: 60 * 60,
+  databaseURI: MONGODB_URI,
+  cloud: CLOUD_CODE,
+  appId: APP_ID,
+  masterKey: MASTER_KEY,
+  liveQuery: {
+    classNames: ['Item', 'Account', 'Transaction', 'CategoryGroup', 'Category'],
+  },
+  serverURL: SERVER_URL,
+  sessionLength: 60 * 60,
 });
 
 app.use('/parse', parse);
@@ -80,12 +86,12 @@ const staticConf = { maxAge: '1y', etag: false };
 
 app.use(express.static(publicPath, staticConf));
 app.get('*', (req, res) => {
-    res.sendFile(resolve(__dirname, STATIC_PATH + '/index.html'));
+  res.sendFile(resolve(__dirname, STATIC_PATH + '/index.html'));
 });
 
 const httpServer = http.createServer(app);
 httpServer.listen(PORT, () => {
-    logger.info(`StaticServer running on ${SERVER_URL.replace('/parse', '/')}`);
+  logger.info(`StaticServer running on ${SERVER_URL.replace('/parse', '/')}`);
 });
 
 ParseServer.createLiveQueryServer(httpServer);

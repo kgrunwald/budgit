@@ -2,11 +2,11 @@
   <div>
     <div class="page-container">
       <div class="account-list-container">
-        <AccountList :onAccountClick="handleAccountClick" :selectedAccountId="selectedAccountId"/>
+        <AccountList :onAccountClick="handleAccountClick" :selectedAccountId="selectedAccountId" />
       </div>
       <div class="content-container">
-        <Account v-if="selectedAccountId" :account="selectedAccount"/>
-        <NoAccounts v-else/>
+        <Account v-if="selectedAccountId" :account="selectedAccount" />
+        <NoAccounts v-else />
       </div>
     </div>
   </div>

@@ -21,7 +21,10 @@ import {
   faChevronCircleUp,
   faChevronCircleDown,
 } from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon, FontAwesomeLayers } from '@fortawesome/vue-fontawesome';
+import {
+  FontAwesomeIcon,
+  FontAwesomeLayers,
+} from '@fortawesome/vue-fontawesome';
 import './app/styles/custom.scss';
 
 import App from './app/App.vue';
@@ -36,7 +39,6 @@ gapi.load('auth2', async () => {
     client_id: process.env.VUE_APP_GOOGLE_CLIENT_ID,
   });
 });
-
 
 Parse.initialize(process.env.VUE_APP_PARSE_APP_ID || '');
 Parse.serverURL = `${process.env.VUE_APP_BASE_URL}/parse`;
@@ -60,7 +62,7 @@ library.add(
   faMinus,
   faPlus,
   faChevronCircleUp,
-  faChevronCircleDown,
+  faChevronCircleDown
 );
 
 Vue.use(BootstrapVue);
@@ -77,16 +79,16 @@ Vue.config.errorHandler = (err, vm, info) => {
   }
 };
 
-window.addEventListener('unhandledrejection', (err) => {
+window.addEventListener('unhandledrejection', err => {
   // @ts-ignore
   if (err.reason.code === Parse.Error.INVALID_SESSION_TOKEN) {
-      Parse.User.logOut();
-      router.push('/login');
+    Parse.User.logOut();
+    router.push('/login');
   }
 });
 
 new Vue({
   router,
   store,
-  render: (h) => h(App),
+  render: h => h(App),
 }).$mount('#app');

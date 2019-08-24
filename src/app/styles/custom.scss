@@ -3,15 +3,16 @@ $teal: #3790a0;
 
 $theme-colors: (
   primary: $purple,
-  secondary: $teal
+  secondary: $teal,
 );
 
 $primary: $purple;
 $secondary: $teal;
 
-.btn.focus, .btn:focus {
+.btn.focus,
+.btn:focus {
   outline: 0;
-  box-shadow: none!important;
+  box-shadow: none !important;
 }
 
 @import 'node_modules/bootstrap/scss/bootstrap';

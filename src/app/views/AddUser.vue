@@ -46,7 +46,7 @@ import UserModule from '../store/UserModule';
 
 @Component
 export default class AddUser extends Vue {
-  private user: {[key: string]: any} = {};
+  private user: { [key: string]: any } = {};
 
   public async saveUser() {
     const user = new User({});
@@ -58,10 +58,8 @@ export default class AddUser extends Vue {
     await UserModule.create(user);
     this.user = {};
   }
-
 }
 </script>
 
 <style lang="scss">
-
 </style>

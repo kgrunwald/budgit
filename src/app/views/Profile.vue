@@ -17,12 +17,12 @@
                 @blur="updateUser('firstName', user)"
                 @keydown.enter.native="updateUser('firstName', user)"
               />
-              <div 
+              <div
                 v-else
                 v-html="user.firstName || '<i>None</i>'"
                 :class="{'attr-label': true, 'none': !user.firstName}"
                 @click="editProfileAttr('firstName')"
-              />              
+              />
             </div>
             <div class="last-name attr-container">
               <div class="attr-title">Last Name:</div>
@@ -39,7 +39,7 @@
                 v-html="user.lastName || '<i>None</i>'"
                 :class="{'attr-label': true, 'none': !user.lastName}"
                 @click="editProfileAttr('lastName')"
-              /> 
+              />
             </div>
             <div class="email attr-container">
               <div class="attr-title">Email:</div>
@@ -56,7 +56,7 @@
                 v-html="user.email || '<i>None</i>'"
                 :class="{'attr-label': true, 'none': !user.email}"
                 @click="editProfileAttr('email')"
-              /> 
+              />
             </div>
             <div class="username attr-container">
               <div class="attr-title">Username:</div>
@@ -73,7 +73,7 @@
                 v-html="user.username || '<i>None</i>'"
                 :class="{'attr-label': true, 'none': !user.username}"
                 @click="editProfileAttr('username')"
-              /> 
+              />
             </div>
           </div>
         </div>
@@ -81,23 +81,17 @@
       <b-card v-if="['kgrunwald@gmail.com', 'james.korzekwa@gmail.com'].includes(user.username)">
         <div class="admin-card-container">
           <div class="item-import">
-            <b-form-input
-              v-model="itemToken"
-              @keydown.enter="updateItemAccess"
-            />
-            <AccountAction 
-              forceImport
-              :itemId="itemToken"
-            >
+            <b-form-input v-model="itemToken" @keydown.enter="updateItemAccess" />
+            <AccountAction forceImport :itemId="itemToken">
               <template slot="action" slot-scope="props">
-                <b-button @click="props.onClick" >Force Import Item</b-button>
+                <b-button @click="props.onClick">Force Import Item</b-button>
               </template>
             </AccountAction>
           </div>
           <div>
             <b-button v-b-modal.add-user>Add User</b-button>
             <b-modal id="add-user" title="Add User" @ok.prevent="saveUser">
-              <AddUser ref="addUser"/>
+              <AddUser ref="addUser" />
             </b-modal>
           </div>
         </div>
@@ -117,12 +111,12 @@ import { BvModalEvent } from 'bootstrap-vue';
 
 @Component({
   components: {
-        AccountAction,
-        AddUser,
-    },
+    AccountAction,
+    AddUser,
+  },
 })
 export default class Profile extends Vue {
-  public edits: {[name: string]: boolean} = {};
+  public edits: { [name: string]: boolean } = {};
   public itemToken: string = '';
 
   get user() {
@@ -130,11 +124,11 @@ export default class Profile extends Vue {
   }
 
   public editProfileAttr(attr: string) {
-    this.edits = {...this.edits, [attr]: true};
+    this.edits = { ...this.edits, [attr]: true };
   }
 
   public uneditProfileAttr(attr: string) {
-    this.edits = {...this.edits, [attr]: false};
+    this.edits = { ...this.edits, [attr]: false };
   }
 
   public async updateUser(attr: string, user: User) {
@@ -171,7 +165,6 @@ export default class Profile extends Vue {
   .profile-header-card {
     flex: 0 1 auto;
     display: flex;
-
   }
 
   .profile-details-card {
@@ -221,6 +214,5 @@ export default class Profile extends Vue {
     }
   }
 }
-
 </style>
 

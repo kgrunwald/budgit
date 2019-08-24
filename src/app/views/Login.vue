@@ -1,38 +1,44 @@
 <template>
-    <div class="outer">
-        <h1>Budgit</h1>
-        <div class="login-container">
-            <span class="login-text" >Login to your account</span>
-            <b-input-group>
-                <b-input-group-prepend>
-                    <div class="icon">
-                        <font-awesome-icon icon="user"/>
-                    </div>
-                </b-input-group-prepend>
-                <b-form-input autofocus v-model="username" placeholder="username" :disabled="disabled" @keyup.enter="onSubmit"/>
-            </b-input-group>
-            <b-input-group>
-                <b-input-group-prepend>
-                    <div class="icon">
-                        <font-awesome-icon icon="lock"/>
-                    </div>
-                </b-input-group-prepend>
-                <b-form-input 
-                    v-model="password" 
-                    placeholder="password" 
-                    type="password" 
-                    :disabled="disabled"
-                    @keyup.enter="onSubmit"
-                />
-            </b-input-group>
-            <b-button variant="primary" @click="onSubmit"> Log In </b-button>
-            <!-- <div class="g-signin2" :data-onsuccess="onSignIn"></div> -->
-            <div class="google-signin" id="google-signin-btn" />
-            <div class="error-container">
-                <span class="error" v-if="error">Invalid username or password.</span>
-            </div>
-        </div>
+  <div class="outer">
+    <h1>Budgit</h1>
+    <div class="login-container">
+      <span class="login-text">Login to your account</span>
+      <b-input-group>
+        <b-input-group-prepend>
+          <div class="icon">
+            <font-awesome-icon icon="user" />
+          </div>
+        </b-input-group-prepend>
+        <b-form-input
+          autofocus
+          v-model="username"
+          placeholder="username"
+          :disabled="disabled"
+          @keyup.enter="onSubmit"
+        />
+      </b-input-group>
+      <b-input-group>
+        <b-input-group-prepend>
+          <div class="icon">
+            <font-awesome-icon icon="lock" />
+          </div>
+        </b-input-group-prepend>
+        <b-form-input
+          v-model="password"
+          placeholder="password"
+          type="password"
+          :disabled="disabled"
+          @keyup.enter="onSubmit"
+        />
+      </b-input-group>
+      <b-button variant="primary" @click="onSubmit">Log In</b-button>
+      <!-- <div class="g-signin2" :data-onsuccess="onSignIn"></div> -->
+      <div class="google-signin" id="google-signin-btn" />
+      <div class="error-container">
+        <span class="error" v-if="error">Invalid username or password.</span>
+      </div>
     </div>
+  </div>
 </template>
 
 <script lang="ts">
@@ -41,122 +47,125 @@ import Parse from 'parse';
 
 @Component
 export default class Login extends Vue {
-    public username: string = '';
-    public password: string = '';
-    public error: boolean = false;
-    public disabled: boolean = false;
+  public username: string = '';
+  public password: string = '';
+  public error: boolean = false;
+  public disabled: boolean = false;
 
-    public async mounted() {
-        // @ts-ignore
-        gapi.signin2.render('google-signin-btn', {
-            onsuccess: this.onGoogleAuthSubmit,
-            width: '270',
-            longtitle: true,
-        });
-    }
+  public async mounted() {
+    // @ts-ignore
+    gapi.signin2.render('google-signin-btn', {
+      onsuccess: this.onGoogleAuthSubmit,
+      width: '270',
+      longtitle: true,
+    });
+  }
 
-    public async onSubmit() {
-        try {
-            this.disabled = true;
-            const response = await fetch('/api/login', {
-                method: 'post',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ username: this.username, password: this.password }),
-            });
-            const body = await response.json();
-            await Parse.User.become(body.sessionToken);
-            this.error = false;
-            this.$router.push('/');
-        } catch (e) {
-            this.disabled = false;
-            this.error = true;
-        }
+  public async onSubmit() {
+    try {
+      this.disabled = true;
+      const response = await fetch('/api/login', {
+        method: 'post',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username: this.username,
+          password: this.password,
+        }),
+      });
+      const body = await response.json();
+      await Parse.User.become(body.sessionToken);
+      this.error = false;
+      this.$router.push('/');
+    } catch (e) {
+      this.disabled = false;
+      this.error = true;
     }
+  }
 
-    public async onGoogleAuthSubmit(googleUser: any) {
-        const profile = googleUser.getBasicProfile();
-        const idToken = googleUser.getAuthResponse().id_token;
-        const id = googleUser.getId();
-        try {
-            this.disabled = true;
-            const response = await fetch('/api/googleauth', {
-                method: 'post',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ idToken, id }),
-            });
-            const body = await response.json();
-            await Parse.User.become(body.sessionToken);
-            this.error = false;
-            this.$router.push('/');
-        } catch (e) {
-            this.disabled = false;
-            this.error = true;
-        }
+  public async onGoogleAuthSubmit(googleUser: any) {
+    const profile = googleUser.getBasicProfile();
+    const idToken = googleUser.getAuthResponse().id_token;
+    const id = googleUser.getId();
+    try {
+      this.disabled = true;
+      const response = await fetch('/api/googleauth', {
+        method: 'post',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ idToken, id }),
+      });
+      const body = await response.json();
+      await Parse.User.become(body.sessionToken);
+      this.error = false;
+      this.$router.push('/');
+    } catch (e) {
+      this.disabled = false;
+      this.error = true;
     }
+  }
 }
 </script>
 
 <style lang="scss" scoped>
-@import "@/app/styles/custom.scss";
+@import '@/app/styles/custom.scss';
 
 .outer {
-    width: 100%;
-    height: 100%;
-    background-color: $purple;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+  width: 100%;
+  height: 100%;
+  background-color: $purple;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 h1 {
-    color: $white;
-    margin: 90px 0 50px;
-    font-weight: 300;
+  color: $white;
+  margin: 90px 0 50px;
+  font-weight: 300;
 }
 
 .login-container {
-    height: 400px;
-    width: 350px;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-evenly;
-    padding: 40px;
-    background-color: white;
-    border-radius: 10px;
+  height: 400px;
+  width: 350px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+  padding: 40px;
+  background-color: white;
+  border-radius: 10px;
 }
 
 .login-text {
-    color: $purple;
-    width: 100%;
-    font-size: 24px;
-    font-weight: 200;
-    text-align: center;
+  color: $purple;
+  width: 100%;
+  font-size: 24px;
+  font-weight: 200;
+  text-align: center;
 }
 
 .icon {
-    width: 36px;
-    background: #e9ecef;
-    border-radius: 5px 0 0 5px;
-    text-align: center;
-    padding: 4px;
-    color: $purple;
-    border: 1px solid #ced4da;
+  width: 36px;
+  background: #e9ecef;
+  border-radius: 5px 0 0 5px;
+  text-align: center;
+  padding: 4px;
+  color: $purple;
+  border: 1px solid #ced4da;
 }
 
 .error-container {
-    height: 14px;
-    width: 100%;
-    text-align: center; 
+  height: 14px;
+  width: 100%;
+  text-align: center;
 }
 
 .error {
-    color: $danger;
-    font-size: 14px;
-    font-weight: 200;
+  color: $danger;
+  font-size: 14px;
+  font-weight: 200;
 }
 </style>
 

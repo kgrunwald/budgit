@@ -1,7 +1,9 @@
 {
   "defaultSeverity": "warning",
   "extends": [
-    "tslint:recommended"
+    "tslint:recommended",
+    "tslint-config-prettier",
+    "tslint-plugin-prettier"
   ],
   "linterOptions": {
     "exclude": [
@@ -10,6 +12,7 @@
     ]
   },
   "rules": {
+    "prettier": true,
     "quotemark": [true, "single"],
     "indent": [true, "spaces", 2],
     "interface-name": false,

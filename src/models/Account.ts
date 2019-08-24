@@ -4,101 +4,101 @@ import Item from './Item';
 import { formatMoney, moneyAsFloat } from './Money';
 
 export class Account extends PrivateModel {
-    constructor() {
-        super('Account');
-    }
+  constructor() {
+    super('Account');
+  }
 
-    get accountId(): string {
-        return this.get('accountId');
-    }
+  get accountId(): string {
+    return this.get('accountId');
+  }
 
-    set accountId(id: string) {
-        this.set('accountId', id);
-    }
+  set accountId(id: string) {
+    this.set('accountId', id);
+  }
 
-    get item(): Item {
-        return this.get('item');
-    }
+  get item(): Item {
+    return this.get('item');
+  }
 
-    set item(item: Item) {
-        this.set('item', item);
-    }
+  set item(item: Item) {
+    this.set('item', item);
+  }
 
-    get availableBalance(): number {
-        return moneyAsFloat(this.get('available'));
-    }
+  get availableBalance(): number {
+    return moneyAsFloat(this.get('available'));
+  }
 
-    set availableBalance(balance: number) {
-        this.set('available', moneyAsFloat(balance));
-    }
+  set availableBalance(balance: number) {
+    this.set('available', moneyAsFloat(balance));
+  }
 
-    get currentBalance(): number {
-        return moneyAsFloat(this.get('current'));
-    }
+  get currentBalance(): number {
+    return moneyAsFloat(this.get('current'));
+  }
 
-    set currentBalance(balance: number) {
-        this.set('current', moneyAsFloat(balance));
-    }
+  set currentBalance(balance: number) {
+    this.set('current', moneyAsFloat(balance));
+  }
 
-    get formattedCurrentBalance(): string {
-        return formatMoney(this.currentBalance);
-    }
+  get formattedCurrentBalance(): string {
+    return formatMoney(this.currentBalance);
+  }
 
-    get name(): string {
-        return this.get('name');
-    }
+  get name(): string {
+    return this.get('name');
+  }
 
-    set name(name: string) {
-        this.set('name', name);
-    }
+  set name(name: string) {
+    this.set('name', name);
+  }
 
-    get type(): string {
-        return this.get('type');
-    }
+  get type(): string {
+    return this.get('type');
+  }
 
-    set type(type: string) {
-        this.set('type', type);
-    }
+  set type(type: string) {
+    this.set('type', type);
+  }
 
-    get subType(): string {
-        return this.get('subType');
-    }
+  get subType(): string {
+    return this.get('subType');
+  }
 
-    set subType(type: string) {
-        this.set('subType', type);
-    }
+  set subType(type: string) {
+    this.set('subType', type);
+  }
 
-    get logo(): string {
-        return this.get('logo');
-    }
+  get logo(): string {
+    return this.get('logo');
+  }
 
-    set logo(logo: string) {
-        this.set('logo', `data:image/png;base64, ${logo}`);
-    }
+  set logo(logo: string) {
+    this.set('logo', `data:image/png;base64, ${logo}`);
+  }
 
-    get color(): string {
-        return this.get('color');
-    }
+  get color(): string {
+    return this.get('color');
+  }
 
-    set color(color: string) {
-        this.set('color', color);
-    }
+  set color(color: string) {
+    this.set('color', color);
+  }
 
-    get refreshToken(): string {
-        return this.get('refreshToken');
-    }
+  get refreshToken(): string {
+    return this.get('refreshToken');
+  }
 
-    set refreshToken(refreshToken: string) {
-        this.set('refreshToken', refreshToken);
-    }
+  set refreshToken(refreshToken: string) {
+    this.set('refreshToken', refreshToken);
+  }
 
-    get expired(): boolean {
-        return this.get('expired');
-    }
+  get expired(): boolean {
+    return this.get('expired');
+  }
 
-    set expired(expired: boolean) {
-        this.set('expired', expired);
-    }
+  set expired(expired: boolean) {
+    this.set('expired', expired);
+  }
 }
 
 Parse.Object.registerSubclass('Account', Account);

@@ -18,7 +18,10 @@ export default class App extends Vue {}
 </script>
 
 <style lang="scss">
-html, body, #app, .app-container {
+html,
+body,
+#app,
+.app-container {
   display: flex;
   flex-direction: column;
   height: 100vh;

@@ -4,114 +4,120 @@ import CategoryGroup from './CategoryGroup';
 import Account from './Account';
 import { reduce, has } from 'lodash';
 import { format } from 'date-fns';
-import { formatMoney, sanitizeMoney, addMoney, moneyAsFloat, isMoneyPositive } from './Money';
+import {
+  formatMoney,
+  sanitizeMoney,
+  addMoney,
+  moneyAsFloat,
+  isMoneyPositive,
+} from './Money';
 
 class Category extends PrivateModel {
-    public static getKey(month: Date): string {
-        return format(month, 'YYYYMM');
+  public static getKey(month: Date): string {
+    return format(month, 'YYYYMM');
+  }
+
+  constructor() {
+    super('Category');
+  }
+
+  get name(): string {
+    if (this.isPayment) {
+      return `Payment: ${this.paymentAccount.name}`;
     }
+    return this.get('name');
+  }
 
-    constructor() {
-        super('Category');
-    }
+  set name(name: string) {
+    this.set('name', name);
+  }
 
-    get name(): string {
-        if (this.isPayment) {
-            return `Payment: ${this.paymentAccount.name}`;
-        }
-        return this.get('name');
-    }
+  set group(group: CategoryGroup) {
+    this.set('group', group);
+  }
 
-    set name(name: string) {
-        this.set('name', name);
-    }
+  get group(): CategoryGroup {
+    return this.get('group');
+  }
 
-    set group(group: CategoryGroup) {
-        this.set('group', group);
-    }
+  set paymentAccount(acct: Account) {
+    this.set('paymentAccount', acct);
+  }
 
-    get group(): CategoryGroup {
-        return this.get('group');
-    }
+  get paymentAccount(): Account {
+    return this.get('paymentAccount');
+  }
 
-    set paymentAccount(acct: Account) {
-        this.set('paymentAccount', acct);
-    }
+  get isPayment(): boolean {
+    return !!this.paymentAccount;
+  }
 
-    get paymentAccount(): Account {
-        return this.get('paymentAccount');
-    }
+  public setBudget(month: Date, amount: number) {
+    const budget = this.get('budget') || {};
+    budget[Category.getKey(month)] = moneyAsFloat(amount);
+    this.set('budget', budget);
+  }
 
-    get isPayment(): boolean {
-        return !!this.paymentAccount;
-    }
+  public getBudget(month: Date): number {
+    const budget = this.get('budget') || {};
+    return moneyAsFloat(budget[Category.getKey(month)] || 0.0);
+  }
 
-    public setBudget(month: Date, amount: number) {
-        const budget = this.get('budget') || {};
-        budget[Category.getKey(month)] = moneyAsFloat(amount);
-        this.set('budget', budget);
-    }
+  public setActivity(month: Date, amount: number | number) {
+    const activity = this.get('activity') || {};
+    activity[Category.getKey(month)] = moneyAsFloat(amount);
+    this.set('activity', activity);
+  }
 
-    public getBudget(month: Date): number {
-        const budget = this.get('budget') || {};
-        return moneyAsFloat((budget[Category.getKey(month)] || 0.0));
-    }
+  public hasActivity(month: Date): boolean {
+    return has(this.get('activity'), Category.getKey(month));
+  }
 
-    public setActivity(month: Date, amount: number | number) {
-        const activity = this.get('activity') || {};
-        activity[Category.getKey(month)] = moneyAsFloat(amount);
-        this.set('activity', activity);
-    }
+  public getActivity(month: Date): number {
+    const activity = this.get('activity') || {};
+    return moneyAsFloat(activity[Category.getKey(month)] || 0);
+  }
 
-    public hasActivity(month: Date): boolean {
-        return has(this.get('activity'), Category.getKey(month));
-    }
+  public getFormattedActivity(month: Date): string {
+    return formatMoney(this.getActivity(month));
+  }
 
-    public getActivity(month: Date): number {
-        const activity = this.get('activity') || {};
-        return moneyAsFloat(activity[Category.getKey(month)] || 0);
-    }
+  public getBalance(month: Date): number {
+    const budget = this.get('budget');
+    const activity = this.get('activity');
+    const monthKey = Category.getKey(month);
 
-    public getFormattedActivity(month: Date): string {
-        return formatMoney(this.getActivity(month));
-    }
+    const accumulatePrevious = (total: number, val: number, key: string) => {
+      if (key <= monthKey) {
+        total += val;
+      }
+      return total;
+    };
 
-    public getBalance(month: Date): number {
-        const budget = this.get('budget');
-        const activity = this.get('activity');
-        const monthKey = Category.getKey(month);
+    const totalBudget = reduce(budget, accumulatePrevious, 0);
+    const totalActivity = reduce(activity, accumulatePrevious, 0);
+    return moneyAsFloat(totalBudget + totalActivity);
+  }
 
-        const accumulatePrevious = (total: number, val: number, key: string) => {
-            if (key <= monthKey) {
-                total += val;
-            }
-            return total;
-        };
+  public getFormattedBalance(month: Date): string {
+    return formatMoney(this.getBalance(month));
+  }
 
-        const totalBudget = reduce(budget, accumulatePrevious, 0);
-        const totalActivity = reduce(activity, accumulatePrevious, 0);
-        return moneyAsFloat(totalBudget + totalActivity);
-    }
+  public set goal(goal: number) {
+    this.set('goal', moneyAsFloat(goal));
+  }
 
-    public getFormattedBalance(month: Date): string {
-        return formatMoney(this.getBalance(month));
-    }
+  public get goal(): number {
+    return moneyAsFloat(this.get('goal'));
+  }
 
-    public set goal(goal: number) {
-        this.set('goal', moneyAsFloat(goal));
-    }
+  public get hasGoal(): boolean {
+    return this.has('goal');
+  }
 
-    public get goal(): number {
-        return moneyAsFloat(this.get('goal'));
-    }
-
-    public get hasGoal(): boolean {
-        return this.has('goal');
-    }
-
-    public get formattedGoal(): string {
-        return formatMoney(this.goal);
-    }
+  public get formattedGoal(): string {
+    return formatMoney(this.goal);
+  }
 }
 
 Parse.Object.registerSubclass('Category', Category);

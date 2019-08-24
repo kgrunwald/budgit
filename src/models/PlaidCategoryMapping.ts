@@ -3,25 +3,25 @@ import Category from './Category';
 import PrivateModel from './PrivateModel';
 
 class PlaidCategoryMapping extends PrivateModel {
-    constructor() {
-        super('PlaidCategoryMapping');
-    }
+  constructor() {
+    super('PlaidCategoryMapping');
+  }
 
-    get plaidCategoryId(): string {
-        return this.get('plaidCategoryId');
-    }
+  get plaidCategoryId(): string {
+    return this.get('plaidCategoryId');
+  }
 
-    set plaidCategoryId(plaidCategoryId: string) {
-        this.set('plaidCategoryId', plaidCategoryId);
-    }
+  set plaidCategoryId(plaidCategoryId: string) {
+    this.set('plaidCategoryId', plaidCategoryId);
+  }
 
-    get category(): Category {
-        return this.get('category');
-    }
+  get category(): Category {
+    return this.get('category');
+  }
 
-    set category(category: Category) {
-        this.set('category', category);
-    }
+  set category(category: Category) {
+    this.set('category', category);
+  }
 }
 
 Parse.Object.registerSubclass('PlaidCategoryMapping', PlaidCategoryMapping);

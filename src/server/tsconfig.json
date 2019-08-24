@@ -6,22 +6,11 @@
     "esModuleInterop": true,
     "outDir": "../../dist/server/"
   },
-  "include": [
-    "./**.ts",
-  ],
-  "files": [
-    "./index.ts",
-    "./cloud/main.ts"
-  ],
-  "exclude": [
-    "node_modules",
-    "../../node_modules",
-  ],
+  "include": ["./**.ts"],
+  "files": ["./index.ts", "./cloud/main.ts"],
+  "exclude": ["node_modules", "../../node_modules"],
   "paths": {
-    "@/*": [
-      "./*",
-      "../*"
-    ],
-    "*" : ["types/*"]
-  },
+    "@/*": ["./*", "../*"],
+    "*": ["types/*"]
+  }
 }
