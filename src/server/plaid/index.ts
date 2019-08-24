@@ -11,7 +11,7 @@ import Account from '../../models/Account';
 import Transaction from '../../models/Transaction';
 import { subDays, format, isBefore } from 'date-fns';
 import PlaidCategoryMapping from '../../models/PlaidCategoryMapping';
-import { set, get } from 'lodash';
+import { set, get, find } from 'lodash';
 import Category from '../../models/Category';
 import CategoryGroup from '../../models/CategoryGroup';
 import User from '../../models/User';
@@ -150,15 +150,16 @@ plaidRouter.use(async (req: Request, res: Response, next: NextFunction) => {
 
 plaidRouter.post('/getAccessToken', async (req: Request, res: Response) => {
   try {
-    const { user } = req;
+    const {
+      user,
+      body: { public_token, accounts },
+    } = req;
     logger.info('Got request for access token from: ' + user.getUsername());
-    const tokenResponse = await client.exchangePublicToken(
-      req.body.public_token
-    );
+    const tokenResponse = await client.exchangePublicToken(public_token);
     logger.info('Exchanged public token');
 
     const item = await savePlaidItem(tokenResponse, user);
-    await getAccounts(user, item);
+    await getAccounts(user, item, accounts);
 
     res.json({ error: false });
   } catch (err) {
@@ -291,7 +292,11 @@ plaidRouter.post('/removeAccount', async (req: Request, res: Response) => {
   }
 });
 
-async function getAccounts(user: User, item: Item): Promise<void> {
+async function getAccounts(
+  user: User,
+  item: Item,
+  accounts: { id: string; name: string; type: string; subtype: string }[]
+): Promise<void> {
   try {
     logger.info('Getting accounts for user ' + user.getUsername());
     const validTypes = ['depository', 'credit'];
@@ -300,18 +305,21 @@ async function getAccounts(user: User, item: Item): Promise<void> {
 
     response.accounts.forEach(async account => {
       if (validTypes.includes(account.type || '')) {
-        logger.info('Saving account', account);
-        const newAcct = await savePlaidAccount(
-          account,
-          response.item.institution_id,
-          item,
-          user
-        );
+        const acc = find(accounts, { id: account.account_id });
+        if (acc) {
+          logger.info('Saving account', account);
+          const newAcct = await savePlaidAccount(
+            account,
+            response.item.institution_id,
+            item,
+            user
+          );
 
-        if (account.type !== 'credit') {
-          await createInitialTransaction(user, newAcct, account);
-        } else {
-          await createCreditCardCategory(user, newAcct);
+          if (account.type !== 'credit') {
+            await createInitialTransaction(user, newAcct, account);
+          } else {
+            await createCreditCardCategory(user, newAcct);
+          }
         }
       }
     });

@@ -51,14 +51,17 @@ export default class AccountAction extends Vue {
     triggerFunc(this.token);
   }
 
-  public async onSuccess(token: string) {
+  public async onSuccess(token: string, metadata: { accounts: any }) {
     if (this.token && !this.$props.forceImport) {
       await AccountModule.updateAccount(this.$props.accountId);
     } else {
       const resp = await fetch('/api/getAccessToken', {
         method: 'post',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ public_token: token }),
+        body: JSON.stringify({
+          public_token: token,
+          accounts: metadata.accounts,
+        }),
       });
     }
   }
