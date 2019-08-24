@@ -24,6 +24,8 @@
     "@fortawesome/fontawesome-svg-core": "^1.2.19",
     "@fortawesome/free-solid-svg-icons": "^5.9.0",
     "@fortawesome/vue-fontawesome": "^0.1.6",
+    "@types/gapi": "^0.0.39",
+    "@types/gapi.auth2": "^0.0.50",
     "@types/mathjs": "^6.0.1",
     "@types/uuid": "^3.4.5",
     "bootstrap": "^4.3.1",

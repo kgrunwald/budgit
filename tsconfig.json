@@ -11,22 +11,12 @@
     "allowSyntheticDefaultImports": true,
     "sourceMap": true,
     "baseUrl": ".",
-    "types": [
-      "webpack-env",
-      "jest"
-    ],
+    "types": ["webpack-env", "jest", "gapi", "gapi.auth2"],
     "paths": {
-      "@/*": [
-        "src/*"
-      ],
-      "*" : ["types/*"]
+      "@/*": ["src/*"],
+      "*": ["types/*"]
     },
-    "lib": [
-      "esnext",
-      "dom",
-      "dom.iterable",
-      "scripthost"
-    ]
+    "lib": ["esnext", "dom", "dom.iterable", "scripthost"]
   },
   "include": [
     "src/**/*.ts",
@@ -34,11 +24,8 @@
     "src/**/*.vue",
     "tests/**/*.ts",
     "tests/**/*.tsx",
-    "!src/**/*.d.ts", "src/server/cloud/main.js"
+    "!src/**/*.d.ts",
+    "src/server/cloud/main.js"
   ],
-  "exclude": [
-    "node_modules",
-    "src/server",
-    "types/*"
-  ]
+  "exclude": ["node_modules", "src/server", "types/*"]
 }

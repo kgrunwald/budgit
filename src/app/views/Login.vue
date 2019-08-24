@@ -53,10 +53,9 @@ export default class Login extends Vue {
   public disabled: boolean = false;
 
   public async mounted() {
-    // @ts-ignore
     gapi.signin2.render('google-signin-btn', {
       onsuccess: this.onGoogleAuthSubmit,
-      width: '270',
+      width: 270,
       longtitle: true,
     });
   }
