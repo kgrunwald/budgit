@@ -37,6 +37,13 @@ import logger from './logger';
 import plaid from './plaid';
 const app = express();
 
+const forceSsl = function(req: any, res: any, next: any) {
+  if (req.headers['x-forwarded-proto'] !== 'https') {
+    return res.redirect(['https://', req.get('Host'), req.url].join(''));
+  }
+  return next();
+};
+
 logger.info('Config', {
   PORT,
   APP_ID,
@@ -46,6 +53,10 @@ logger.info('Config', {
 });
 
 const isProduction = NODE_ENV === 'production';
+
+if (isProduction) {
+  app.use(forceSsl);
+}
 
 const MongoStore = createMongoStore(session);
 app.use(
