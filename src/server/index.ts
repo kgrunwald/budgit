@@ -54,9 +54,9 @@ logger.info('Config', {
 
 const isProduction = NODE_ENV === 'production';
 
-if (isProduction) {
-  app.use(forceSsl);
-}
+// if (isProduction) {
+//   app.use(forceSsl);
+// }
 
 const MongoStore = createMongoStore(session);
 app.use(
