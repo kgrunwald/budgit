@@ -54,10 +54,6 @@ logger.info('Config', {
 
 const isProduction = NODE_ENV === 'production';
 
-// if (isProduction) {
-//   app.use(forceSsl);
-// }
-
 const MongoStore = createMongoStore(session);
 app.use(
   session({
@@ -99,6 +95,10 @@ app.use(express.static(publicPath, staticConf));
 app.get('*', (req, res) => {
   res.sendFile(resolve(__dirname, STATIC_PATH + '/index.html'));
 });
+
+if (isProduction) {
+  app.use(forceSsl);
+}
 
 const httpServer = http.createServer(app);
 httpServer.listen(PORT, () => {
