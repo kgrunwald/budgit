@@ -47,15 +47,15 @@ logger.info('Config', {
 
 const isProduction = NODE_ENV === 'production';
 
-if (isProduction) {
-  if (process.env.NODE_ENV === 'production') {
-    app.use((req, res, next) => {
-      if (req.header('x-forwarded-proto') !== 'https')
-        res.redirect(`https://${req.header('host')}${req.url}`);
-      else next();
-    });
-  }
-}
+// if (isProduction) {
+//   if (process.env.NODE_ENV === 'production') {
+//     app.use((req, res, next) => {
+//       if (req.header('x-forwarded-proto') !== 'https')
+//         res.redirect(`https://${req.header('host')}${req.url}`);
+//       else next();
+//     });
+//   }
+// }
 
 const MongoStore = createMongoStore(session);
 app.use(
