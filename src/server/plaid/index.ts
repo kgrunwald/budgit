@@ -135,9 +135,9 @@ plaidRouter.get('/logout', (req, res) => {
 plaidRouter.use(async (req: Request, res: Response, next: NextFunction) => {
   // @ts-ignore
   const user = await new Parse.Query(User).first({
-    ...SUDO,
-    sessionToken: get(req, 'session.token', ''),
+    sessionToken: get(req, 'session.token', 'no token'),
   });
+
   if (!user) {
     req.session && req.session.destroy(() => logger.info('Session destroyed'));
     res.redirect('/login');
@@ -220,7 +220,7 @@ plaidRouter.post('/updateAccounts', async (req: Request, res: Response) => {
     const accts: Account[] = await new Parse.Query(Account)
       .includeAll()
       .equalTo('item', item)
-      .find({ useMasterKey: true });
+      .find(SUDO);
     logger.info(`Loaded all accounts for item ${item.itemId}`);
     accts.forEach(async acct => {
       logger.info(`Loading transactions for account: ${acct.accountId}`);
