@@ -82,6 +82,7 @@ plaidRouter.post('/login', async (req: Request, res: Response) => {
     const user = await User.logIn(username, password);
     logger.info('User', user);
     set(req, 'session.token', user.getSessionToken());
+    set(req, 'session.userId', user.get('id'));
     refreshAccounts(user);
     res.json(user);
   } catch (err) {
@@ -112,6 +113,7 @@ plaidRouter.post('/googleauth', async (req: Request, res: Response) => {
     );
     if (user) {
       set(req, 'session.token', user.getSessionToken());
+      set(req, 'session.userId', user.get('id'));
       refreshAccounts(user);
       res.json(user);
     } else {
@@ -134,9 +136,10 @@ plaidRouter.get('/logout', (req, res) => {
 
 plaidRouter.use(async (req: Request, res: Response, next: NextFunction) => {
   // @ts-ignore
-  const user = await new Parse.Query(User).first({
-    sessionToken: get(req, 'session.token', 'no token'),
-  });
+  const user = await new Parse.Query(User).get(
+      get(req, 'session.userId'),
+      { sessionToken: get(req, 'session.token') }
+  );
 
   if (!user) {
     req.session && req.session.destroy(() => logger.info('Session destroyed'));
