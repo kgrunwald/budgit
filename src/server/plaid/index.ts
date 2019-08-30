@@ -15,6 +15,12 @@ import { set, get } from 'lodash';
 import Category from '../../models/Category';
 import CategoryGroup from '../../models/CategoryGroup';
 import User from '../../models/User';
+import UserDao from '../../dao/UserDao';
+import AccountDao from '../../dao/AccountDao';
+import ItemDao from '../../dao/ItemDao';
+import TransactionDao from '../../dao/TransactionDao';
+import CategoryDao from '../../dao/CategoryDao';
+import CategoryGroupDao from '../../dao/CategoryGroupDao';
 import { TokenPayload } from 'google-auth-library/build/src/auth/loginticket';
 
 const CLIENT_ID = process.env.PLAID_CLIENT_ID || '';
@@ -37,6 +43,12 @@ declare global {
   namespace Express {
     interface Request {
       user: User;
+      userDao: UserDao;
+      accountDao: AccountDao;
+      itemDao: ItemDao;
+      transactionDao: TransactionDao;
+      categoryDao: CategoryDao;
+      categoryGroupDao: CategoryGroupDao;
     }
   }
 }
@@ -62,13 +74,23 @@ const oathClient = new OAuth2Client(GOOGLE_CLIENT_ID);
 
 const plaidRouter = Router();
 
+plaidRouter.use((req: Request, res: Response, next: NextFunction) => {
+  req.userDao = new UserDao(true);
+  req.itemDao = new ItemDao(true);
+  req.accountDao = new AccountDao(true);
+  req.transactionDao = new TransactionDao(true);
+  req.categoryDao = new CategoryDao(true);
+  req.categoryGroupDao = new CategoryGroupDao(true);
+  next();
+});
+
 plaidRouter.post('/webhook', async (req: Request, res: Response) => {
   const type = req.body.webhook_type;
   if (type === 'TRANSACTIONS') {
-    await handleTransactionWebhook(req.body as TransactionWebhook);
+    await handleTransactionWebhook(req, req.body as TransactionWebhook);
     res.json({ status: 'ok' });
   } else if (type === 'ITEM') {
-    await handleItemWebhook(req.body as ItemWebhook);
+    await handleItemWebhook(req, req.body as ItemWebhook);
     res.json({ status: 'ok' });
   } else {
     logger.error('Got unknown webhook type', req.body);
@@ -80,10 +102,11 @@ plaidRouter.post('/login', async (req: Request, res: Response) => {
   try {
     const { username, password } = req.body;
     const user = await User.logIn(username, password);
+    req.user = user;
     logger.info('User', user);
-    set(req, 'session.token', user.getSessionToken());
-    set(req, 'session.userId', user.get('id'));
-    refreshAccounts(user);
+
+    set(req, 'session.user', user);
+    refreshAccounts(req);
     res.json(user);
   } catch (err) {
     if (err.message === 'Invalid username/password.') {
@@ -102,19 +125,16 @@ plaidRouter.post('/googleauth', async (req: Request, res: Response) => {
       audience: GOOGLE_CLIENT_ID,
     });
     const payload = ticket.getPayload() as TokenPayload;
-    // @ts-ignore
-    const user = await new Parse.Query(User)
-      .equalTo('username', payload.email)
-      .first({ ...SUDO });
-    await user._linkWith(
-      'google',
-      { authData: { id: payload['sub'], id_token: idToken } },
-      { ...SUDO }
-    );
+    const user = await req.userDao.byUsername(payload.email || '');
     if (user) {
-      set(req, 'session.token', user.getSessionToken());
-      set(req, 'session.userId', user.get('id'));
-      refreshAccounts(user);
+      await user._linkWith(
+        'google',
+        { authData: { id: payload['sub'], id_token: idToken } },
+        { ...SUDO }
+      );
+      set(req, 'session.user', user);
+      req.user = user;
+      refreshAccounts(req);
       res.json(user);
     } else {
       throw 'Invalid username/password.';
@@ -130,24 +150,32 @@ plaidRouter.post('/googleauth', async (req: Request, res: Response) => {
 
 plaidRouter.get('/logout', (req, res) => {
   logger.info('Logout route', req.session);
-  req.session && req.session.destroy(() => logger.info('Session destroyed'));
-  res.json({ message: 'ok' });
+  req.session &&
+    req.session.destroy(() => {
+      logger.info('Session destroyed');
+      res.json({ message: 'ok' });
+    });
 });
 
 plaidRouter.use(async (req: Request, res: Response, next: NextFunction) => {
-  // @ts-ignore
-  const user = await new Parse.Query(User).get(
-      get(req, 'session.userId'),
-      { sessionToken: get(req, 'session.token') }
-  );
+  try {
+    logger.info('session', req.session);
+    const user = await req.userDao.byId(get(req, 'session.user.objectId'));
+    req.user = user;
 
-  if (!user) {
+    const token = user.getSessionToken();
+    req.userDao.setSessionToken(token);
+    req.itemDao = new ItemDao(true);
+    req.accountDao = new AccountDao(true);
+    req.transactionDao = new TransactionDao(true);
+    req.categoryDao = new CategoryDao(true);
+    req.categoryGroupDao = new CategoryGroupDao(true);
+  } catch (err) {
+    logger.warn('Could not find user, redirecting to login', { err });
     req.session && req.session.destroy(() => logger.info('Session destroyed'));
     res.redirect('/login');
     return;
   }
-
-  req.user = user;
   next();
 });
 
@@ -160,8 +188,8 @@ plaidRouter.post('/getAccessToken', async (req: Request, res: Response) => {
     );
     logger.info('Exchanged public token');
 
-    const item = await savePlaidItem(tokenResponse, user);
-    await getAccounts(user, item);
+    const item = await savePlaidItem(tokenResponse, req);
+    await getAccounts(req, item);
 
     res.json({ error: false });
   } catch (err) {
@@ -179,18 +207,23 @@ plaidRouter.post('/refreshToken', async (req: Request, res: Response) => {
     let item;
 
     if (accountId) {
-      // @ts-ignore
-      const acct: Account = await new Parse.Query(Account)
-        .include('item')
-        .equalTo('accountId', accountId)
-        .first(SUDO);
+      const acct = await req.accountDao.byAccountId(accountId);
+      if (!acct) {
+        logger.error('Could not find account by account id', { accountId });
+        throw new Error('Could not find account by accountId');
+      }
+
       logger.info(
         `Loaded account: ${acct.accountId}. Refreshing token for item: ${acct.item.itemId}`
       );
       item = acct.item;
     } else if (itemId) {
-      // @ts-ignore
-      item = await new Parse.Query(Item).get(itemId, SUDO);
+      item = await req.itemDao.byItemId(itemId);
+    }
+
+    if (!item) {
+      logger.error('Could not find item by item id', { itemId });
+      throw new Error('Could not find item by item id');
     }
 
     const response = await client.createPublicToken(item.accessToken);
@@ -208,26 +241,23 @@ plaidRouter.post('/updateAccounts', async (req: Request, res: Response) => {
     logger.info('Got updateAccounts request from: ' + user.getUsername());
 
     const { accountId } = req.body;
-    // @ts-ignore
-    const acct: Account = await new Parse.Query(Account)
-      .include('item')
-      .equalTo('accountId', accountId)
-      .first(SUDO);
+    const acct = await req.accountDao.byAccountId(accountId);
+    if (!acct) {
+      logger.error('Could not find account by account id', { accountId });
+      throw new Error('Could not find account by account id');
+    }
+
     logger.info(
       `Loaded account: ${acct.accountId}. Refreshing all transactions for item: ${acct.item.itemId}`
     );
 
     const item = acct.item;
 
-    // @ts-ignore
-    const accts: Account[] = await new Parse.Query(Account)
-      .includeAll()
-      .equalTo('item', item)
-      .find(SUDO);
+    const accts = await req.accountDao.byItem(item);
     logger.info(`Loaded all accounts for item ${item.itemId}`);
     accts.forEach(async acct => {
       logger.info(`Loading transactions for account: ${acct.accountId}`);
-      await getTransactions(user, acct);
+      await getTransactions(req, acct);
     });
 
     res.json({ error: false });
@@ -243,40 +273,31 @@ plaidRouter.post('/removeAccount', async (req: Request, res: Response) => {
     logger.info('Got removeAccount request from: ' + user.getUsername());
 
     const { accountId } = req.body;
-    // @ts-ignore
-    const acct: Account = await new Parse.Query(Account)
-      .include('item')
-      .equalTo('accountId', accountId)
-      .first(SUDO);
+    const acct = await req.accountDao.byAccountId(accountId);
+    if (!acct) {
+      logger.error('Could not find account by account id', { accountId });
+      throw new Error('Could not find account by account id');
+    }
+
     logger.info(
       `Loaded account: ${acct.accountId}. Account item: ${acct.item.itemId}`
     );
 
     const item = acct.item;
     logger.info(`Removing transactions for account: ${acct.accountId}.`);
-    // @ts-ignore
-    const trans: Transaction[] = await new Parse.Query(Transaction)
-      .includeAll()
-      .equalTo('account', acct)
-      .find(SUDO);
-    trans.forEach(async tran => {
-      await tran.destroy(SUDO);
+
+    const txns = await req.transactionDao.byAccount(acct);
+    txns.forEach(async txn => {
+      await txn.destroy(SUDO);
     });
-    // @ts-ignore
-    const categories: Category[] = await new Parse.Query(Category)
-      .includeAll()
-      .equalTo('paymentAccount', acct)
-      .find(SUDO);
+
+    const categories = await req.categoryDao.byPaymentAccount(acct);
     categories.forEach(async category => {
       await category.destroy(SUDO);
     });
     await acct.destroy(SUDO);
 
-    // @ts-ignore
-    const accts: Account[] = await new Parse.Query(Account)
-      .includeAll()
-      .equalTo('item', item)
-      .find(SUDO);
+    const accts = await req.accountDao.byItem(item);
     logger.info(
       `Length of all accounts for item ${item.itemId}: ${accts.length}`
     );
@@ -294,9 +315,9 @@ plaidRouter.post('/removeAccount', async (req: Request, res: Response) => {
   }
 });
 
-async function getAccounts(user: User, item: Item): Promise<void> {
+async function getAccounts(req: Request, item: Item): Promise<void> {
   try {
-    logger.info('Getting accounts for user ' + user.getUsername());
+    logger.info('Getting accounts for user ' + req.user.getUsername());
     const validTypes = ['depository', 'credit'];
 
     const response = await client.getAccounts(item.accessToken);
@@ -308,20 +329,20 @@ async function getAccounts(user: User, item: Item): Promise<void> {
           account,
           response.item.institution_id,
           item,
-          user
+          req
         );
 
         if (account.type !== 'credit') {
-          await createInitialTransaction(user, newAcct, account);
+          await createInitialTransaction(req, newAcct, account);
         } else {
-          await createCreditCardCategory(user, newAcct);
+          await createCreditCardCategory(req, newAcct);
         }
       }
     });
   } catch (err) {
     if (err.error_code === 'ITEM_LOGIN_REQUIRED') {
       logger.error(`Login required for item: ${item.itemId}`);
-      await markItemTokenExpired(item);
+      await markItemTokenExpired(req, item);
     } else {
       logger.error('Error updating accounts:', err);
     }
@@ -329,7 +350,7 @@ async function getAccounts(user: User, item: Item): Promise<void> {
 }
 
 async function createInitialTransaction(
-  user: User,
+  req: Request,
   newAcct: Account,
   account: plaid.Account
 ) {
@@ -344,49 +365,50 @@ async function createInitialTransaction(
   initialTxn.merchant = `${newAcct.name} Initial Balance`;
   initialTxn.transactionId = newAcct.accountId;
 
-  // @ts-ignore
-  const category = await new Parse.Query(Category)
-    .equalTo('name', 'Available Cash')
-    .equalTo('user', user)
-    .first(SUDO);
+  const category = await req.categoryDao.byName('Available Cash');
+  if (!category) {
+    logger.error('Cant load the available cash category', {
+      user: req.user,
+    });
+    throw new Error('Failed to load available cash category');
+  }
+
   logger.info('Loaded cash category', { category });
   initialTxn.category = category;
 
-  await initialTxn.commit(user, SUDO);
+  await initialTxn.commit(req.user, SUDO);
 }
 
-async function createCreditCardCategory(user: User, newAcct: Account) {
-  // @ts-ignore
-  let group = await new Parse.Query(CategoryGroup)
-    .equalTo('name', 'Credit Cards')
-    .equalTo('user', user)
-    .first(SUDO);
+async function createCreditCardCategory(req: Request, newAcct: Account) {
+  let group = await req.categoryGroupDao.byName('Credit Cards');
   if (!group) {
-    logger.info('Creating credit card group for user ' + user.getUsername());
+    logger.info(
+      'Creating credit card group for user ' + req.user.getUsername()
+    );
     group = new CategoryGroup();
     group.name = 'Credit Cards';
-    await group.commit(user, SUDO);
+    await group.commit(req.user, SUDO);
   }
 
   const category = new Category();
   category.name = `Payment: ${newAcct.name}`;
   category.group = group;
   category.paymentAccount = newAcct;
-  await category.commit(user, SUDO);
+  await category.commit(req.user, SUDO);
 }
 
-async function refreshAccounts(user: User) {
-  logger.info(`Refreshing account for user ${user.getUsername()}`);
-  // @ts-ignore
-  const accts: Account[] = await new Parse.Query(Account)
-    .includeAll()
-    .equalTo('user', user)
-    .find(SUDO);
-  accts.forEach(acct => getTransactions(user, acct));
+async function refreshAccounts(req: Request) {
+  logger.info(`Refreshing account for user ${req.user.getUsername()}`);
+  if (!req.accountDao) {
+    req.accountDao = new AccountDao(true);
+  }
+  const accts = await req.accountDao.all();
+  accts.forEach(acct => getTransactions(req, acct));
 }
 
-async function getTransactions(user: User, account: Account): Promise<void> {
+async function getTransactions(req: Request, account: Account): Promise<void> {
   try {
+    const { user } = req;
     logger.info(
       'Getting transactions for user: ' +
         user.getUsername() +
@@ -414,7 +436,7 @@ async function getTransactions(user: User, account: Account): Promise<void> {
 
     response.transactions.forEach(async plaidTxn => {
       logger.info(`Processing transaction ${plaidTxn.transaction_id}`);
-      await savePlaidTransaction(plaidTxn, account, user);
+      await savePlaidTransaction(plaidTxn, account, req);
     });
 
     account.expired = false;
@@ -425,12 +447,9 @@ async function getTransactions(user: User, account: Account): Promise<void> {
   }
 }
 
-async function markItemTokenExpired(item: Item): Promise<void> {
+async function markItemTokenExpired(req: Request, item: Item): Promise<void> {
   logger.info(`Marking all accounts for item ${item.itemId} as expired`);
-  // @ts-ignore
-  const accts: Account[] = await new Parse.Query(Account)
-    .equalTo('item', item)
-    .find(SUDO);
+  const accts = await req.accountDao.byItem(item);
   accts.forEach(async acct => {
     logger.info(`Marking account ${acct.accountId} expired.`);
     acct.expired = true;
@@ -439,6 +458,7 @@ async function markItemTokenExpired(item: Item): Promise<void> {
 }
 
 async function handleTransactionWebhook(
+  req: Request,
   payload: TransactionWebhook
 ): Promise<void> {
   logger.info('Processing transaction webhook', payload);
@@ -451,11 +471,11 @@ async function handleTransactionWebhook(
     logger.info(
       `Loading transactions: ${payload.webhook_code} for item ${payload.item_id}`
     );
-    // @ts-ignore
-    const item: Item = await new Parse.Query(Item)
-      .includeAll()
-      .equalTo('itemId', payload.item_id)
-      .first(SUDO);
+    const item = await req.itemDao.byItemId(payload.item_id);
+    if (!item) {
+      logger.error('Failed to load item', { payload });
+      throw new Error('Failed to load item');
+    }
 
     const endDate = format(Date(), DATE_FORMAT);
     const startDate = format(subDays(endDate, 30), DATE_FORMAT);
@@ -468,52 +488,45 @@ async function handleTransactionWebhook(
     txnsResp.transactions.forEach(async plaidTxn => {
       logger.info(`Processing transaction ${plaidTxn.transaction_id}`);
 
-      // @ts-ignore
-      const acctQuery = new Parse.Query(Account).equalTo(
-        'accountId',
-        plaidTxn.account_id
-      );
-      const exists = await acctQuery.count(SUDO);
-      logger.info(`Found matching account for transaction: ${exists}`);
-      if (exists) {
-        const acct: Account = await acctQuery.first(SUDO);
+      const acct = await req.accountDao.byAccountId(plaidTxn.account_id);
+      if (acct) {
+        logger.info(`Found matching account for transaction.`);
         logger.info(`Saving transaction to account ${acct.accountId}`);
-        await savePlaidTransaction(plaidTxn, acct, item.user);
+        await savePlaidTransaction(plaidTxn, acct, req);
       }
     });
   } else if (payload.webhook_code === 'TRANSACTIONS_REMOVED') {
     logger.info('Removing transactions');
     payload.removed_transactions.forEach(async txnId => {
-      // @ts-ignore
-      const txn: Transaction = await new Parse.Query(Transaction)
-        .equalTo('transactionId', txnId)
-        .first(SUDO);
-      logger.info(`Destroying transaction: ${txn.transactionId}`);
-      await txn.destroy(SUDO);
+      const txn = await req.transactionDao.byTransactionId(txnId);
+      if (txn) {
+        logger.info(`Destroying transaction: ${txn.transactionId}`);
+        await txn.destroy(SUDO);
+      }
     });
   }
 }
 
-async function handleItemWebhook(payload: ItemWebhook) {
+async function handleItemWebhook(req: Request, payload: ItemWebhook) {
   if (
     payload.webhook_code === 'ERROR' &&
     payload.error.error_code === 'ITEM_LOGIN_REQUIRED'
   ) {
     logger.info(`Login required for ${payload.item_id}`);
-    const item = await fetch(Item, 'itemId', payload.item_id);
-    await markItemTokenExpired(item as Item);
+    const item = await req.itemDao.byItemId(payload.item_id);
+    await markItemTokenExpired(req, item as Item);
   }
 }
 
 async function savePlaidItem(
   token: plaid.TokenResponse,
-  user: User
+  req: Request
 ): Promise<Item> {
-  logger.info('Saving Plaid Item', { token, user });
-  const item = await getOrCreate(Item, 'itemId', token.item_id);
+  logger.info('Saving Plaid Item', { token, user: req.user });
+  const item = await req.itemDao.getOrCreate(token.item_id);
   item.accessToken = token.access_token;
   item.itemId = token.item_id;
-  item.user = user;
+  item.user = req.user;
 
   const acl = new Parse.ACL();
   acl.setPublicReadAccess(false);
@@ -528,44 +541,33 @@ async function savePlaidItem(
 async function savePlaidTransaction(
   plaidTxn: plaid.Transaction,
   account: Account,
-  user: User
+  req: Request
 ): Promise<void> {
   if (plaidTxn.pending) {
     logger.info(`Transaction ${plaidTxn.transaction_id} is pending, skipping.`);
     return;
   }
 
-  const txn = await getOrCreate(
-    Transaction,
-    'transactionId',
-    plaidTxn.transaction_id
-  );
+  const txn = await req.transactionDao.getOrCreate(plaidTxn.transaction_id);
   txn.transactionId = plaidTxn.transaction_id;
   txn.merchant = plaidTxn.name || '';
   txn.date = new Date(plaidTxn.date);
   txn.amount = (plaidTxn.amount || 0) * -1;
 
   if (plaidTxn.category_id) {
-    const categoryMap = await fetch(
-      PlaidCategoryMapping,
-      'plaidCategoryId',
-      plaidTxn.category_id
-    );
-    if (categoryMap) {
-      txn.category = categoryMap.category;
-    }
+    // TODO: PlaidCategoryMapping
   }
   txn.account = account;
-  await txn.commit(user, SUDO);
+  await txn.commit(req.user, SUDO);
 }
 
 async function savePlaidAccount(
   account: plaid.Account,
   institutionId: string,
   item: Item,
-  user: User
+  req: Request
 ): Promise<Account> {
-  const getAccount = getOrCreate(Account, 'accountId', account.account_id);
+  const getAccount = await req.accountDao.getOrCreate(account.account_id);
   const getInstitution = client.getInstitutionById<
     InstitutionWithInstitutionData
   >(institutionId, { include_optional_metadata: true });
@@ -587,54 +589,8 @@ async function savePlaidAccount(
   acct.logo = institution.logo;
   acct.expired = false;
 
-  await acct.commit(user, SUDO);
+  await acct.commit(req.user, SUDO);
   return acct;
-}
-
-interface Queryable<T> {
-  new (...args: any[]): T;
-}
-
-async function getOrCreate<T>(
-  classType: Queryable<T>,
-  idField: string,
-  id: string
-): Promise<T> {
-  let inst: T | null = null;
-  try {
-    inst = ((await new Parse.Query(classType.name)
-      .includeAll()
-      .equalTo(idField, id)
-      .first(SUDO)) as any) as T;
-  } catch (e) {
-    logger.info(`Class ${classType.name} did not exist. Creating new instance`);
-  }
-
-  if (!inst) {
-    inst = new classType();
-  }
-
-  return inst;
-}
-
-async function fetch<T>(
-  classType: Queryable<T>,
-  idField: string,
-  id: string
-): Promise<T | null> {
-  let inst: T | null = null;
-  try {
-    inst = ((await new Parse.Query(classType.name)
-      .includeAll()
-      .equalTo(idField, id)
-      .first(SUDO)) as any) as T;
-  } catch (e) {
-    logger.info(
-      `Class ${classType.name} did not exist. Skipping due to fetch().`
-    );
-  }
-
-  return inst;
 }
 
 export default plaidRouter;
