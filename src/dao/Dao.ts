@@ -19,11 +19,17 @@ abstract class Dao {
   }
 
   protected async getOrCreate(field: string, id: string) {
-    let obj = await this.first(field, id);
-    if (!obj) {
-      obj = new this.clazz();
+    try {
+      const obj = await this.first(field, id);
+      if (obj) {
+        return obj;
+      }
+    } catch (err) {
+      // pass;
     }
-    return obj;
+
+    const newObj = new this.clazz();
+    return newObj;
   }
 
   protected all() {
