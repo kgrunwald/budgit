@@ -47,7 +47,6 @@ export default class Navigation extends Vue {
     AccountModule.loadAccounts();
     CategoryModule.loadCategories();
     CategoryGroupModule.loadCategoryGroups();
-    TransactionModule.load();
   }
 
   public async signOut() {
