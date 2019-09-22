@@ -57,7 +57,7 @@ class TransactionModule extends VuexModule {
 
     this.txnsByAcct = {
       ...this.txnsByAcct,
-      [acctId]: [...reverse(sortBy(txns, 'date'))],
+      [acctId]: [...reverse(sortBy(txns, ['date', 'id']))],
     };
   }
 
