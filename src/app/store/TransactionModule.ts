@@ -7,7 +7,7 @@ import {
   MutationAction,
 } from 'vuex-module-decorators';
 import store from './index';
-import { omit, pickBy, values, sortBy, reverse } from 'lodash';
+import { omit, pickBy, remove, sortBy, reverse } from 'lodash';
 import Parse from 'parse';
 import Account from '@/models/Account';
 import Transaction from '@/models/Transaction';
@@ -17,14 +17,18 @@ interface TxnMap {
   [k: string]: Transaction;
 }
 
+interface AcctTxnMap {
+  [k: string]: Transaction[];
+}
+
 @Module({ name: 'transaction', store, namespaced: true, dynamic: true })
 class TransactionModule extends VuexModule {
-  public txnsByid: TxnMap = {};
+  public txnsByAcct: AcctTxnMap = {};
 
   @Action
   public async load() {
     // @ts-ignore
-    const query = new Parse.Query(Transaction).includeAll();
+    const query = new Parse.Query(Transaction).limit(30).includeAll();
     const txnSub = new Subscriber(query, this);
     await txnSub.subscribe();
   }
@@ -44,26 +48,29 @@ class TransactionModule extends VuexModule {
 
   @Mutation
   public add(txn: Transaction) {
-    this.txnsByid = {
-      ...this.txnsByid,
-      [txn.transactionId]: txn,
+    const acctId = txn.account.accountId;
+    let txns = this.txnsByAcct[acctId] || [];
+    txns = remove(txns, existing => existing.id !== txn.id);
+    txns.push(txn);
+
+    this.txnsByAcct = {
+      ...this.txnsByAcct,
+      [acctId]: [...reverse(sortBy(txns, 'date'))],
     };
   }
 
   @Mutation
   public remove(txn: Transaction) {
-    this.txnsByid = omit(this.txnsByid, txn.transactionId);
+    const acctId = txn.account.accountId;
+    const txns = this.txnsByAcct[acctId];
+    this.txnsByAcct = {
+      ...this.txnsByAcct,
+      [acctId]: [...remove(txns, existing => existing.id !== txn.id)],
+    };
   }
 
   get byAccountId() {
-    return (acctId: string): Transaction[] => {
-      const matches = pickBy(this.txnsByid, (txn: Transaction) => {
-        return txn && txn.account.accountId === acctId;
-      });
-
-      // @ts-ignore
-      return reverse(sortBy(values(matches), 'date'));
-    };
+    return (acctId: string): Transaction[] => this.txnsByAcct[acctId];
   }
 
   @Action({ commit: 'add' })
