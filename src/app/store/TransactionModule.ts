@@ -39,6 +39,7 @@ class TransactionModule extends VuexModule {
     const query = new Parse.Query(Transaction);
     query.equalTo('account', account);
     query.include('category');
+    query.descending('date');
     query.limit(30);
 
     const txns = await query.find();
