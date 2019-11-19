@@ -28,7 +28,7 @@ class TransactionModule extends VuexModule {
   @Action
   public async load() {
     // @ts-ignore
-    const query = new Parse.Query(Transaction).limit(30).includeAll();
+    const query = new Parse.Query(Transaction).limit(100).includeAll();
     const txnSub = new Subscriber(query, this);
     await txnSub.subscribe();
   }
