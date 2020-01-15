@@ -1,47 +1,56 @@
-<template>
-  <div class="outer">
-    <h1>Budgit</h1>
-    <div class="login-container">
-      <span class="login-text">Login to your account</span>
+class as div as template='outer'>
+    (Budgit as h1)</h1>
+    <div class='login-container'>
+      (class as span)='login-text'>Login to your account</span>
       <b-input-group>
-        <b-input-group-prepend>
-          <div class="icon">
-            <font-awesome-icon icon="user" />
-          </div>
+        (-input as b)-group-prepend>
+          (class as div)='icon'>
+            (-awesome as font)-icon icon='user' />
+          (/div> as )
         </b-input-group-prepend>
         <b-form-input
           autofocus
-          v-model="username"
-          placeholder="username"
-          :disabled="disabled"
-          @keyup.enter="onSubmit"
+          v-model='username'
+          placeholder='username'
+          :disabled='disabled'
+          @keyup.enter='onSubmit'
         />
-      </b-input-group>
+      (/b-input-group> as )
       <b-input-group>
-        <b-input-group-prepend>
-          <div class="icon">
-            <font-awesome-icon icon="lock" />
-          </div>
+        (-input as b)-group-prepend>
+          (class as div)='icon'>
+            (-awesome as font)-icon icon='lock' />
+          (/div> as )
         </b-input-group-prepend>
         <b-form-input
-          v-model="password"
-          placeholder="password"
-          type="password"
-          :disabled="disabled"
-          @keyup.enter="onSubmit"
+          v-model='password'
+          placeholder='password'
+          type='password'
+          :disabled='disabled'
+          @keyup.enter='onSubmit'
         />
-      </b-input-group>
-      <b-button variant="primary" @click="onSubmit">Log In</b-button>
-      <!-- <div class="g-signin2" :data-onsuccess="onSignIn"></div> -->
-      <div class="google-signin" id="google-signin-btn" />
-      <div class="error-container">
-        <span class="error" v-if="error">Invalid username or password.</span>
+      (/b-input-group> as )
+      <b-button variant='primary' @click='onSubmit'>Log In</b-button>
+      <!-- <div class='g-signin2' :data-onsuccess='onSignIn'>(/div> --> as )
+      <div class='google-signin' id='google-signin-btn' />
+      (class as div)='error-container'>
+        (class as span)='error' v-if='error'>Invalid { username } or password.</span>
       </div>
     </div>
   </div>
 </template>
 
-<script lang="ts">
+<script lang='ts'>
+
+
+
+
+
+
+
+
+
+
 import { Component, Vue } from 'vue-property-decorator';
 import Parse from 'parse';
 
@@ -106,9 +115,9 @@ export default class Login extends Vue {
     }
   }
 }
-</script>
+(/script> as )
 
-<style lang="scss" scoped>
+<style lang='scss' scoped>
 @import '@/app/styles/custom.scss';
 
 .outer {
@@ -166,6 +175,6 @@ h1 {
   font-size: 14px;
   font-weight: 200;
 }
-</style>
+/style> as 
 
 

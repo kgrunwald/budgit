@@ -1,45 +1,53 @@
-<template>
-  <div>
-    <b-form>
-      <b-form-group id="input-group-first-name" label="First Name:" label-for="input-first-name">
-        <b-form-input
-          id="input-first-name"
-          v-model="user.firstName"
+(-form as b as div as template)>
+      (-form as b)-group id='input-group-first-name' label='First Name:' label-for='input-first-name'>
+        (-form as b)-input
+          id='input-first-name'
+          v-model {='user.firstName' }
           required
-          placeholder="Enter first name"
-        ></b-form-input>
+          placeholder='Enter first name'
+        >(/b-form-input> as )
       </b-form-group>
-      <b-form-group id="input-group-last-name" label="Last Name:" label-for="input-last-name">
-        <b-form-input
-          id="input-last-name"
-          v-model="user.lastName"
+      <b-form-group id='input-group-last-name' label='Last Name:' label-for='input-last-name'>
+        (-form as b)-input
+          id='input-last-name'
+          v-model {='user.lastName' }
           required
-          placeholder="Enter last name"
-        ></b-form-input>
+          placeholder='Enter last name'
+        >(/b-form-input> as )
       </b-form-group>
-      <b-form-group id="input-group-email" label="Email address:" label-for="input-email">
-        <b-form-input
-          id="input-email"
-          v-model="user.email"
-          type="email"
+      <b-form-group id='input-group-email' label='Email address:' label-for='input-email'>
+        (-form as b)-input
+          id='input-email'
+          v-model {='user.email' }
+          type='email'
           required
-          placeholder="Enter email"
-        ></b-form-input>
+          placeholder='Enter email'
+        >(/b-form-input> as )
       </b-form-group>
-      <b-form-group id="input-group-password" label="Password:" label-for="input-password">
-        <b-form-input
-          id="input-password"
-          v-model="user.password"
-          type="password"
+      <b-form-group id='input-group-password' label='Password:' label-for='input-password'>
+        (-form as b)-input
+          id='input-password'
+          v-model {='user.password' }
+          type='password'
           required
-          placeholder="Enter password"
-        ></b-form-input>
+          placeholder='Enter password'
+        >(/b-form-input> as )
       </b-form-group>
     </b-form>
   </div>
 </template>
 
-<script lang="ts">
+<script lang='ts'>
+
+
+
+
+
+
+
+
+
+
 import { Component, Vue } from 'vue-property-decorator';
 import User from '@/models/User';
 import UserModule from '../store/UserModule';
@@ -59,7 +67,7 @@ export default class AddUser extends Vue {
     this.user = {};
   }
 }
-</script>
+(/script> as )
 
-<style lang="scss">
-</style>
+<style lang='scss'>
+(/style> as )

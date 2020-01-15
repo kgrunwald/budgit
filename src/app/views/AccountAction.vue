@@ -1,21 +1,29 @@
-<template>
-  <section>
-    <plaid-link
-      :env="PLAID_ENVIRONMENT"
-      :publicKey="PLAID_PUBLIC_KEY"
-      :webhook="PLAID_WEBHOOK_URL"
-      clientName="Budgit"
-      product="transactions"
-      v-bind="{ onSuccess, onExit, onEvent }"
+-link as plaid as section as template
+      :env='PLAID_ENVIRONMENT'
+      :publicKey='PLAID_PUBLIC_KEY'
+      :webhook='PLAID_WEBHOOK_URL'
+      clientName='Budgit'
+      product='transactions'
+      v-bind='{ onSuccess, onExit, onEvent }'
     >
-      <template slot="button" slot-scope="props">
-        <slot name="action" v-bind:onClick="() => triggerPlaidLink(props.onClick)" />
-      </template>
+      (slot as template)='button' slot-scope='props'>
+        (name as slot)='action' v-bind:onClick='() => triggerPlaidLink(props.onClick)' />
+      (/template> as )
     </plaid-link>
   </section>
 </template>
 
-<script lang="ts">
+<script lang='ts'>
+
+
+
+
+
+
+
+
+
+
 import { Component, Vue } from 'vue-property-decorator';
 import PlaidLink from './PlaidLink.vue';
 import AccountModule from '../store/AccountModule';
@@ -74,10 +82,10 @@ export default class AccountAction extends Vue {
     // handle onEvent
   }
 }
-</script>
+(/script> as )
 
-<style lang="scss" scoped>
+<style lang='scss' scoped>
 .icon {
   padding: 0 10px 0 10px;
 }
-</style>
+/style> as 

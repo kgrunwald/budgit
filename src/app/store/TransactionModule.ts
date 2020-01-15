@@ -1,85 +1,74 @@
 import {
-  Module,
-  VuexModule,
-  Mutation,
-  Action,
-  getModule,
-  MutationAction,
+    Module,
+    VuexModule,
+    Mutation,
+    Action,
+    getModule
 } from 'vuex-module-decorators';
 import store from './index';
-import { omit, pickBy, remove, sortBy, reverse } from 'lodash';
-import Parse from 'parse';
+import { remove, sortBy, reverse } from 'lodash';
 import Account from '@/models/Account';
 import Transaction from '@/models/Transaction';
-import Subscriber from './Subscriber';
+import TransactionDao from '@/dao/TransactionDao';
 
 interface TxnMap {
-  [k: string]: Transaction;
+    [k: string]: Transaction;
 }
 
 interface AcctTxnMap {
-  [k: string]: Transaction[];
+    [k: string]: Transaction[];
 }
+
+const dao: TransactionDao = new TransactionDao();
 
 @Module({ name: 'transaction', store, namespaced: true, dynamic: true })
 class TransactionModule extends VuexModule {
-  public txnsByAcct: AcctTxnMap = {};
+    public txnsByAcct: AcctTxnMap = {};
 
-  @Action
-  public async load() {
-    // @ts-ignore
-    const query = new Parse.Query(Transaction).limit(100).includeAll();
-    const txnSub = new Subscriber(query, this);
-    await txnSub.subscribe();
-  }
+    @Action
+    public async load() {
+        dao.subscribe(this);
+    }
 
-  @Action
-  public async loadTransactions(account: Account) {
-    // @ts-ignore
-    const query = new Parse.Query(Transaction);
-    query.equalTo('account', account);
-    query.include('category');
-    query.descending('date');
-    query.limit(30);
+    @Action
+    public async loadTransactions(account: Account) {
+        const txns = await dao.recentByAccount(account);
+        txns.forEach((txn: Transaction) => {
+            this.add(txn);
+        });
+    }
 
-    const txns = await query.find();
-    txns.forEach((txn: Transaction) => {
-      this.add(txn);
-    });
-  }
+    @Mutation
+    public add(txn: Transaction) {
+        const acctId = txn.accountId;
+        let txns = this.txnsByAcct[acctId] || [];
+        txns = remove(txns, existing => existing.id !== txn.id);
+        txns.push(txn);
 
-  @Mutation
-  public add(txn: Transaction) {
-    const acctId = txn.account.accountId;
-    let txns = this.txnsByAcct[acctId] || [];
-    txns = remove(txns, existing => existing.id !== txn.id);
-    txns.push(txn);
+        this.txnsByAcct = {
+            ...this.txnsByAcct,
+            [acctId]: [...reverse(sortBy(txns, ['date', 'id']))]
+        };
+    }
 
-    this.txnsByAcct = {
-      ...this.txnsByAcct,
-      [acctId]: [...reverse(sortBy(txns, ['date', 'id']))],
-    };
-  }
+    @Mutation
+    public remove(txn: Transaction) {
+        const acctId = txn.accountId;
+        const txns = this.txnsByAcct[acctId];
+        this.txnsByAcct = {
+            ...this.txnsByAcct,
+            [acctId]: [...remove(txns, existing => existing.id !== txn.id)]
+        };
+    }
 
-  @Mutation
-  public remove(txn: Transaction) {
-    const acctId = txn.account.accountId;
-    const txns = this.txnsByAcct[acctId];
-    this.txnsByAcct = {
-      ...this.txnsByAcct,
-      [acctId]: [...remove(txns, existing => existing.id !== txn.id)],
-    };
-  }
+    get byAccountId() {
+        return (acctId: string): Transaction[] => this.txnsByAcct[acctId];
+    }
 
-  get byAccountId() {
-    return (acctId: string): Transaction[] => this.txnsByAcct[acctId];
-  }
-
-  @Action({ commit: 'add' })
-  public async update(txn: Transaction) {
-    await txn.commit();
-    return txn;
-  }
+    @Action({ commit: 'add' })
+    public async update(txn: Transaction): Promise<Transaction> {
+        return await dao.commit(txn);
+    }
 }
 
 export default getModule(TransactionModule);

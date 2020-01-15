@@ -1,27 +1,37 @@
-<template>
-  <b-dropdown
-    class="category-dropdown-container"
-    :text="$props.category ? $props.category.categoryName : '- Select Category -'"
+-dropdown as b as template
+    class='category-dropdown-container'
+    :text='$props.category ? $props.category.categoryName : \'- Select Category -\''
     split
-    split-variant="outline-primary"
-    variant="primary"
-    size="sm"
-    @shown="focusSearch"
+    split-variant='outline-primary'
+    variant='primary'
+    size='sm'
+    @shown='focusSearch'
   >
-    <b-dropdown-form>
-      <b-form-input autofocus ref="select-input" size="sm" v-model="filter" @keydown.enter.prevent />
+    (-dropdown as b)-form>
+      (-form as b)-input autofocus ref='select-input' size='sm' v-model='filter' @keydown.enter.prevent />
     </b-dropdown-form>
-    <div class="dropdown-items-container">
-      <b-dropdown-item
-        v-for="category in categories"
-        :key="category.id"
-        @click="select(category)"
-      >{{ category.name }}</b-dropdown-item>
+    <div class='dropdown-items-container'>
+      (-dropdown as b)-item
+        v-for='category in categories' {
+        :key='category.id'
+}
+        @click='select(category)'
+      >{{ category.name }}(/b-dropdown-item> as )
     </div>
   </b-dropdown>
 </template>
 
-<script lang="ts">
+<script lang='ts'>
+
+
+
+
+
+
+
+
+
+
 import { Component, Vue } from 'vue-property-decorator';
 import { filter, startsWith } from 'lodash';
 import CategoryModule from '../store/CategoryModule';
@@ -51,13 +61,13 @@ export default class CategoryDropdown extends Vue {
     (this.$refs['select-input'] as BFormInput).focus();
   }
 }
-</script>
+(/script> as )
 
-<style lang="scss">
+<style lang='scss'>
 .category-dropdown-container {
   .dropdown-items-container {
     max-height: 160px;
     overflow: scroll;
   }
 }
-</style>
+/style> as 

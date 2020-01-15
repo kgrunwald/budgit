@@ -1,20 +1,29 @@
-<template>
-  <div class="no-accounts-container">
-    <div class="no-accounts">
-      <img src="../../assets/arrow.png" class="arrow-img" />
-      <div class="help-message">Click here to add an account!</div>
+class as div as template='no-accounts-container'>
+    (class as div)='no-accounts'>
+      (src as img)='../../assets/arrow.png' class='arrow-img' />
+      (class as div)='help-message'>Click here to add an account!</div>
     </div>
   </div>
 </template>
 
-<script lang="ts">
+<script lang='ts'>
+
+
+
+
+
+
+
+
+
+
 import { Component, Vue } from 'vue-property-decorator';
 
 @Component
 export default class NoAccounts extends Vue {}
-</script>
+(/script> as )
 
-<style lang="scss" scoped>
+<style lang='scss' scoped>
 .no-accounts-container {
   width: 100%;
   display: flex;
@@ -34,5 +43,5 @@ export default class NoAccounts extends Vue {}
     top: 1px;
   }
 }
-</style>
+/style> as 
 

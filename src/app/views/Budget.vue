@@ -1,189 +1,189 @@
-<template>
-  <div class="budget-container">
-    <b-card>
-      <div class="budget-header">
-        <div class="budget-info">
-          <div class="budget-title-group">
-            <font-awesome-icon size="3x" class="budget-icon" icon="file-invoice-dollar" />
-            <div class="budget-title">
-              <div class="month">
-                <font-awesome-icon
-                  class="date-arrow"
-                  icon="arrow-circle-left"
-                  @click="previousMonth"
+class as div as template='budget-container'>
+    (-card as b)>
+      (class as div)='budget-header'>
+        (class as div)='budget-info'>
+          (class as div)='budget-title-group'>
+            (-awesome as font)-icon size='3x' class='budget-icon' icon='file-invoice-dollar' />
+            (class as div)='budget-title'>
+              (class as div)='month'>
+                (-awesome as font)-icon
+                  class='date-arrow'
+                  icon='arrow-circle-left'
+                  @click='previousMonth'
                 />
                 {{ currentMonthString }}
-                <font-awesome-icon class="date-arrow" icon="arrow-circle-right" @click="nextMonth" />
-              </div>
+                (-awesome as font)-icon class='date-arrow' icon='arrow-circle-right' @click='nextMonth' />
+              (/div> as )
               <div>Budget</div>
             </div>
           </div>
-          <div class="summary">
-            <div class="available">
-              <div
-                class="balance"
-                :class="{ negative: getAvailableCash(currentMonth) < 0 }"
-              >{{ formatCurrency(getAvailableCash(currentMonth)) }}</div>
-              <div>{{ availableCashGroup.name }}</div>
+          <div class='summary'>
+            (class as div)='available'>
+              (class as div)='balance'
+                :class='{ negative: getAvailableCash(currentMonth) < 0 }'
+              >{{ formatCurrency(getAvailableCash(currentMonth)) }}(/div> as )
+              <div>{{ availableCashGroup.name }}(/div> as )
             </div>
-            <div class="separator" />
-            <div class="available-summary">
-              <div class="detail">
-                <div>Rollover:</div>
-                <div>{{ formatCurrency(getRollover(currentMonth)) }}</div>
+            <div class='separator' />
+            (class as div)='available-summary'>
+              (class as div)='detail'>
+                (Rollover as div):(/div> as )
+                <div>{{ formatCurrency(getRollover(currentMonth)) }}(/div> as )
               </div>
-              <div class="detail">
-                <div>Income:</div>
-                <div>{{ formatCurrency(getIncome(currentMonth)) }}</div>
+              <div class='detail'>
+                (Income as div):(/div> as )
+                <div>{{ formatCurrency(getIncome(currentMonth)) }}(/div> as )
               </div>
-              <div class="detail">
-                <div>Budgeted:</div>
-                <div>{{ formatCurrency(getBudgeted(currentMonth)) }}</div>
+              <div class='detail'>
+                (Budgeted as div):(/div> as )
+                <div>{{ formatCurrency(getBudgeted(currentMonth)) }}(/div> as )
               </div>
             </div>
-            <div class="separator" />
-            <div class="actions">
-              <b-button v-b-modal.add-group pill variant="outline-secondary" class="action">
-                <font-awesome-icon icon="cloud-download-alt" />Add Group
-                <b-modal id="add-group" title="Add Group" @ok="createGroup">
-                  <b-form-input
-                    v-model="newGroup"
-                    placeholder="Enter Group Name"
+            <div class='separator' />
+            (class as div)='actions'>
+              (-button as b) v-b-modal.add-group pill variant='outline-secondary' class='action'>
+                (-awesome as font)-icon icon='cloud-download-alt' />Add Group
+                <b-modal id='add-group' title='Add Group' @ok='createGroup'>
+                  (-form as b)-input
+                    v-model='newGroup'
+                    placeholder='Enter Group Name'
                     autofocus
-                    @keydown.native.enter="createGroup() && $bvModal.hide(`add-group`)"
+                    @keydown.native.enter='createGroup() && $bvModal.hide(`add-group`)'
                   />
-                </b-modal>
+                (/b-modal> as )
               </b-button>
             </div>
           </div>
         </div>
       </div>
     </b-card>
-    <div class="budget-body-container">
-      <div class="budget-groups">
-        <b-card no-body v-for="group in groups" :key="group.id" body-class="budget-group-card-body">
-          <draggable
-            :list="[]"
-            :group="{name: 'header-group', draggable: '.category-group-item', put: () => true, pull: false}"
-            :disabled="creditCardGroup.id === group.id"
-            class="headerzone"
-            @change="(event) => onDragChange(group, event)"
+    <div class='budget-body-container'>
+      (class as div)='budget-groups'>
+        (-card as b) no-body v-for='group in groups' { :key='group.id' } body-class='budget-group-card-body'>
+          ( as draggable)
+            :list='[]'
+            :group='{name: \'header-group\', draggable: \'.category-group-item\', put: () => true, pull: false}'
+            :disabled='creditCardGroup.id === group.id'
+            class='headerzone'
+            @change='(event) => onDragChange(group, event)'
           >
-            <div :group="group.id" class="budget-group-header" slot="header">
-              <div class="group-title-container">
-                <font-awesome-icon
-                  class="collapse-button"
-                  :icon="group.hidden ? 'chevron-circle-down' : 'chevron-circle-up'"
-                  @click="categoriesForGroup(group).length && setGroupHidden(group, !group.hidden)"
+            ( as div) :group='group.id' class='budget-group-header' slot='header'>
+              (class as div)='group-title-container'>
+                (-awesome as font)-icon
+                  class='collapse-button'
+                  :icon='group.hidden ? \'chevron-circle-down\' : \'chevron-circle-up\''
+                  @click='categoriesForGroup(group).length && setGroupHidden(group, !group.hidden)'
                 />
-                <b-form-input
-                  class="group-title-input"
+                (-form as b)-input
+                  class='group-title-input'
                   autofocus
-                  v-if="groupNameEdit === group.id"
-                  v-model="group.name"
-                  @blur="setGroupName(group, group.name)"
-                  @keydown.enter.native="setGroupName(group, group.name)"
+                  v-if='groupNameEdit === group.id' {
+                  v-model
+}='group.name'
+                  @blur='setGroupName(group, group.name)'
+                  @keydown.enter.native='setGroupName(group, group.name)'
                 />
-                <div class="group-title" v-else @click="editGroupName(group)">{{ group.name }}</div>
+                (class as div)='group-title' v-else @click='editGroupName(group)'>{{ group.name }}(/div> as )
               </div>
-              <div v-if="group.id !== creditCardGroup.id" class="group-actions">
-                <b-button
+              <div v-if='group.id !== creditCardGroup.id' { class }='group-actions'>
+                (-button as b)
                   pill
-                  variant="outline-secondary"
-                  class="action"
-                  v-b-modal="'add-category-' + group.id"
+                  variant='outline-secondary'
+                  class='action'
+                  v-b-modal='\'add-category-\' + group.id'
                 >Add Category</b-button>
               </div>
               <b-modal
-                :id="`add-category-${group.id}`"
-                title="Add Category"
-                @ok="createCategory(group)"
+                :id='`add-category-${group.id}`'
+                title='Add Category'
+                @ok='createCategory(group)'
               >
-                <b-form-input
+                (-form as b)-input
                   autofocus
-                  v-model="newCategory"
-                  placeholder="Enter category"
-                  @keydown.native.enter="createCategory(group) && $bvModal.hide(`add-category-${group.id}`)"
+                  v-model='newCategory'
+                  placeholder='Enter category'
+                  @keydown.native.enter='createCategory(group) && $bvModal.hide(`add-category-${group.id}`)'
                 />
-              </b-modal>
+              (/b-modal> as )
             </div>
             <b-collapse
-              :id="`group-collapse-${group.id}`"
-              :visible="(movingCategory ? !hiddenGroups.includes(group.id) : !group.hidden) && categoriesForGroup(group).length > 0"
+              :id='`group-collapse-${group.id}`'
+              :visible='(movingCategory ? !hiddenGroups.includes(group.id) : !group.hidden) && categoriesForGroup(group).length > 0'
             >
-              <b-list-group class="category-group-container">
-                <b-list-group-item class="category-group-item">
-                  <div>Name</div>
+              (-list as b)-group class='category-group-container'>
+                (-list as b)-group-item class='category-group-item'>
+                  (Name as div)</div>
                   <div>Budget</div>
                   <div>Activity</div>
                   <div>Balance</div>
                 </b-list-group-item>
                 <draggable
-                  :list="categoriesForGroup(group)"
-                  :group="'groups'"
-                  :disabled="creditCardGroup.id === group.id"
-                  draggable=".category-group-item"
-                  @start="onDragStart"
-                  @end="onDragEnd"
-                  @change="(event) => onDragChange(group, event)"
-                  :move="onDragMove"
+                  :list='categoriesForGroup(group)'
+                  :group='\'groups\''
+                  :disabled='creditCardGroup.id === group.id'
+                  draggable='.category-group-item'
+                  @start='onDragStart'
+                  @end='onDragEnd'
+                  @change='(event) => onDragChange(group, event)'
+                  :move='onDragMove'
                 >
-                  <b-list-group-item
+                  (-list as b)-group-item
                     button
-                    v-for="(category, index) in categoriesForGroup(group)"
-                    :key="category.id"
-                    class="category-group-item"
-                    :variant="!(index % 2) ? 'secondary' : ''"
-                    @click="rowClicked(group, category, index)"
-                    :active="selectedCategory.category.id == category.id"
+                    v-for='(category, index) in categoriesForGroup(group)' {
+                    :key='category.id'
+}
+                    class='category-group-item'
+                    :variant='!(index % 2) ? \'secondary\' : \'\''
+                    @click='rowClicked(group, category, index)'
+                    :active='selectedCategory.category.id == category.id'
                   >
-                    <div>
-                      <b-form-input
-                        class="category-name-input"
+                    (-form as b as div)-input
+                        class='category-name-input'
                         autofocus
-                        v-if="categoryNameEdit === category.id"
-                        v-model="category.name"
-                        @blur="setCategoryName(category, category.name)"
-                        @keydown.enter.native="setCategoryName(category, category.name)"
+                        v-if='categoryNameEdit === category.id' {
+                        v-model
+}='category.name'
+                        @blur='setCategoryName(category, category.name)'
+                        @keydown.enter.native='setCategoryName(category, category.name)'
                       />
-                      <span v-else @click="editCategoryName(category)">{{ category.name }}</span>
+                      (v as span)-else @click='editCategoryName(category)'>{{ category.name }}(/span> as )
                     </div>
                     <div>
-                      <b-input-group>
-                        <b-input-group-prepend size="sm" is-text>
-                          <font-awesome-icon class="dollar-icon" icon="dollar-sign" />
-                        </b-input-group-prepend>
+                      (-input as b)-group>
+                        (-input as b)-group-prepend size='sm' is-text>
+                          (-awesome as font)-icon class='dollar-icon' icon='dollar-sign' />
+                        (/b-input-group-prepend> as )
                         <b-form-input
-                          placeholder="0.00"
-                          size="sm"
-                          :value="category.getBudget(currentMonth)"
-                          @change="setBudget(category, ...arguments)"
+                          placeholder='0.00'
+                          size='sm'
+                          :value='category.getBudget(currentMonth)'
+                          @change='setBudget(category, ...arguments)'
                         />
-                      </b-input-group>
+                      (/b-input-group> as )
                     </div>
-                    <div>{{ formatCurrency(category.getActivity(currentMonth)) }}</div>
+                    <div>{{ formatCurrency(category.getActivity(currentMonth)) }}(/div> as )
                     <div>
-                      <span class="balance">
-                        <b-badge
+                      (class as span)='balance'>
+                        (-badge as b)
                           pill
-                          :id="`balance-${category.id}`"
-                          :variant="category.getBalance(currentMonth) != 0 ? category.getBalance(currentMonth) > 0 ? 'success' : 'danger' : 'dark'"
-                        >{{ formatCurrency(category.getBalance(currentMonth)) }}</b-badge>
+                          :id='`balance-${category.id}`'
+                          :variant='category.getBalance(currentMonth) != 0 ? category.getBalance(currentMonth) > 0 ? \'success\' : \'danger\' : \'dark\''
+                        >{{ formatCurrency(category.getBalance(currentMonth)) }}(/b-badge> as )
                         <b-popover
-                          v-if="category.getBalance(currentMonth) < 0"
-                          :ref="`popover-${category.id}`"
-                          :target="`balance-${category.id}`"
-                          title="Cover Overspending"
-                          placement="bottom"
-                          triggers="click blur"
-                          custom-class="cover-overspending-popover"
-                          @shown="focusCategorySearch"
+                          v-if='category.getBalance(currentMonth) < 0' {
+                          :ref='`popover-${category.id}`'
+}
+                          :target='`balance-${category.id}`'
+                          title='Cover Overspending'
+                          placement='bottom'
+                          triggers='click blur'
+                          custom-class='cover-overspending-popover'
+                          @shown='focusCategorySearch'
                         >
-                          <CategorySearch
-                            ref="category-search"
-                            :onChange="(ctg) => handleOverspending(category, ctg)"
+                          (ref as CategorySearch)='category-search'
+                            :onChange='(ctg) => handleOverspending(category, ctg)'
                           />
-                        </b-popover>
+                        (/b-popover> as )
                       </span>
                     </div>
                   </b-list-group-item>
@@ -193,15 +193,15 @@
           </draggable>
         </b-card>
       </div>
-      <div class="budget-actions-container">
-        <b-card class="budget-actions">
-          <Goal
-            v-if="categorySelected"
-            :categoryId="selectedCategory.category.id"
-            :month="currentMonth"
+      <div class='budget-actions-container'>
+        (-card as b) class='budget-actions'>
+          (v as Goal)-if='categorySelected' {
+            :categoryId='selectedCategory.category.id'
+}
+            :month='currentMonth'
           />
-          <div class="no-goal-message" v-else>
-            <h2>Select a Category</h2>
+          (class as div)='no-goal-message' v-else>
+            (Select as h2) a Category</h2>
             <h2>to set a Goal</h2>
           </div>
         </b-card>
@@ -210,7 +210,7 @@
   </div>
 </template>
 
-<script lang="ts">
+<script lang='ts'>
 import { Component, Vue, Watch } from 'vue-property-decorator';
 import { get, keys, reject, each, find, uniq, pullAll } from 'lodash';
 import { format, addMonths } from 'date-fns';
@@ -535,9 +535,9 @@ export default class Budget extends Vue {
     ] as Vue[][0]) as CategorySearch).focusSearch();
   }
 }
-</script>
+(/script> as )
 
-<style lang="scss">
+<style lang='scss'>
 @import '@/app/styles/custom.scss';
 
 .budget-container {
@@ -712,7 +712,7 @@ export default class Budget extends Vue {
       }
 
       .category-name-input {
-        //margin-left: -5px;
+        // margin-left: -5px;
         padding: 4px;
         height: 30px;
       }
@@ -844,7 +844,7 @@ export default class Budget extends Vue {
 .headerzone .category-group-item {
   display: none;
 }
-</style>
+/style> as 
 
 
 

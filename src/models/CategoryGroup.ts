@@ -1,27 +1,6 @@
-import Parse from './Parse';
-import PrivateModel from './PrivateModel';
+import Model from './Model';
 
-class CategoryGroup extends PrivateModel {
-  constructor() {
-    super('CategoryGroup');
-  }
-
-  get name(): string {
-    return this.get('name');
-  }
-
-  set name(name: string) {
-    this.set('name', name);
-  }
-
-  get hidden(): boolean {
-    return this.get('hidden');
-  }
-
-  set hidden(hidden: boolean) {
-    this.set('hidden', hidden);
-  }
+export default class CategoryGroup extends Model {
+    public name!: string;
+    public hidden!: boolean;
 }
-
-Parse.Object.registerSubclass('CategoryGroup', CategoryGroup);
-export default CategoryGroup;

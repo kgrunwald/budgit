@@ -1,36 +1,18 @@
-import Parse from './Parse';
-import PrivateModel from './PrivateModel';
-import User from './User';
+import Model from './Model';
+import { field } from './Metadata';
 
-class Item extends PrivateModel {
-  constructor() {
-    super('Item');
-  }
+export default class Item extends Model {
+    @field public accessToken!: string;
+    @field public itemId!: string;
 
-  get accessToken(): string {
-    return this.get('accessToken');
-  }
+    private privateTest!: string;
 
-  set accessToken(token: string) {
-    this.set('accessToken', token);
-  }
+    @field
+    get test(): string {
+        return 'Getter Called';
+    }
 
-  get itemId(): string {
-    return this.get('itemId');
-  }
-
-  set itemId(id: string) {
-    this.set('itemId', id);
-  }
-
-  get user(): User {
-    return this.get('user');
-  }
-
-  set user(user: User) {
-    this.set('user', user);
-  }
+    set test(t: string) {
+        this.privateTest = 'Setter Called';
+    }
 }
-
-Parse.Object.registerSubclass('Item', Item);
-export default Item;

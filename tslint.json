@@ -1,24 +1,16 @@
 {
-  "defaultSeverity": "warning",
-  "extends": [
-    "tslint:recommended",
-    "tslint-config-prettier",
-    "tslint-plugin-prettier"
-  ],
-  "linterOptions": {
-    "exclude": [
-      "node_modules/**",
-      "src/server/**"
-    ]
-  },
-  "rules": {
-    "prettier": true,
-    "quotemark": [true, "single"],
-    "indent": [true, "spaces", 2],
-    "interface-name": false,
-    "ordered-imports": false,
-    "object-literal-sort-keys": false,
-    "no-consecutive-blank-lines": false,
-    "no-console": false
-  }
+    "extends": ["tslint-plugin-prettier"],
+    "linterOptions": {
+        "exclude": ["node_modules/**", "src/server/**"]
+    },
+    "rules": {
+        "prettier": true,
+        "quotemark": [true, "single"],
+        "indent": [true, "spaces", 4],
+        "interface-name": false,
+        "ordered-imports": false,
+        "object-literal-sort-keys": false,
+        "no-consecutive-blank-lines": false,
+        "no-console": false
+    }
 }

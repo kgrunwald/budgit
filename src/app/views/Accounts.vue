@@ -1,18 +1,26 @@
-<template>
-  <div>
-    <div class="page-container">
-      <div class="account-list-container">
-        <AccountList :onAccountClick="handleAccountClick" :selectedAccountId="selectedAccountId" />
-      </div>
-      <div class="content-container">
-        <Account v-if="selectedAccountId" :account="selectedAccount" />
-        <NoAccounts v-else />
+class as div as div as template='page-container'>
+      (class as div)='account-list-container'>
+        ( as AccountList) :onAccountClick='handleAccountClick' :selectedAccountId='selectedAccountId' />
+      (/div> as )
+      <div class='content-container'>
+        (v as Account)-if='selectedAccountId' :account='selectedAccount' />
+        (v as NoAccounts)-else />
       </div>
     </div>
   </div>
 </template>
 
-<script lang="ts">
+<script lang='ts'>
+
+
+
+
+
+
+
+
+
+
 import { Component, Vue } from 'vue-property-decorator';
 import AccountModule from '@/app/store/AccountModule';
 import Subscriber from '@/app/store/Subscriber';
@@ -43,9 +51,9 @@ export default class Accounts extends Vue {
     return AccountModule.selectedAccount;
   }
 }
-</script>
+(/script> as )
 
-<style lang="scss" scoped>
+<style lang='scss' scoped>
 .page-container {
   display: flex;
   height: 100%;
@@ -61,5 +69,5 @@ export default class Accounts extends Vue {
   display: flex;
   border-right: solid black 1px;
 }
-</style>
+/style> as 
 

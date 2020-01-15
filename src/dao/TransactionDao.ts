@@ -1,25 +1,34 @@
 import Dao from './Dao';
 import Account from '../models/Account';
 import Transaction from '../models/Transaction';
+import { objectsToClassArray } from '@/models/Metadata';
 
-class TransactionDao extends Dao {
-  protected clazz = Transaction;
+class TransactionDao extends Dao<Transaction> {
+    constructor() {
+        super(Transaction);
+    }
 
-  constructor(useMasterKey?: boolean, sessionToken?: string) {
-    super({ useMasterKey, sessionToken });
-  }
+    public byAccount(account: Account): Promise<Transaction[]> {
+        return this.find('account', account);
+    }
 
-  public byAccount(account: Account): Promise<Transaction[]> {
-    return this.first('account', account);
-  }
+    public byTransactionId(txnId: string): Promise<Transaction | undefined> {
+        return this.first('transactionId', txnId);
+    }
 
-  public byTransactionId(txnId: string): Promise<Transaction | undefined> {
-    return this.first('transactionId', txnId);
-  }
+    public async recentByAccount(account: Account): Promise<Transaction[]> {
+        const res = await this.collection()
+            .where('accountId', '==', account.id)
+            .orderBy('date', 'desc')
+            .limit(30)
+            .get();
 
-  public getOrCreate(txnId: string): Promise<Transaction> {
-    return super.getOrCreate('transactionId', txnId);
-  }
+        return objectsToClassArray(this.clazz, res);
+    }
+
+    public getOrCreate(txnId: string): Promise<Transaction> {
+        return super.getOrCreate('transactionId', txnId);
+    }
 }
 
 export default TransactionDao;

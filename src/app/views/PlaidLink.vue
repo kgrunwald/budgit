@@ -1,14 +1,23 @@
-<template>
-  <div class="plaid-link-wrapper">
-    <slot name="button" v-bind:onClick="handleOnClick">
-      <button class="plaid-link-button" @click="handleOnClick">
-        <slot />
+class as div as template='plaid-link-wrapper'>
+    (name as slot)='button' v-bind:onClick='handleOnClick'>
+      (class as button)='plaid-link-button' @click='handleOnClick'>
+        (/> as slot)
       </button>
     </slot>
   </div>
 </template>
 
-<script lang="ts">
+<script lang='ts'>
+
+
+
+
+
+
+
+
+
+
 import { Component, Vue } from 'vue-property-decorator';
 
 @Component({
@@ -93,4 +102,4 @@ export default class PlaidLink extends Vue {
     }
   }
 }
-</script>
+/script> as 

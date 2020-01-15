@@ -1,105 +1,46 @@
-import Parse from './Parse';
-import PrivateModel from './PrivateModel';
-import Item from './Item';
+import Model from './Model';
+import { field } from './Metadata';
 import { formatMoney, moneyAsFloat } from './Money';
 
-export class Account extends PrivateModel {
-  constructor() {
-    super('Account');
-  }
+export default class Account extends Model {
+    @field public accountId!: string;
+    @field public itemId!: string;
+    @field public name!: string;
+    @field public type!: string;
+    @field public subType!: string;
+    @field public color!: string;
+    @field public refreshToken!: string;
+    @field public expired!: boolean;
+    @field public available: number = 0;
+    @field public current: number = 0;
 
-  get accountId(): string {
-    return this.get('accountId');
-  }
+    @field private logoStr: string = '';
 
-  set accountId(id: string) {
-    this.set('accountId', id);
-  }
+    get availableBalance(): number {
+        return moneyAsFloat(this.available);
+    }
 
-  get item(): Item {
-    return this.get('item');
-  }
+    set availableBalance(balance: number) {
+        this.available = moneyAsFloat(balance);
+    }
 
-  set item(item: Item) {
-    this.set('item', item);
-  }
+    get currentBalance(): number {
+        return moneyAsFloat(this.current);
+    }
 
-  get availableBalance(): number {
-    return moneyAsFloat(this.get('available'));
-  }
+    set currentBalance(balance: number) {
+        this.current = moneyAsFloat(balance);
+    }
 
-  set availableBalance(balance: number) {
-    this.set('available', moneyAsFloat(balance));
-  }
+    get formattedCurrentBalance(): string {
+        return formatMoney(this.currentBalance);
+    }
 
-  get currentBalance(): number {
-    return moneyAsFloat(this.get('current'));
-  }
+    get logo(): string {
+        return `data:image/png;base64, ${this.logoStr}`;
+    }
 
-  set currentBalance(balance: number) {
-    this.set('current', moneyAsFloat(balance));
-  }
-
-  get formattedCurrentBalance(): string {
-    return formatMoney(this.currentBalance);
-  }
-
-  get name(): string {
-    return this.get('name');
-  }
-
-  set name(name: string) {
-    this.set('name', name);
-  }
-
-  get type(): string {
-    return this.get('type');
-  }
-
-  set type(type: string) {
-    this.set('type', type);
-  }
-
-  get subType(): string {
-    return this.get('subType');
-  }
-
-  set subType(type: string) {
-    this.set('subType', type);
-  }
-
-  get logo(): string {
-    return this.get('logo');
-  }
-
-  set logo(logo: string) {
-    this.set('logo', `data:image/png;base64, ${logo}`);
-  }
-
-  get color(): string {
-    return this.get('color');
-  }
-
-  set color(color: string) {
-    this.set('color', color);
-  }
-
-  get refreshToken(): string {
-    return this.get('refreshToken');
-  }
-
-  set refreshToken(refreshToken: string) {
-    this.set('refreshToken', refreshToken);
-  }
-
-  get expired(): boolean {
-    return this.get('expired');
-  }
-
-  set expired(expired: boolean) {
-    this.set('expired', expired);
-  }
+    set logo(logo: string) {
+        this.logoStr = logo;
+    }
 }
-
-Parse.Object.registerSubclass('Account', Account);
-export default Account;

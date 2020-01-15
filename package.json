@@ -1,116 +1,125 @@
 {
-  "name": "budgit",
-  "version": "0.1.0",
-  "private": true,
-  "engines": {
-    "node": "12.x"
-  },
-  "scripts": {
-    "serve": "VUE_APP_PLAID_WEBHOOK_URL=`./scripts/run_ngrok.sh` vue-cli-service serve",
-    "start:db": "docker run --rm -d -p 27017-27019:27017-27019 --name mongodb mongo",
-    "stop:db": "docker kill mongodb",
-    "start:db:dash": "parse-dashboard --config parse-dashboard-config.json --port 4041",
-    "start:db:prod": "parse-dashboard --config parse-dashboard-prod.json --port 4042",
-    "start:client": "yarn serve",
-    "start:server": "yarn start:db:dash & nodemon",
-    "start:prod": "node dist/server/server/index.js",
-    "build": "vue-cli-service build && tsc --skipLibCheck -p src/server",
-    "clean": "rm -rf dist",
-    "lint": "vue-cli-service lint",
-    "test:e2e": "vue-cli-service test:e2e",
-    "test:unit": "vue-cli-service test:unit"
-  },
-  "dependencies": {
-    "@fortawesome/fontawesome-svg-core": "^1.2.19",
-    "@fortawesome/free-solid-svg-icons": "^5.9.0",
-    "@fortawesome/vue-fontawesome": "^0.1.6",
-    "@types/gapi": "^0.0.39",
-    "@types/gapi.auth2": "^0.0.50",
-    "@types/mathjs": "^6.0.1",
-    "@types/uuid": "^3.4.5",
-    "bootstrap": "^4.3.1",
-    "bootstrap-vue": "^2.0.0-rc.28",
-    "connect-mongo": "^3.0.0",
-    "core-js": "^2.6.5",
-    "date-fns": "^1.30.1",
-    "dotenv": "^8.0.0",
-    "express": "^4.17.1",
-    "express-session": "^1.16.2",
-    "google-auth-library": "^5.2.0",
-    "lodash": "^4.17.15",
-    "mathjs": "^6.0.4",
-    "money-math": "^2.5.1",
-    "parse": "^2.5.1",
-    "parse-server": "^3.6.0",
-    "plaid": "^4.2.0",
-    "uuid": "^3.3.2",
-    "vue": "^2.6.10",
-    "vue-class-component": "^7.0.2",
-    "vue-property-decorator": "^8.1.0",
-    "vue-router": "^3.0.3",
-    "vuedraggable": "^2.23.0",
-    "vuex": "^3.0.1",
-    "vuex-module-decorators": "^0.9.9",
-    "winston": "^3.2.1"
-  },
-  "devDependencies": {
-    "@types/connect-mongo": "^0.0.43",
-    "@types/cookie-parser": "^1.4.1",
-    "@types/dotenv": "^6.1.1",
-    "@types/express": "^4.17.0",
-    "@types/express-session": "^1.15.13",
-    "@types/jest": "^23.1.4",
-    "@types/lodash": "^4.14.136",
-    "@types/money-math": "^2.5.0",
-    "@types/parse": "^2.2.7",
-    "@vue/cli-plugin-babel": "^3.9.0",
-    "@vue/cli-plugin-e2e-cypress": "^3.9.0",
-    "@vue/cli-plugin-typescript": "^3.9.0",
-    "@vue/cli-plugin-unit-jest": "^3.9.0",
-    "@vue/cli-service": "^3.9.0",
-    "@vue/test-utils": "1.0.0-beta.29",
-    "babel-core": "7.0.0-bridge.0",
-    "lint-staged": "^8.1.5",
-    "ngrok": "^3.2.4",
-    "node-sass": "^4.9.0",
-    "nodemon": "^1.19.1",
-    "parse-dashboard": "^1.4.3",
-    "prettier": "^1.18.2",
-    "sass-loader": "^7.1.0",
-    "ts-jest": "^23.0.0",
-    "ts-node": "^8.3.0",
-    "tslint": "^5.19.0",
-    "tslint-config-prettier": "^1.18.0",
-    "tslint-plugin-prettier": "^2.0.1",
-    "typescript": "^3.4.3",
-    "vue-template-compiler": "^2.6.10"
-  },
-  "nodemonConfig": {
-    "ignore": [
-      "**/*.test.ts",
-      "**/*.spec.ts",
-      ".git",
-      "node_modules"
-    ],
-    "watch": [
-      "./src/server/*",
-      "./src/models/*",
-      "./.env.local"
-    ],
-    "exec": "ts-node -P ./src/server/tsconfig.json ./src/server/index.ts",
-    "ext": "ts"
-  },
-  "gitHooks": {
-    "pre-commit": "lint-staged"
-  },
-  "lint-staged": {
-    "src/**/*.ts": [
-      "vue-cli-service lint",
-      "git add"
-    ],
-    "*.vue": [
-      "vue-cli-service lint",
-      "git add"
-    ]
-  }
+    "name": "budgit",
+    "version": "0.1.0",
+    "private": true,
+    "engines": {
+        "node": "12.x"
+    },
+    "scripts": {
+        "serve": "VUE_APP_PLAID_WEBHOOK_URL=`./scripts/run_ngrok.sh` vue-cli-service serve",
+        "start:db": "docker run --rm -d -p 27017-27019:27017-27019 --name mongodb mongo",
+        "stop:db": "docker kill mongodb",
+        "start:db:dash": "parse-dashboard --config parse-dashboard-config.json --port 4041",
+        "start:db:prod": "parse-dashboard --config parse-dashboard-prod.json --port 4042",
+        "start:client": "yarn serve",
+        "start:server": "yarn start:db:dash & nodemon",
+        "start:prod": "node dist/server/server/index.js",
+        "build": "vue-cli-service build && tsc --skipLibCheck -p src/server",
+        "clean": "rm -rf dist",
+        "lint": "vue-cli-service lint",
+        "test:e2e": "vue-cli-service test:e2e",
+        "test:unit": "vue-cli-service test:unit"
+    },
+    "dependencies": {
+        "@fortawesome/fontawesome-svg-core": "^1.2.19",
+        "@fortawesome/free-solid-svg-icons": "^5.9.0",
+        "@fortawesome/vue-fontawesome": "^0.1.6",
+        "@types/gapi": "^0.0.39",
+        "@types/gapi.auth2": "^0.0.50",
+        "@types/mathjs": "^6.0.1",
+        "@types/uuid": "^3.4.5",
+        "bootstrap": "^4.3.1",
+        "bootstrap-vue": "^2.0.0-rc.28",
+        "connect-mongo": "^3.0.0",
+        "core-js": "^2.6.5",
+        "date-fns": "^1.30.1",
+        "dotenv": "^8.0.0",
+        "express": "^4.17.1",
+        "express-session": "^1.16.2",
+        "firebase": "^7.6.2",
+        "firebase-admin": "^8.9.0",
+        "firebase-functions": "^3.3.0",
+        "google-auth-library": "^5.2.0",
+        "lodash": "^4.17.15",
+        "mathjs": "^6.0.4",
+        "money-math": "^2.5.1",
+        "parse": "^2.5.1",
+        "parse-server": "^3.6.0",
+        "plaid": "^4.2.0",
+        "prettier": "^1.19.1",
+        "reflect-metadata": "^0.1.13",
+        "tslint-config-prettier": "^1.18.0",
+        "tslint-plugin-prettier": "^2.1.0",
+        "uuid": "^3.3.2",
+        "vue": "^2.6.10",
+        "vue-class-component": "^7.0.2",
+        "vue-property-decorator": "^8.1.0",
+        "vue-router": "^3.0.3",
+        "vuedraggable": "^2.23.0",
+        "vuex": "^3.0.1",
+        "vuex-module-decorators": "^0.9.9",
+        "winston": "^3.2.1"
+    },
+    "devDependencies": {
+        "@types/connect-mongo": "^0.0.43",
+        "@types/cookie-parser": "^1.4.1",
+        "@types/dotenv": "^6.1.1",
+        "@types/express": "^4.17.0",
+        "@types/express-session": "^1.15.13",
+        "@types/firebase": "^3.2.1",
+        "@types/jest": "^23.1.4",
+        "@types/lodash": "^4.14.136",
+        "@types/money-math": "^2.5.0",
+        "@types/parse": "^2.2.7",
+        "@vue/cli-plugin-babel": "^3.9.0",
+        "@vue/cli-plugin-e2e-cypress": "^3.9.0",
+        "@vue/cli-plugin-typescript": "^3.9.0",
+        "@vue/cli-plugin-unit-jest": "^3.9.0",
+        "@vue/cli-service": "^3.9.0",
+        "@vue/test-utils": "1.0.0-beta.29",
+        "babel-core": "7.0.0-bridge.0",
+        "lint-staged": "^8.1.5",
+        "ngrok": "^3.2.4",
+        "node-sass": "^4.9.0",
+        "nodemon": "^1.19.1",
+        "parse-dashboard": "^1.4.3",
+        "sass-loader": "^7.1.0",
+        "ts-jest": "^23.0.0",
+        "ts-node": "^8.3.0",
+        "tslint": "^5.19.0",
+        "typescript": "^3.4.3",
+        "vue-template-compiler": "^2.6.10"
+    },
+    "nodemonConfig": {
+        "ignore": [
+            "**/*.test.ts",
+            "**/*.spec.ts",
+            ".git",
+            "node_modules"
+        ],
+        "watch": [
+            "./src/server/*",
+            "./src/models/*",
+            "./.env.local"
+        ],
+        "exec": "ts-node -P ./src/server/tsconfig.json ./src/server/index.ts",
+        "ext": "ts"
+    },
+    "prettier": {
+        "tabWidth": 4,
+        "singleQuote": true
+    },
+    "gitHooks": {
+        "pre-commit": "lint-staged"
+    },
+    "lint-staged": {
+        "src/**/*.ts": [
+            "vue-cli-service lint",
+            "git add"
+        ],
+        "*.vue": [
+            "vue-cli-service lint",
+            "git add"
+        ]
+    }
 }

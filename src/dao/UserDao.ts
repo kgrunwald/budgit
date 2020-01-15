@@ -1,20 +1,22 @@
 import Dao from './Dao';
 import User from '../models/User';
 
-class UserDao extends Dao {
-  protected clazz = User;
+class UserDao extends Dao<User> {
+    constructor() {
+        super(User);
+    }
 
-  constructor(useMasterKey?: boolean, sessionToken?: string) {
-    super({ useMasterKey, sessionToken });
-  }
+    public byUsername(username: string): Promise<User | undefined> {
+        return this.first('username', username);
+    }
 
-  public byUsername(username: string): Promise<User | undefined> {
-    return this.first('username', username);
-  }
+    public async byId(userId: string): Promise<User | undefined> {
+        return this.get(userId);
+    }
 
-  public async byId(userId: string): Promise<User> {
-    return this.get(userId);
-  }
+    public async current(): Promise<User> {
+        return new User();
+    }
 }
 
 export default UserDao;

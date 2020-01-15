@@ -1,50 +1,10 @@
-import Parse from './Parse';
+import Model from './Model';
+import { field } from './Metadata';
 
-export class User extends Parse.User {
-  constructor(attributes: any) {
-    super(attributes);
-  }
-
-  get email(): string {
-    return this.get('email');
-  }
-
-  set email(email: string) {
-    this.set('email', email);
-  }
-
-  get username(): string {
-    return this.get('username');
-  }
-
-  set username(username: string) {
-    this.set('username', username);
-  }
-
-  get password(): string {
-    return this.get('password');
-  }
-
-  set password(password: string) {
-    this.set('password', password);
-  }
-
-  get firstName(): string {
-    return this.get('firstName');
-  }
-
-  set firstName(firstName: string) {
-    this.set('firstName', firstName);
-  }
-
-  get lastName(): string {
-    return this.get('lastName');
-  }
-
-  set lastName(lastName: string) {
-    this.set('lastName', lastName);
-  }
+export default class User extends Model {
+    @field public email?: string;
+    @field public username?: string;
+    @field public password?: string;
+    @field public firstName?: string;
+    @field public lastName?: string;
 }
-
-Parse.Object.registerSubclass('_User', User);
-export default User;

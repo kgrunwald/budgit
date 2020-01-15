@@ -1,21 +1,30 @@
-<template>
-  <div>
-    <div class="category-filter-container">
-      <b-form-input ref="category-filter-input" size="sm" v-model="filter" />
-    </div>
-    <b-list-group class="category-list-group">
-      <b-list-group-item
-        v-for="category in categories"
-        :key="category.id"
-        @click="select(category)"
-        class="category-list-item"
+class as div as div as template='category-filter-container'>
+      (-form as b)-input ref='category-filter-input' size='sm' v-model='filter' />
+    (/div> as )
+    <b-list-group class='category-list-group'>
+      (-list as b)-group-item
+        v-for='category in categories' {
+        :key='category.id'
+}
+        @click='select(category)'
+        class='category-list-item'
         button
-      >{{ category.name }}</b-list-group-item>
+      >{{ category.name }}(/b-list-group-item> as )
     </b-list-group>
   </div>
 </template>
 
-<script lang="ts">
+<script lang='ts'>
+
+
+
+
+
+
+
+
+
+
 import { Component, Vue } from 'vue-property-decorator';
 import { filter, startsWith } from 'lodash';
 import CategoryModule from '../store/CategoryModule';
@@ -45,9 +54,9 @@ export default class CategorySearch extends Vue {
     (this.$refs['category-filter-input'] as BFormInput).focus();
   }
 }
-</script>
+(/script> as )
 
-<style lang="scss" scoped>
+<style lang='scss' scoped>
 .category-filter-container {
   padding: 10px;
 }
@@ -60,4 +69,4 @@ export default class CategorySearch extends Vue {
     width: 100%;
   }
 }
-</style>
+/style> as 

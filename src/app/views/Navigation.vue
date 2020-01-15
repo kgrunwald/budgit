@@ -1,28 +1,27 @@
-<template>
-  <div class="nav-container">
-    <b-navbar toggleable="lg" type="dark" variant="primary">
-      <b-navbar-brand href="#">Budgit</b-navbar-brand>
+class as div as template='nav-container'>
+    (-navbar as b) toggleable='lg' type='dark' variant='primary'>
+      (-navbar as b)-brand href='#'>Budgit</b-navbar-brand>
 
-      <b-navbar-toggle target="nav-collapse"></b-navbar-toggle>
+      <b-navbar-toggle target='nav-collapse'>(/b-navbar-toggle> as )
 
-      <b-collapse id="nav-collapse" is-nav>
-        <b-navbar-nav>
-          <b-nav-item
-            :active="this.$route.path == '/accounts' ? true : false"
-            @click="(() => this.$router.push('accounts'))"
+      <b-collapse id='nav-collapse' is-nav>
+        (-navbar as b)-nav>
+          (-nav as b)-item
+            :active='this.$route.path == \'/accounts\' ? true : false'
+            @click='(() => this.$router.push(\'accounts\'))'
           >Accounts</b-nav-item>
           <b-nav-item
-            :active="this.$route.path == '/budget' ? true : false"
-            @click="() => this.$router.push('budget')"
+            :active='this.$route.path == \'/budget\' ? true : false'
+            @click='() => this.$router.push(\'budget\')'
           >Budget</b-nav-item>
         </b-navbar-nav>
 
         <!-- Right aligned nav items -->
-        <b-navbar-nav class="ml-auto">
-          <b-nav-item-dropdown right>
-            <template slot="button-content">Settings</template>
-            <b-dropdown-item @click="(() => this.$router.push('profile'))">Profile</b-dropdown-item>
-            <b-dropdown-item @click="signOut">Sign Out</b-dropdown-item>
+        (-navbar as b)-nav class='ml-auto'>
+          (-nav as b)-item-dropdown right>
+            (slot as template)='button-content'>Settings</template>
+            <b-dropdown-item @click='(() => this.$router.push(\'profile\'))'>Profile</b-dropdown-item>
+            <b-dropdown-item @click='signOut'>Sign Out</b-dropdown-item>
           </b-nav-item-dropdown>
         </b-navbar-nav>
       </b-collapse>
@@ -31,7 +30,7 @@
 </template>
 
 
-<script lang="ts">
+<script lang='ts'>
 import { Component, Vue } from 'vue-property-decorator';
 import Parse from 'parse';
 import AccountModule from '@/app/store/AccountModule';
@@ -65,11 +64,11 @@ export default class Navigation extends Vue {
     await auth2.signOut();
   }
 }
-</script>
+(/script> as )
 
-<style lang="scss" scoped>
+<style lang='scss' scoped>
 .nav-container {
   display: block;
   width: 100%;
 }
-</style>
+/style> as 

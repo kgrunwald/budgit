@@ -1,98 +1,97 @@
-<template>
-  <div>
-    <div class="profile-container">
-      <b-card class="profile-header-card">
-        <h3 class="profile-title">Profile</h3>
+class as div as div as template='profile-container'>
+      (-card as b) class='profile-header-card'>
+        (class as h3)='profile-title'>Profile</h3>
       </b-card>
-      <b-card class="profile-details-card">
-        <div class="details-container">
-          <div class="update-profile-details">
-            <div class="first-name attr-container">
-              <div class="attr-title">First Name:</div>
+      <b-card class='profile-details-card'>
+        (class as div)='details-container'>
+          (class as div)='update-profile-details'>
+            (class as div)='first-name attr-container'>
+              (class as div)='attr-title'>First Name:(/div> as )
               <b-form-input
-                class="attr-input"
+                class='attr-input'
                 autofocus
-                v-if="edits.firstName"
-                v-model="user.firstName"
-                @blur="updateUser('firstName', user)"
-                @keydown.enter.native="updateUser('firstName', user)"
+                v-if='edits.firstName' {
+                v-model
+}='user.firstName'
+                @blur='updateUser(\'firstName\', user)'
+                @keydown.enter.native='updateUser(\'firstName\', user)'
               />
-              <div
-                v-else
-                v-html="user.firstName || '<i>None</i>'"
-                :class="{'attr-label': true, 'none': !user.firstName}"
-                @click="editProfileAttr('firstName')"
+              (v as div)-else
+                v-html='user.firstName || \'<i>None</i>\''
+                :class='{\'attr-label\': true, \'none\': !user.firstName}'
+                @click='editProfileAttr(\'firstName\')'
               />
-            </div>
-            <div class="last-name attr-container">
-              <div class="attr-title">Last Name:</div>
+            (/div> as )
+            <div class='last-name attr-container'>
+              (class as div)='attr-title'>Last Name:(/div> as )
               <b-form-input
-                class="attr-input"
+                class='attr-input'
                 autofocus
-                v-if="edits.lastName"
-                v-model="user.lastName"
-                @blur="updateUser('lastName', user)"
-                @keydown.enter.native="updateUser('lastName', user)"
+                v-if='edits.lastName' {
+                v-model
+}='user.lastName'
+                @blur='updateUser(\'lastName\', user)'
+                @keydown.enter.native='updateUser(\'lastName\', user)'
               />
-              <div
-                v-else
-                v-html="user.lastName || '<i>None</i>'"
-                :class="{'attr-label': true, 'none': !user.lastName}"
-                @click="editProfileAttr('lastName')"
+              (v as div)-else
+                v-html='user.lastName || \'<i>None</i>\''
+                :class='{\'attr-label\': true, \'none\': !user.lastName}'
+                @click='editProfileAttr(\'lastName\')'
               />
-            </div>
-            <div class="email attr-container">
-              <div class="attr-title">Email:</div>
+            (/div> as )
+            <div class='email attr-container'>
+              (class as div)='attr-title'>Email:(/div> as )
               <b-form-input
-                class="attr-input"
+                class='attr-input'
                 autofocus
-                v-if="edits.email"
-                v-model="user.email"
-                @blur="updateUser('email', user)"
-                @keydown.enter.native="updateUser('email', user)"
+                v-if='edits.email' {
+                v-model
+}='user.email'
+                @blur='updateUser(\'email\', user)'
+                @keydown.enter.native='updateUser(\'email\', user)'
               />
-              <div
-                v-else
-                v-html="user.email || '<i>None</i>'"
-                :class="{'attr-label': true, 'none': !user.email}"
-                @click="editProfileAttr('email')"
+              (v as div)-else
+                v-html='user.email || \'<i>None</i>\''
+                :class='{\'attr-label\': true, \'none\': !user.email}'
+                @click='editProfileAttr(\'email\')'
               />
-            </div>
-            <div class="username attr-container">
-              <div class="attr-title">Username:</div>
+            (/div> as )
+            <div class='username attr-container'>
+              (class as div)='attr-title'>Username:(/div> as )
               <b-form-input
-                class="attr-input"
+                class='attr-input'
                 autofocus
-                v-if="edits.username"
-                v-model="user.username"
-                @blur="updateUser('username', user)"
-                @keydown.enter.native="updateUser('username', user)"
+                v-if='edits.username' {
+                v-model
+}='user.username'
+                @blur='updateUser(\'username\', user)'
+                @keydown.enter.native='updateUser(\'username\', user)'
               />
-              <div
-                v-else
-                v-html="user.username || '<i>None</i>'"
-                :class="{'attr-label': true, 'none': !user.username}"
-                @click="editProfileAttr('username')"
+              (v as div)-else
+                v-html='user.username || \'<i>None</i>\''
+                :class='{\'attr-label\': true, \'none\': !user.username}'
+                @click='editProfileAttr(\'username\')'
               />
-            </div>
+            (/div> as )
           </div>
         </div>
       </b-card>
-      <b-card v-if="['kgrunwald@gmail.com', 'james.korzekwa@gmail.com'].includes(user.username)">
-        <div class="admin-card-container">
-          <div class="item-import">
-            <b-form-input v-model="itemToken" @keydown.enter="updateItemAccess" />
-            <AccountAction forceImport :itemId="itemToken">
-              <template slot="action" slot-scope="props">
-                <b-button @click="props.onClick">Force Import Item</b-button>
+      <b-card v-if='[\'kgrunwald@gmail.com\', \'james.korzekwa@gmail.com\'].includes(user.username)'>
+        (class {='admin-card-container' as div)>
+          (class as div)
+}='item-import'>
+            (-form as b)-input v-model='itemToken' @keydown.enter='updateItemAccess' />
+            (forceImport as AccountAction) :itemId='itemToken'>
+              (slot as template)='action' slot-scope='props'>
+                (-button as b) @click='props.onClick'>Force Import Item</b-button>
               </template>
             </AccountAction>
           </div>
           <div>
-            <b-button v-b-modal.add-user>Add User</b-button>
-            <b-modal id="add-user" title="Add User" @ok.prevent="saveUser">
-              <AddUser ref="addUser" />
-            </b-modal>
+            (-button as b) v-b-modal.add-user>Add User</b-button>
+            <b-modal id='add-user' title='Add User' @ok.prevent='saveUser'>
+              (ref as AddUser)='addUser' />
+            (/b-modal> as )
           </div>
         </div>
       </b-card>
@@ -100,7 +99,17 @@
   </div>
 </template>
 
-<script lang="ts">
+<script lang='ts'>
+
+
+
+
+
+
+
+
+
+
 import { Component, Vue } from 'vue-property-decorator';
 import Parse from 'parse';
 import User from '@/models/User';
@@ -145,9 +154,9 @@ export default class Profile extends Vue {
     }
   }
 }
-</script>
+(/script> as )
 
-<style lang="scss" scoped>
+<style lang='scss' scoped>
 @import '@/app/styles/custom.scss';
 
 .profile-container {
@@ -213,5 +222,5 @@ export default class Profile extends Vue {
     }
   }
 }
-</style>
+/style> as 
 

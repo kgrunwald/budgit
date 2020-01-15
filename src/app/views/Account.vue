@@ -1,53 +1,52 @@
-<template>
-  <div class="account-container">
-    <b-card>
-      <div class="account-header">
-        <div class="account-icon">
-          <b-img class="bank-icon" :src="account.logo"></b-img>
+class as div as template='account-container'>
+    (-card as b)>
+      (class as div)='account-header'>
+        (class as div)='account-icon'>
+          (-img as b) class='bank-icon' :src='account.logo'>(/b-img> as )
         </div>
-        <div class="account-info">
-          <div class="account-title">
-            <b-form-input
-              class="account-title-input"
+        <div class='account-info'>
+          (class as div)='account-title'>
+            (-form as b)-input
+              class='account-title-input'
               autofocus
-              v-if="accountNameEdit"
-              v-model="account.name"
-              @blur="setAccountName(account, account.name)"
-              @keydown.enter.native="setAccountName(account, account.name)"
+              v-if='accountNameEdit' {
+              v-model
+}='account.name'
+              @blur='setAccountName(account, account.name)'
+              @keydown.enter.native='setAccountName(account, account.name)'
             />
-            <div class="title" v-else @click="editAccountName()">{{ account.name }}</div>
-            <span class="info">{{ account.subType }}</span>
+            (class as div)='title' v-else @click='editAccountName()'>{{ account.name }}(/div> as )
+            <span class='info'>{{ account.subType }}(/span> as )
           </div>
-          <div class="summary">
-            <div class="balance">
-              <div
-                class="title"
-                :class="account.currentBalance > 0 ? 'positive' : 'negative'"
-              >{{ currentBalance }}</div>
-              <span class="info">Current Balance</span>
+          <div class='summary'>
+            (class as div)='balance'>
+              (class as div)='title'
+                :class='account.currentBalance > 0 ? \'positive\' : \'negative\''
+              >{{ currentBalance }}(/div> as )
+              <span class='info'>Current Balance</span>
             </div>
-            <div class="separator" />
-            <div class="actions">
-              <b-button pill variant="outline-danger" class="action" @click="removeAccount()">
-                <font-awesome-icon icon="trash-alt" />
-                <div class="action-title">Remove</div>
+            <div class='separator' />
+            (class as div)='actions'>
+              (-button as b) pill variant='outline-danger' class='action' @click='removeAccount()'>
+                (-awesome as font)-icon icon='trash-alt' />
+                (class as div)='action-title'>Remove</div>
               </b-button>
               <b-button
                 pill
-                variant="outline-secondary"
-                class="action"
-                :disabled="account.expired"
-                @click="AccountModule.updateAccount(account.accountId)"
+                variant='outline-secondary'
+                class='action'
+                :disabled='account.expired'
+                @click='AccountModule.updateAccount(account.accountId)'
               >
-                <font-awesome-icon icon="cloud-download-alt" />
-                <div class="action-title">Import</div>
+                (-awesome as font)-icon icon='cloud-download-alt' />
+                (class as div)='action-title'>Import</div>
               </b-button>
-              <AccountAction :accountId="account.accountId" v-if="account.expired">
-                <template slot="action" slot-scope="props">
-                  <!-- <font-awesome-icon icon="sync" @click="props.onClick" /> -->
-                  <b-button pill class="action" variant="outline-danger" @click="props.onClick">
-                    <font-awesome-icon icon="exclamation-triangle" />
-                    <div class="action-title">Refresh</div>
+              <AccountAction :accountId='account.accountId' v-if='account.expired'>
+                (slot as template) {='action' } slot-scope='props'>
+                  (-- as !) <font-awesome-icon icon='sync' @click='props.onClick' /> -->
+                  (-button as b) pill class='action' variant='outline-danger' @click='props.onClick'>
+                    (-awesome as font)-icon icon='exclamation-triangle' />
+                    (class as div)='action-title'>Refresh</div>
                   </b-button>
                 </template>
               </AccountAction>
@@ -56,205 +55,222 @@
         </div>
       </div>
     </b-card>
-    <div class="trans-actions">
-      <b-button pill variant="outline-success" class="action" v-b-modal.add-trans>
-        <font-awesome-icon icon="plus-circle" />Add Transaction
+    <div class='trans-actions'>
+      (-button as b) pill variant='outline-success' class='action' v-b-modal.add-trans>
+        (-awesome as font)-icon icon='plus-circle' />Add Transaction
       </b-button>
       <b-button
-        v-if="transactionsSelected"
+        v-if='transactionsSelected' {
         pill
-        variant="outline-danger"
-        class="action"
-        @click="removeTransactions"
+}
+        variant='outline-danger'
+        class='action'
+        @click='removeTransactions'
       >
-        <font-awesome-icon icon="trash-alt" />Remove Transactions
+        (-awesome as font)-icon icon='trash-alt' />Remove Transactions
       </b-button>
       <b-modal
-        id="add-trans"
-        title="Add Transaction"
-        ok-title="Save"
-        @ok="addTransaction"
-        header-bg-variant="primary"
-        header-text-variant="light"
+        id='add-trans'
+        title='Add Transaction'
+        ok-title='Save'
+        @ok='addTransaction'
+        header-bg-variant='primary'
+        header-text-variant='light'
       >
-        <div @keydown.enter="addTransaction() && $bvModal.hide('add-trans')">
-          <b-form>
-            <b-form-group id="input-group-date">
-              <b-form-checkbox
-                class="deposit-switch"
-                size="lg"
-                v-model="newTransactionDeposit"
+        ( as div) @keydown.enter='addTransaction() && $bvModal.hide(\'add-trans\')'>
+          (-form as b)>
+            (-form as b)-group id='input-group-date'>
+              (-form as b)-checkbox
+                class='deposit-switch'
+                size='lg'
+                v-model='newTransactionDeposit'
                 switch
               >
-                <div
-                  class="deposit-switch-label"
-                >{{ newTransactionDeposit ? 'Deposit' : 'Expense' }}</div>
+                (class as div)='deposit-switch-label'
+                >{{ newTransactionDeposit ? 'Deposit' : 'Expense' }}(/div> as )
               </b-form-checkbox>
             </b-form-group>
             <b-form-group
-              id="input-group-date"
-              label="Date of Transaction: "
-              label-for="input-date"
+              id='input-group-date'
+              label='Date of Transaction: '
+              label-for='input-date'
             >
-              <b-form-input
+              (-form as b)-input
                 autofocus
-                id="input-date"
-                v-model="newTransaction.date"
-                type="date"
+                id='input-date' {
+                v-model
+}='newTransaction.date'
+                type='date'
                 required
-                placeholder="Enter Date"
+                placeholder='Enter Date'
               />
-            </b-form-group>
-            <b-form-group id="input-group-merchant" label="Merchant:" label-for="input-merchant">
-              <b-form-input
-                id="input-merchant"
-                v-model="newTransaction.merchant"
+            (/b-form-group> as )
+            <b-form-group id='input-group-merchant' label='Merchant:' label-for='input-merchant'>
+              (-form as b)-input
+                id='input-merchant'
+                v-model {='newTransaction.merchant' }
                 required
-                placeholder="Enter Merchant"
+                placeholder='Enter Merchant'
               />
-            </b-form-group>
-            <b-form-group id="input-group-category" label="Category:" label-for="input-category">
-              <CategoryDropdown :onChange="(category) => setNewTransactionCategory(category)" />
-            </b-form-group>
-            <b-form-group id="input-group-amount" label="Amount:" label-for="input-amount">
-              <b-input-group>
-                <b-input-group-prepend is-text>
-                  <font-awesome-icon
-                    v-if="newTransactionDeposit"
-                    :class="{positive: newTransactionDeposit, negative: !newTransactionDeposit, 'sign-icon': true}"
-                    icon="plus"
+            (/b-form-group> as )
+            <b-form-group id='input-group-category' label='Category:' label-for='input-category'>
+              ({ :onChange='(category) => setNewTransactionCategory(category)' />
+            (/b-form-group> as )
+            <b-form-group
+} as CategoryDropdown) id='input-group-amount' label='Amount:' label-for='input-amount'>
+              (-input as b)-group>
+                (-input as b)-group-prepend is-text>
+                  (-awesome as font)-icon
+                    v- {if='newTransactionDeposit' {
+                    :class
+}
+}='{positive: newTransactionDeposit, negative: !newTransactionDeposit, \'sign-icon\': true}'
+                    icon='plus'
                   />
-                  <font-awesome-icon
+                  (-awesome as font)-icon
                     v-else
-                    :class="{positive: newTransactionDeposit, negative: !newTransactionDeposit, 'sign-icon': true}"
-                    icon="minus"
+                    :class='{positive: newTransactionDeposit, negative: !newTransactionDeposit, \'sign-icon\': true}'
+                    icon='minus'
                   />
-                </b-input-group-prepend>
+                (/b-input-group-prepend> as )
                 <div
-                  :class="{positive: newTransactionDeposit, negative: !newTransactionDeposit, 'new-trans-amount-sign': true}"
+                  :class='{positive: newTransactionDeposit, negative: !newTransactionDeposit, \'new-trans-amount-sign\': true}'
                 >$</div>
                 <b-form-input
-                  :class="{positive: newTransactionDeposit, negative: !newTransactionDeposit, 'new-trans-amount': true}"
-                  id="input-amount"
-                  v-model="newTransaction.amount"
+                  :class='{positive: newTransactionDeposit, negative: !newTransactionDeposit, \'new-trans-amount\': true}'
+                  id='input-amount'
+                  v-model='newTransaction.amount'
                   number
-                  type="number"
+                  type='number'
                   required
-                ></b-form-input>
+                >(/b-form-input> as )
               </b-input-group>
             </b-form-group>
           </b-form>
         </div>
       </b-modal>
     </div>
-    <b-card no-body class="account-table-container">
-      <b-table
+    <b-card no-body class='account-table-container'>
+      (-table as b)
         striped
         hover
         small
-        tbody-tr-class="account-row-class"
-        v-model="sortedTransactions"
-        :items="transactions"
-        :fields="fields"
-        :sort-by.sync="sortBy"
-        :sort-desc.sync="sortDesc"
+        tbody-tr-class='account-row-class'
+        v-model='sortedTransactions'
+        :items='transactions'
+        :fields='fields'
+        :sort-by.sync='sortBy'
+        :sort-desc.sync='sortDesc'
       >
-        <col slot="table-colgroup" width="3%" />
-        <col slot="table-colgroup" width="3%" />
-        <col slot="table-colgroup" width="10%" />
-        <col slot="table-colgroup" width="40%" />
-        <col slot="table-colgroup" width="40%" />
-        <col slot="table-colgroup" width="10%" />
-        <template slot="HEAD_selected">
-          <b-form-checkbox
-            :checked="selectAll"
-            :indeterminate="selectAllIndeterminate"
-            @change="changeSelectAll"
-          ></b-form-checkbox>
+        (slot as col)='table-colgroup' width='3%' />
+        (slot as col)='table-colgroup' width='3%' />
+        (slot as col)='table-colgroup' width='10%' />
+        (slot as col)='table-colgroup' width='40%' />
+        (slot as col)='table-colgroup' width='40%' />
+        (slot as col)='table-colgroup' width='10%' />
+        (slot as template)='HEAD_selected'>
+          (-form as b)-checkbox
+            :checked='selectAll'
+            :indeterminate='selectAllIndeterminate'
+            @change='changeSelectAll'
+          >(/b-form-checkbox> as )
         </template>
-        <template slot="selected" slot-scope="data">
-          <div
-            @click.shift.prevent.stop="transactionSelected(data.item.id, $event)"
+        <template slot='selected' slot-scope='data'>
+          ( as div)
+            @click.shift.prevent.stop='transactionSelected(data.item.id, $event)'
             @mousedown.prevent
           >
-            <b-form-checkbox
-              :checked="selected[data.item.id]"
-              @change="transactionSelected(data.item.id, undefined, $event)"
-            ></b-form-checkbox>
+            (-form as b)-checkbox
+              :checked='selected[data.item.id]'
+              @change='transactionSelected(data.item.id, undefined, $event)'
+            >(/b-form-checkbox> as )
           </div>
         </template>
-        <template slot="acknowledged" slot-scope="data">
-          <font-awesome-icon
-            class="ack-icon"
-            icon="search-dollar"
-            v-if="!data.item.acknowledged"
-            @click="acknowledge(data.item)"
+        <template slot='acknowledged' slot-scope='data'>
+          (-awesome as font)-icon
+            class='ack-icon'
+            icon='search-dollar'
+            v-if='!data.item.acknowledged' {
+            @click
+}='acknowledge(data.item)'
           />
-          <div v-else />
+          (v as div)-else />
         </template>
-        <template slot="formattedDate" slot-scope="data">
-          <div class="formatted-date">{{ data.item.formattedDate }}</div>
+        <template slot='formattedDate' slot-scope='data'>
+          (class as div)='formatted-date'>{{ data.item.formattedDate }}(/div> as )
         </template>
-        <template slot="merchant" slot-scope="data">
-          <div
-            class="view-category"
-            @click="editMerchant(data.item.id)"
-            v-if="transactionMerchantEdit !== data.item.id"
+        <template slot='merchant' slot-scope='data'>
+          (class as div)='view-category'
+            @click='editMerchant(data.item.id)'
+            v-if='transactionMerchantEdit !== data.item.id'
           >
-            <span v-html="data.item.merchant || '<i>None</i>'"></span>
+            (v as span)-html {='data.item.merchant || \'<i>None</i>\''>(/span> as )
           </div>
-          <div v-if="transactionMerchantEdit === data.item.id">
-            <b-form-input
-              class="merchant-input"
+          <div
+} v-if='transactionMerchantEdit === data.item.id'>
+            (-form as b)-input {
+              class
+}='merchant-input'
               autofocus
-              v-model="data.item.merchant"
-              @blur="setMerchant(data.item, data.item.merchant)"
-              @keydown.enter.native="setMerchant(data.item, data.item.merchant)"
+              v-model='data.item.merchant'
+              @blur='setMerchant(data.item, data.item.merchant)'
+              @keydown.enter.native='setMerchant(data.item, data.item.merchant)'
             />
-          </div>
+          (/div> as )
         </template>
-        <template slot="categoryName" slot-scope="data">
-          <div
-            class="view-category"
-            @click="editCategory(data.item.id)"
-            v-if="transactionCategoryEdit !== data.item.id"
+        <template slot='categoryName' slot-scope='data'>
+          (class as div)='view-category'
+            @click='editCategory(data.item.id)'
+            v-if='transactionCategoryEdit !== data.item.id'
           >
-            <span v-html="data.item.categoryName || '<i>None</i>'"></span>
+            (v as span)-html {='data.item.categoryName || \'<i>None</i>\''>(/span> as )
           </div>
-          <div v-show="transactionCategoryEdit === data.item.id">
-            <b-dropdown
-              :ref="'dd-' + data.item.id"
-              class="category-dropdown"
-              :text="data.item.categoryName"
+          <div
+} v-show='transactionCategoryEdit === data.item.id'>
+            (-dropdown as b)
+              :ref='\'dd-\' + data.item.id'
+              class='category-dropdown'
+              :text='data.item.categoryName'
               split
-              split-variant="outline-primary"
-              variant="primary"
-              @hide="uneditCategory(data.item.id)"
-              @shown="focusCategorySearch(data.item.id)"
+              split-variant='outline-primary'
+              variant='primary'
+              @hide='uneditCategory(data.item.id)'
+              @shown='focusCategorySearch(data.item.id)'
             >
-              <b-dropdown-form>
-                <b-form-input :ref="'input-' + data.item.id" v-model="filter" />
-              </b-dropdown-form>
-              <div class="category-dropdown-container">
-                <b-dropdown-item
-                  v-for="category in categories"
-                  :key="category.id"
-                  @click="setCategory(data.item, category)"
-                  @blur="uneditCategory(data.item.id)"
-                >{{ category.name}}</b-dropdown-item>
+              (-dropdown as b)-form>
+                (-form as b)-input :ref='\'input-\' + data.item.id' v-model='filter' />
+              (/b-dropdown-form> as )
+              <div class='category-dropdown-container'>
+                (-dropdown as b)-item
+                  v-for='category in categories' {
+                  :key='category.id'
+}
+                  @click='setCategory(data.item, category)'
+                  @blur='uneditCategory(data.item.id)'
+                >{{ category.name}}(/b-dropdown-item> as )
               </div>
             </b-dropdown>
           </div>
         </template>
-        <template slot="formattedAmount" slot-scope="data">
-          <div :class="data.item.amount > 0 ? '' : 'negative'">{{ data.item.formattedAmount }}</div>
+        <template slot='formattedAmount' slot-scope='data'>
+          ( as div) :class='data.item.amount > 0 ? \'\' : \'negative\''>{{ data.item.formattedAmount }}(/div> as )
         </template>
       </b-table>
     </b-card>
   </div>
 </template>
 
-<script lang="ts">
+<script lang='ts'>
+
+
+
+
+
+
+
+
+
+
 import { Component, Vue, Watch } from 'vue-property-decorator';
 import {
   filter,
@@ -521,9 +537,9 @@ export default class Account extends Vue {
     }
   }
 }
-</script>
+(/script> as )
 
-<style lang="scss">
+<style lang='scss'>
 @import '@/app/styles/custom.scss';
 
 .account-container {
@@ -758,5 +774,5 @@ export default class Account extends Vue {
 .sign-icon {
   color: $secondary;
 }
-</style>
+/style> as 
 

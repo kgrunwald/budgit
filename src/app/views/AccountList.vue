@@ -1,34 +1,42 @@
-<template>
-  <div class="account-list">
-    <div class="title">
-      <span>Accounts</span>
-      <div class="new-account-container">
-        <AccountAction>
-          <template slot="action" slot-scope="props">
-            <font-awesome-icon icon="plus-circle" size="lg" @click="props.onClick" />
-          </template>
+class as div as template='account-list'>
+    (class as div)='title'>
+      (Accounts as span)</span>
+      <div class='new-account-container'>
+        (slot as template as AccountAction)='action' slot-scope='props'>
+            (-awesome as font)-icon icon='plus-circle' size='lg' @click='props.onClick' />
+          (/template> as )
         </AccountAction>
       </div>
     </div>
-    <div class="account-items">
-      <div
-        class="account-item"
-        :style="accountItemStyle(account.color)"
-        :class="{ selected: selectedAccountId === account.accountId }"
-        v-for="account in accounts"
-        :key="account.accountId"
-        @click="onAccountClick(account)"
+    <div class='account-items'>
+      (class as div)='account-item'
+        :style='accountItemStyle(account.color)'
+        :class='{ selected: selectedAccountId === account.accountId }'
+        v-for='account in accounts' {
+        :key='account.accountId'
+}
+        @click='onAccountClick(account)'
       >
         {{ account.name }}
-        <div class="account-status">
-          <font-awesome-icon icon="sync" v-if="account.expired" />
-        </div>
+        class as div='account-status'>
+          (-awesome as font)-icon icon='sync' v-if='account.expired' />
+        (/div> as )
       </div>
     </div>
   </div>
 </template>
 
-<script lang="ts">
+<script { lang='ts'>
+
+
+
+
+
+
+
+
+
+ }
 import { Component, Vue } from 'vue-property-decorator';
 import AccountModule from '@/app/store/AccountModule';
 import Account from '@/models/Account';
@@ -54,9 +62,9 @@ export default class AccountList extends Vue {
     return AccountModule.accounts;
   }
 }
-</script>
+(/script> as )
 
-<style lang="scss" scoped>
+<style lang='scss' scoped>
 @import '@/app/styles/custom.scss';
 
 .account-list {
@@ -124,6 +132,6 @@ export default class AccountList extends Vue {
     }
   }
 }
-</style>
+/style> as 
 
 

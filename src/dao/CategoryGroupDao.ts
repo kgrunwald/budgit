@@ -1,16 +1,14 @@
-import Dao from './Dao';
+import Dao, { Subscriber } from './Dao';
 import CategoryGroup from '../models/CategoryGroup';
 
-class CategoryGroupDao extends Dao {
-  protected clazz = CategoryGroup;
+class CategoryGroupDao extends Dao<CategoryGroup> {
+    constructor() {
+        super(CategoryGroup);
+    }
 
-  constructor(useMasterKey?: boolean, sessionToken?: string) {
-    super({ useMasterKey, sessionToken });
-  }
-
-  public byName(name: string): Promise<CategoryGroup | undefined> {
-    return this.first('name', name);
-  }
+    public byName(name: string): Promise<CategoryGroup | undefined> {
+        return this.first('name', name);
+    }
 }
 
 export default CategoryGroupDao;

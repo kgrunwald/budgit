@@ -1,75 +1,72 @@
 import {
-  Module,
-  VuexModule,
-  Action,
-  Mutation,
-  getModule,
+    Module,
+    VuexModule,
+    Action,
+    Mutation,
+    getModule
 } from 'vuex-module-decorators';
 import { values, omit, filter } from 'lodash';
 import store from './index';
 import Category from '@/models/Category';
 import CategoryGroup from '@/models/CategoryGroup';
-import Parse from '@/models/Parse';
-import Subscriber from './Subscriber';
+import CategoryDao from '@/dao/CategoryDao';
 
 interface CategoriesById {
-  [id: string]: Category;
+    [id: string]: Category;
 }
+
+const dao: CategoryDao = new CategoryDao();
 
 @Module({ name: 'category', store, namespaced: true, dynamic: true })
 class CategoryModule extends VuexModule {
-  public categoriesById: CategoriesById = {};
+    public categoriesById: CategoriesById = {};
 
-  @Action({ rawError: true })
-  public async loadCategories() {
-    // @ts-ignore
-    const query = new Parse.Query(Category);
-    const sub = new Subscriber(query, this);
-    await sub.subscribe();
+    @Action({ rawError: true })
+    public async loadCategories() {
+        dao.subscribe(this);
 
-    const categories = await query.find();
-    categories.forEach((category: Category) => {
-      this.add(category);
-    });
-  }
+        const categories = await dao.all();
+        categories.forEach((category: Category) => {
+            this.add(category);
+        });
+    }
 
-  @Mutation
-  public add(category: Category) {
-    this.categoriesById = {
-      ...this.categoriesById,
-      [category.id]: category,
-    };
-  }
+    @Mutation
+    public add(category: Category) {
+        this.categoriesById = {
+            ...this.categoriesById,
+            [category.id]: category
+        };
+    }
 
-  @Mutation
-  public remove(category: Category) {
-    this.categoriesById = omit(this.categoriesById, category.id);
-  }
+    @Mutation
+    public remove(category: Category) {
+        this.categoriesById = omit(this.categoriesById, category.id);
+    }
 
-  get categories(): Category[] {
-    return values(this.categoriesById);
-  }
+    get categories(): Category[] {
+        return values(this.categoriesById);
+    }
 
-  get byId() {
-    return (id: string): Category => {
-      return this.categoriesById[id];
-    };
-  }
+    get byId() {
+        return (id: string): Category => {
+            return this.categoriesById[id];
+        };
+    }
 
-  get categoriesByGroup() {
-    return (group: CategoryGroup): Category[] => {
-      return filter(
-        this.categories,
-        category => category.group.id === group.id
-      );
-    };
-  }
+    get categoriesByGroup() {
+        return (group: CategoryGroup): Category[] => {
+            return filter(
+                this.categories,
+                category => category.groupId === group.id
+            );
+        };
+    }
 
-  @Action({ commit: 'add' })
-  public async update(category: Category) {
-    await category.commit();
-    return category;
-  }
+    @Action({ commit: 'add' })
+    public async update(category: Category): Promise<Category> {
+        return await dao.commit(category);
+    }
 }
 
 export default getModule(CategoryModule);
