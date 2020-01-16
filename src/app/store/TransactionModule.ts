@@ -69,6 +69,10 @@ class TransactionModule extends VuexModule {
     public async update(txn: Transaction): Promise<Transaction> {
         return await dao.commit(txn);
     }
+
+    public async delete(txn: Transaction): Promise<void> {
+        return await dao.delete(txn);
+    }
 }
 
 export default getModule(TransactionModule);

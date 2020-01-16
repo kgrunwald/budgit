@@ -14,7 +14,7 @@ export default class Account extends Model {
     @field public available: number = 0;
     @field public current: number = 0;
 
-    @field private logoStr: string = '';
+    @field public logoStr: string = '';
 
     get availableBalance(): number {
         return moneyAsFloat(this.available);
@@ -37,10 +37,10 @@ export default class Account extends Model {
     }
 
     get logo(): string {
-        return `data:image/png;base64, ${this.logoStr}`;
+        return this.logoStr;
     }
 
     set logo(logo: string) {
-        this.logoStr = logo;
+        this.logoStr = `data:image/png;base64, ${this.logo}`;
     }
 }

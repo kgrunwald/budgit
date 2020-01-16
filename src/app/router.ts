@@ -1,20 +1,37 @@
 import Vue from 'vue';
-import Parse from 'parse';
+import firebase from 'firebase/app';
 import Router, { NavigationGuard, Route } from 'vue-router';
 import Accounts from './views/Accounts.vue';
 import Budget from './views/Budget.vue';
 import Profile from './views/Profile.vue';
 import Login from './views/Login.vue';
+import UserDao from '@/dao/UserDao';
 
 Vue.use(Router);
 
-const loginGuard: NavigationGuard<Vue> = (to: Route, from: Route, next) => {
-    const user = Parse.User.current();
-    if (user && user.authenticated()) {
-        next();
-    } else {
-        next('/login');
+var dao = new UserDao();
+
+const loginGuard: NavigationGuard<Vue> = async (
+    to: Route,
+    from: Route,
+    next
+) => {
+    const user = firebase.auth().currentUser;
+    if (user) {
+        try {
+            var accountUser = await dao.byUsername(user.email || '');
+            if (accountUser) {
+                next();
+                return;
+            } else {
+                await firebase.auth().signOut();
+            }
+        } catch (e) {
+            console.log('Error checking auth status', e);
+        }
     }
+
+    next('/login');
 };
 
 export default new Router({

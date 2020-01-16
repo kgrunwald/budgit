@@ -16,7 +16,7 @@ class AccountDao extends Dao<Account> {
     }
 
     public all(): Promise<Account[]> {
-        return this.all();
+        return super.all();
     }
 
     public getOrCreate(accountId: string): Promise<Account> {

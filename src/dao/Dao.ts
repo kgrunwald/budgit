@@ -20,7 +20,9 @@ abstract class Dao<T extends Model> {
     }
 
     public async all() {
-        const docs = await db.collection(this.clazz.name).get();
+        const docs = await db()
+            .collection(this.clazz.name)
+            .get();
         return this.docsToClassArray(docs);
     }
 
@@ -38,6 +40,12 @@ abstract class Dao<T extends Model> {
                 }
             });
         });
+    }
+
+    public async delete(obj: T): Promise<void> {
+        await this.collection()
+            .doc(obj.id)
+            .delete();
     }
 
     protected async update(obj: T): Promise<T> {
@@ -103,7 +111,7 @@ abstract class Dao<T extends Model> {
     protected collection(): firebase.firestore.CollectionReference<
         firebase.firestore.DocumentData
     > {
-        return db.collection(this.clazz.name);
+        return db().collection(this.clazz.name);
     }
 
     protected docsToClassArray(
@@ -111,7 +119,7 @@ abstract class Dao<T extends Model> {
             firebase.firestore.DocumentData
         >
     ): T[] {
-        return snapshot.docs.map(this.docToClass);
+        return snapshot.docs.map(doc => this.docToClass(doc));
     }
 
     private docToClass(doc: firebase.firestore.DocumentData): T {

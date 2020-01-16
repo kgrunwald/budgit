@@ -21,7 +21,7 @@ const dao: AccountDao = new AccountDao();
 @Module({ name: 'account', store, namespaced: true, dynamic: true })
 class AccountModule extends VuexModule {
     public accountsById: AccountsById = {};
-    public selectedAccountId: string = 'init';
+    public selectedAccountId: string = '';
 
     @MutationAction
     public async selectAccount(selectedAccountId: string) {

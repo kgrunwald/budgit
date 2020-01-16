@@ -27,20 +27,24 @@ import {
 } from '@fortawesome/vue-fontawesome';
 import './app/styles/custom.scss';
 
-import App from './app/App.vue';
-import router from './app/router';
-import store from './app/store';
-import Parse from 'parse';
+import firebase from 'firebase/app';
+import 'firebase/firestore';
+import { initializeFirestore } from '@/dao/Firebase';
 
-gapi.load('auth2', async () => {
-    gapi.auth2.init({
-        client_id: process.env.VUE_APP_GOOGLE_CLIENT_ID
-    });
+const app = firebase.initializeApp({
+    apiKey: 'AIzaSyDsRwythALU0vhd8J6u96gjH-18agODJgs',
+    authDomain: 'jk-budgit.firebaseapp.com',
+    databaseURL: 'https://jk-budgit.firebaseio.com',
+    projectId: 'jk-budgit',
+    appId: 'budgit-web'
 });
 
-Parse.initialize(process.env.VUE_APP_PARSE_APP_ID || '');
-Parse.serverURL = `${process.env.VUE_APP_BASE_URL}/parse`;
-Parse.liveQueryServerURL = `${process.env.VUE_APP_WS_URL}/parse`;
+firebase.auth().setPersistence(firebase.auth.Auth.Persistence.SESSION);
+initializeFirestore(app);
+
+import App from '@/app/App.vue';
+import router from '@/app/router';
+import store from '@/app/store';
 
 library.add(
     faPlusCircle,
@@ -68,22 +72,6 @@ Vue.config.productionTip = false;
 
 Vue.component('font-awesome-icon', FontAwesomeIcon);
 Vue.component('font-awesome-layers', FontAwesomeLayers);
-
-Vue.config.errorHandler = (err, vm, info) => {
-    // @ts-ignore
-    if (err.code === Parse.Error.INVALID_SESSION_TOKEN) {
-        Parse.User.logOut();
-        router.push('/login');
-    }
-};
-
-window.addEventListener('unhandledrejection', err => {
-    // @ts-ignore
-    if (err.reason.code === Parse.Error.INVALID_SESSION_TOKEN) {
-        Parse.User.logOut();
-        router.push('/login');
-    }
-});
 
 new Vue({
     router,
