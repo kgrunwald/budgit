@@ -1,4 +1,5 @@
 import Model from './Model';
+import { field } from './Metadata';
 import { reduce, has } from 'lodash';
 import { format } from 'date-fns';
 import { formatMoney, moneyAsFloat } from './Money';
@@ -7,24 +8,18 @@ interface Budget {
     [category: string]: number;
 }
 
-export default class Category extends Model {
+export default class Category implements Model {
     public static getKey(month: Date): string {
-        return format(month, 'YYYYMM');
+        return format(month, 'yyyyMM');
     }
 
-    public groupId!: string;
-    public paymentAccountId!: string;
-    public budget!: Budget;
-    public activity!: Budget;
-    public name!: string;
-    public goal!: number;
-
-    // public formattedName(): string {
-    //   if (this.isPayment) {
-    //     return `Payment: ${this.paymentAccount.name}`;
-    //   }
-    //   return this.name;
-    // }
+    @field public id!: string;
+    @field public groupId!: string;
+    @field public paymentAccountId!: string;
+    @field public budget!: Budget;
+    @field public activity!: Budget;
+    @field public name!: string;
+    @field public goal!: number;
 
     get isPayment(): boolean {
         return !!this.paymentAccountId;

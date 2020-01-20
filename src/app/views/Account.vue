@@ -37,7 +37,7 @@
                 variant="outline-secondary"
                 class="action"
                 :disabled="account.expired"
-                @click="AccountModule.updateAccount(account.accountId)"
+                @click="AccountModule.updateAccount(account.itemId)"
               >
                 <font-awesome-icon icon="cloud-download-alt" />
                 <div class="action-title">Import</div>
@@ -172,7 +172,7 @@
             @change="changeSelectAll"
           ></b-form-checkbox>
         </template>
-        <template slot="selected" slot-scope="data">
+        <template v-slot:cell(selected)="data">
           <div
             @click.shift.prevent.stop="transactionSelected(data.item.id, $event)"
             @mousedown.prevent
@@ -183,19 +183,19 @@
             ></b-form-checkbox>
           </div>
         </template>
-        <template slot="acknowledged" slot-scope="data">
+        <template v-slot:cell(acknowledged)="data">
           <font-awesome-icon
             class="ack-icon"
             icon="search-dollar"
             v-if="!data.item.acknowledged"
             @click="acknowledge(data.item)"
-          />
-          <div v-else />
+          ></font-awesome-icon>
+          <div v-else ></div>
         </template>
-        <template slot="formattedDate" slot-scope="data">
+        <template v-slot:cell(formattedDate)="data">
           <div class="formatted-date">{{ data.item.formattedDate }}</div>
         </template>
-        <template slot="merchant" slot-scope="data">
+        <template v-slot:cell(merchant)="data">
           <div
             class="view-category"
             @click="editMerchant(data.item.id)"
@@ -213,7 +213,7 @@
             />
           </div>
         </template>
-        <template slot="categoryName" slot-scope="data">
+        <template v-slot:cell(categoryName)="data">
           <div
             class="view-category"
             @click="editCategory(data.item.id)"
@@ -246,7 +246,7 @@
             </b-dropdown>
           </div>
         </template>
-        <template slot="formattedAmount" slot-scope="data">
+        <template v-slot:cell(formattedAmount)="data">
           <div :class="data.item.amount > 0 ? '' : 'negative'">{{ data.item.formattedAmount }}</div>
         </template>
       </b-table>
@@ -428,7 +428,15 @@ export default class Account extends Vue {
     }
 
     get transactions(): Transaction[] {
-        return TransactionModule.byAccountId(this.$props.account.accountId);
+        let txns = TransactionModule.txnsByAcct[this.$props.account.id] || [];
+        txns.map(txn => {
+            if (txn.categoryId) {
+                const ctg = CategoryModule.categoriesById[txn.categoryId];
+                txn.categoryName = ctg && ctg.name;
+            }
+            return txn;
+        });
+        return txns;
     }
 
     public async acknowledge(txn: Transaction) {
@@ -493,7 +501,7 @@ export default class Account extends Vue {
             tran.date = new Date(this.newTransaction.date);
             tran.transactionId = uuid();
             tran.accountId = this.$props.account.id;
-            tran.categoryId = this.newTransaction.category.id;
+            tran.categoryId = this.newTransaction.categoryId;
             tran.merchant = this.newTransaction.merchant;
             tran.acknowledged = true;
             tran.currency = 'USD';

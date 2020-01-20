@@ -6,6 +6,7 @@ import Budget from './views/Budget.vue';
 import Profile from './views/Profile.vue';
 import Login from './views/Login.vue';
 import UserDao from '@/dao/UserDao';
+import User from '@/models/User';
 
 Vue.use(Router);
 
@@ -16,22 +17,27 @@ const loginGuard: NavigationGuard<Vue> = async (
     from: Route,
     next
 ) => {
-    const user = firebase.auth().currentUser;
-    if (user) {
-        try {
-            var accountUser = await dao.byUsername(user.email || '');
-            if (accountUser) {
-                next();
-                return;
-            } else {
-                await firebase.auth().signOut();
+    try {
+        const user = firebase.auth().currentUser;
+        if (user) {
+            try {
+                var accountUser = await dao.byUsername(user.email || '');
+                if (accountUser) {
+                    next();
+                    return;
+                } else {
+                    await firebase.auth().signOut();
+                }
+            } catch (e) {
+                console.log('Error checking auth status', e);
             }
-        } catch (e) {
-            console.log('Error checking auth status', e);
+        } else {
+            console.log('no current user found');
         }
+        next('/login');
+    } catch (e) {
+        console.error('Error in login guard', e);
     }
-
-    next('/login');
 };
 
 export default new Router({

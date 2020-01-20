@@ -8,14 +8,16 @@ import {
 import { values, omit, filter } from 'lodash';
 import store from './index';
 import Category from '@/models/Category';
+import User from '@/models/User';
 import CategoryGroup from '@/models/CategoryGroup';
 import CategoryDao from '@/dao/CategoryDao';
+import UserStore from './UserStore';
 
 interface CategoriesById {
     [id: string]: Category;
 }
 
-const dao: CategoryDao = new CategoryDao();
+const dao = new CategoryDao(UserStore.loadUser());
 
 @Module({ name: 'category', store, namespaced: true, dynamic: true })
 class CategoryModule extends VuexModule {

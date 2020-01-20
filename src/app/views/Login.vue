@@ -16,9 +16,13 @@
 
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
-import firebase from 'firebase';
+import firebase from 'firebase/app';
 import * as firebaseui from 'firebaseui';
 import 'firebaseui/dist/firebaseui.css';
+import UserModule from '../store/UserModule';
+import UserDao from '../../dao/UserDao';
+import User from '../../models/User';
+import UserStore from '../store/UserStore';
 
 @Component
 export default class Login extends Vue {
@@ -30,19 +34,28 @@ export default class Login extends Vue {
     public ui = new firebaseui.auth.AuthUI(firebase.auth());
 
     public async mounted() {
-        firebase.auth().onAuthStateChanged(user => {
-            if (user) {
-                this.$router.push('/');
-            } else {
-                this.ui.start('#firebaseui-auth-container', {
-                    signInOptions: [
-                        firebase.auth.GoogleAuthProvider.PROVIDER_ID
-                    ],
-                    callbacks: {
-                        signInSuccessWithAuthResult: () => false
-                    },
-                    signInFlow: 'popup'
-                });
+        firebase.auth().onAuthStateChanged(async user => {
+            try {
+                if (user && user.email) {
+                    const dao = new UserDao();
+                    const userModel = await dao.byUsername(user.email);
+                    if (userModel) {
+                        UserStore.storeUser(userModel);
+                    }
+                    this.$router.push('accounts');
+                } else {
+                    this.ui.start('#firebaseui-auth-container', {
+                        signInOptions: [
+                            firebase.auth.GoogleAuthProvider.PROVIDER_ID
+                        ],
+                        callbacks: {
+                            signInSuccessWithAuthResult: () => false
+                        },
+                        signInFlow: 'popup'
+                    });
+                }
+            } catch (e) {
+                console.error('Error on auth state change', e);
             }
         });
     }

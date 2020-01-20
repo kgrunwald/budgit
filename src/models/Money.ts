@@ -1,4 +1,4 @@
-import money from 'money-math';
+import * as money from 'money-math';
 
 export const formatMoney = (amount: string | number): string => {
     const sanitized = sanitizeMoney(amount);

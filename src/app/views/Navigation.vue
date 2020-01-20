@@ -44,15 +44,18 @@ import CategoryModule from '../store/CategoryModule';
 import CategoryGroupModule from '../store/CategoryGroupModule';
 import TransactionModule from '../store/TransactionModule';
 import UserModule from '../store/UserModule';
-import firebase from 'firebase';
+import firebase from 'firebase/app';
 
 @Component({})
 export default class Navigation extends Vue {
     public async mounted() {
-        UserModule.loadUser();
-        AccountModule.loadAccounts();
-        CategoryModule.loadCategories();
-        CategoryGroupModule.loadCategoryGroups();
+        await Promise.all([
+            UserModule.loadUser(),
+            AccountModule.loadAccounts(),
+            CategoryModule.loadCategories(),
+            CategoryGroupModule.loadCategoryGroups()
+        ]);
+        await TransactionModule.load();
     }
 
     public async signOut() {

@@ -8,8 +8,11 @@ import {
 import store from './index';
 import { remove, sortBy, reverse } from 'lodash';
 import Account from '@/models/Account';
+import User from '@/models/User';
 import Transaction from '@/models/Transaction';
 import TransactionDao from '@/dao/TransactionDao';
+import CategoryModule from './CategoryModule';
+import UserStore from './UserStore';
 
 interface TxnMap {
     [k: string]: Transaction;
@@ -19,7 +22,7 @@ interface AcctTxnMap {
     [k: string]: Transaction[];
 }
 
-const dao: TransactionDao = new TransactionDao();
+const dao = new TransactionDao(UserStore.loadUser());
 
 @Module({ name: 'transaction', store, namespaced: true, dynamic: true })
 class TransactionModule extends VuexModule {
@@ -42,7 +45,7 @@ class TransactionModule extends VuexModule {
     public add(txn: Transaction) {
         const acctId = txn.accountId;
         let txns = this.txnsByAcct[acctId] || [];
-        txns = remove(txns, existing => existing.id !== txn.id);
+        remove(txns, existing => existing.id === txn.id);
         txns.push(txn);
 
         this.txnsByAcct = {
@@ -70,8 +73,9 @@ class TransactionModule extends VuexModule {
         return await dao.commit(txn);
     }
 
-    public async delete(txn: Transaction): Promise<void> {
-        return await dao.delete(txn);
+    @Action
+    public delete(txn: Transaction): Promise<void> {
+        return dao.delete(txn);
     }
 }
 

@@ -22,6 +22,7 @@
 import { Component, Vue } from 'vue-property-decorator';
 import PlaidLink from './PlaidLink.vue';
 import AccountModule from '../store/AccountModule';
+import UserStore from '../store/UserStore';
 
 @Component({
     components: { PlaidLink },
@@ -36,11 +37,12 @@ export default class AccountAction extends Vue {
     public PLAID_PUBLIC_KEY = process.env.VUE_APP_PLAID_PUBLIC_KEY;
     public PLAID_ENVIRONMENT = process.env.VUE_APP_PLAID_ENV;
     public PLAID_WEBHOOK_URL = process.env.VUE_APP_PLAID_WEBHOOK_URL;
+    public API_BASE = process.env.VUE_APP_API_BASE_URL;
     private token: string = '';
 
     public async triggerPlaidLink(triggerFunc: (token: string) => void) {
         if (this.$props.accountId || this.$props.itemId) {
-            const resp = await fetch('/api/refreshToken', {
+            const resp = await fetch(this.API_BASE + '/refreshToken', {
                 method: 'post',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -56,14 +58,15 @@ export default class AccountAction extends Vue {
 
     public async onSuccess(token: string, metadata: { accounts: any }) {
         if (this.token && !this.$props.forceImport) {
-            await AccountModule.updateAccount(this.$props.accountId);
+            await AccountModule.updateAccount(this.$props.itemId);
         } else {
-            const resp = await fetch('/api/getAccessToken', {
+            const resp = await fetch(this.API_BASE + '/getAccessToken', {
                 method: 'post',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     public_token: token,
-                    accounts: metadata.accounts
+                    accounts: metadata.accounts,
+                    userId: UserStore.loadUser().id
                 })
             });
         }

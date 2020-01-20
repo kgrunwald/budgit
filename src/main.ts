@@ -29,6 +29,7 @@ import './app/styles/custom.scss';
 
 import firebase from 'firebase/app';
 import 'firebase/firestore';
+import 'firebase/auth';
 import { initializeFirestore } from '@/dao/Firebase';
 
 const app = firebase.initializeApp({
@@ -39,7 +40,6 @@ const app = firebase.initializeApp({
     appId: 'budgit-web'
 });
 
-firebase.auth().setPersistence(firebase.auth.Auth.Persistence.SESSION);
 initializeFirestore(app);
 
 import App from '@/app/App.vue';

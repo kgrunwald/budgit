@@ -1,6 +1,5 @@
 import { field } from './Metadata';
 
-export default class Model {
-    @field public id!: string;
-    @field public userId!: string;
+export default interface Model {
+    id: string;
 }

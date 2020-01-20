@@ -1,7 +1,8 @@
 import Model from './Model';
 import { field } from './Metadata';
 
-export default class User extends Model {
+export default class User implements Model {
+    @field public id!: string;
     @field public email?: string;
     @field public username?: string;
     @field public password?: string;

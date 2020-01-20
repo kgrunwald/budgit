@@ -2,7 +2,8 @@ import Model from './Model';
 import { field } from './Metadata';
 import { formatMoney, moneyAsFloat } from './Money';
 
-export default class Account extends Model {
+export default class Account implements Model {
+    @field public id!: string;
     @field public accountId!: string;
     @field public itemId!: string;
     @field public name!: string;

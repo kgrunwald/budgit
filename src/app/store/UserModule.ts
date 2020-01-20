@@ -8,19 +8,18 @@ import {
 import store from './index';
 import User from '@/models/User';
 import UserDao from '@/dao/UserDao';
+import UserStore from './UserStore';
 
-const dao: UserDao = new UserDao();
+const dao = new UserDao();
 
 @Module({ name: 'user', store, namespaced: true, dynamic: true })
 class UserModule extends VuexModule {
-    public user: User = new User();
+    public user: User = UserStore.loadUser();
 
     @Action({ rawError: true })
-    public async loadUser() {
+    public loadUser() {
         dao.subscribe(this);
-
-        const user = await dao.current();
-        this.add(user);
+        this.add(this.user);
     }
 
     @Mutation

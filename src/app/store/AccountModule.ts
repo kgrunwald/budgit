@@ -9,14 +9,18 @@ import {
 import { omit, values } from 'lodash';
 import store from './index';
 import Account from '@/models/Account';
+import User from '@/models/User';
 import TransactionModule from './TransactionModule';
 import AccountDao from '@/dao/AccountDao';
+import UserStore from './UserStore';
 
 interface AccountsById {
     [key: string]: Account;
 }
 
-const dao: AccountDao = new AccountDao();
+const API_BASE = process.env.VUE_APP_API_BASE_URL;
+
+const dao = new AccountDao(UserStore.loadUser());
 
 @Module({ name: 'account', store, namespaced: true, dynamic: true })
 class AccountModule extends VuexModule {
@@ -77,17 +81,17 @@ class AccountModule extends VuexModule {
     }
 
     @Action
-    public async updateAccount(accountId: string) {
-        const resp = await fetch('/api/updateAccounts', {
+    public async updateAccount(itemId: string) {
+        await fetch(API_BASE + '/updateAccounts', {
             method: 'post',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ accountId })
+            body: JSON.stringify({ itemId })
         });
     }
 
     @Action
     public async removeAccount(accountId: string) {
-        const resp = await fetch('/api/removeAccount', {
+        const resp = await fetch(API_BASE + '/removeAccount', {
             method: 'post',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ accountId })

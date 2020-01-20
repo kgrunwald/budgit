@@ -1,21 +1,19 @@
-import Dao from './Dao';
+import { Dao, DaoBase } from './Dao';
 import User from '../models/User';
+import FirebaseDao from './Firebase';
 
-class UserDao extends Dao<User> {
-    constructor() {
-        super(User);
+class UserDao extends DaoBase<User> {
+    constructor(dao?: Dao<User>) {
+        if (!dao) {
+            dao = new FirebaseDao<User>(User);
+        }
+
+        super(dao, 'User');
+        dao.setCollectionName(`Users`);
     }
 
     public byUsername(username: string): Promise<User | undefined> {
-        return this.first('username', username);
-    }
-
-    public async byId(userId: string): Promise<User | undefined> {
-        return this.get(userId);
-    }
-
-    public async current(): Promise<User> {
-        return new User();
+        return this.dao.first('username', username);
     }
 }
 

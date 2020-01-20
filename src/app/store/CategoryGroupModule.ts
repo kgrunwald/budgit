@@ -8,9 +8,12 @@ import {
 import { values, omit, remove, find } from 'lodash';
 import store from './index';
 import CategoryGroup from '@/models/CategoryGroup';
+import User from '@/models/User';
 import Category from '@/models/Category';
 import CategoryDao from '@/dao/CategoryDao';
 import CategoryGroupDao from '@/dao/CategoryGroupDao';
+import UserModule from './UserModule';
+import UserStore from './UserStore';
 
 interface CategoryGroupsById {
     [key: string]: CategoryGroup;
@@ -20,7 +23,7 @@ const AVAILABLE_CASH_GROUP = 'Available Cash';
 const CREDIT_CARD_GROUP = 'Credit Cards';
 const HIDDEN_GROUP = 'Hidden';
 
-const dao: CategoryGroupDao = new CategoryGroupDao();
+const dao = new CategoryGroupDao(UserStore.loadUser());
 
 @Module({ name: 'categoryGroup', store, namespaced: true, dynamic: true })
 class CategoryGroupModule extends VuexModule {
@@ -50,7 +53,9 @@ class CategoryGroupModule extends VuexModule {
 
                     switch (groupName) {
                         case AVAILABLE_CASH_GROUP:
-                            const categoryDao = new CategoryDao();
+                            const categoryDao = new CategoryDao(
+                                UserStore.loadUser()
+                            );
                             const availableCashCategory = new Category();
                             availableCashCategory.groupId = group.id;
                             availableCashCategory.name = AVAILABLE_CASH_GROUP;

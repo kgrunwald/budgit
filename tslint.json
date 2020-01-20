@@ -1,7 +1,7 @@
 {
     "extends": ["tslint-plugin-prettier"],
     "linterOptions": {
-        "exclude": ["node_modules/**", "src/server/**"]
+        "exclude": ["node_modules/**"]
     },
     "rules": {
         "prettier": true,
