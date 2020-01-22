@@ -1,6 +1,6 @@
 import * as plaid from 'plaid';
 import * as functions from 'firebase-functions';
-import * as cors from 'cors';
+import { PubSub } from '@google-cloud/pubsub';
 import Item from '../../src/models/Item';
 import Account from '../../src/models/Account';
 import Transaction from '../../src/models/Transaction';
@@ -15,14 +15,13 @@ import CategoryDao from '../../src/dao/CategoryDao';
 import CategoryGroupDao from '../../src/dao/CategoryGroupDao';
 import AdminDao from './adminDao';
 import UserDao from '../../src/dao/UserDao';
+import { CallableContext } from 'firebase-functions/lib/providers/https';
 
 const CLIENT_ID = functions.config().plaid.client_id;
 const PLAID_SECRET = functions.config().plaid.secret;
 const PUBLIC_KEY = functions.config().plaid.public_key;
 const PLAID_ENV = functions.config().plaid.env;
 const WEBHOOK_URL = 'https://us-central1-jk-budgit.cloudfunctions.net/webhook';
-
-const allowCORS = cors({ origin: 'https://jk-budgit.firebaseapp.com' });
 
 const client = new plaid.Client(
     CLIENT_ID,
@@ -49,94 +48,132 @@ interface ItemWebhook extends Webhook {
 
 const DATE_FORMAT = 'yyyy-MM-dd';
 
-const readItemDao = new ItemDao(new AdminDao<Item>(Item));
-const userDao = new UserDao(new AdminDao<User>(User));
+let readItemDao: ItemDao;
+let userDao: UserDao;
+
+const projectId = functions.config().pubsub.project_id;
+const topic = functions.config().pubsub.topic;
+const pubsub = new PubSub({ projectId });
 
 export const webhook = async (
     req: functions.https.Request,
     res: functions.Response
 ) => {
-    const type = req.body.webhook_type;
+    const messageId = await pubsub.topic(topic).publishJSON(req.body);
+    console.log(`Message ${messageId} published.`);
+    res.json({ status: 'ok' });
+};
+
+export const webhookHandler = async (msg: functions.pubsub.Message) => {
+    const body = msg.json;
+    const type = body.webhook_type;
     if (type === 'TRANSACTIONS') {
-        await handleTransactionWebhook(req.body as TransactionWebhook);
-        res.json({ status: 'ok' });
+        await handleTransactionWebhook(body as TransactionWebhook);
     } else if (type === 'ITEM') {
-        await handleItemWebhook(req.body as ItemWebhook);
-        res.json({ status: 'ok' });
+        await handleItemWebhook(body as ItemWebhook);
     } else {
-        console.error('Got unknown webhook type', req.body);
-        res.json({ status: 'ok' });
+        console.error('Got unknown webhook type', body);
     }
 };
 
-export const getAccessToken = async (
-    req: functions.https.Request,
-    res: functions.Response
-) => {
-    return allowCORS(req, res, async () => {
-        try {
-            const user = await userDao.byId(req.body.userId);
-            const tokenResponse = await client.exchangePublicToken(
-                req.body.public_token
-            );
-            console.info('Exchanged public token');
+function error(message: string, e?: Error): functions.https.HttpsError {
+    return new functions.https.HttpsError('internal', message, e);
+}
 
-            const item = await savePlaidItem(tokenResponse, req, user);
-            await getAccounts(req, item);
+function denied(message: string, e?: Error): functions.https.HttpsError {
+    return new functions.https.HttpsError('permission-denied', message, e);
+}
 
-            res.json({ error: false });
-        } catch (err) {
-            console.error('Error saving item or accounts', err);
-            res.status(500).json({ error: err.message });
+function authError(message: string, e?: Error): functions.https.HttpsError {
+    return new functions.https.HttpsError('unauthenticated', message, e);
+}
+
+async function initFirebase() {
+    const admin = await import('firebase-admin');
+    admin.initializeApp();
+
+    readItemDao = new ItemDao(new AdminDao<Item>(Item));
+    userDao = new UserDao(new AdminDao<User>(User));
+}
+
+export const getAccessToken = async (data: any, context: CallableContext) => {
+    try {
+        if (!context.auth?.uid) {
+            throw authError('Not authenticated');
         }
-    });
+
+        await initFirebase();
+
+        const user = await userDao.byId(context.auth?.uid);
+        const tokenResponse = await client.exchangePublicToken(
+            data.publicToken
+        );
+
+        const item = await savePlaidItem(tokenResponse, user);
+        await getAccounts(user, item);
+
+        return { error: false };
+    } catch (err) {
+        console.error('Error saving item or accounts', err);
+        throw error('Error saving item or accounts', err);
+    }
 };
 
-export const refreshToken = async (
-    req: functions.https.Request,
-    res: functions.Response
-) => {
-    return allowCORS(req, res, async () => {
-        try {
-            const { itemId } = req.body;
-            const item = await readItemDao.byItemId(itemId);
-            const response = await client.createPublicToken(item.accessToken);
-            console.log('Got new public token for account/item.', response);
-            res.json({ publicToken: response.public_token });
-        } catch (err) {
-            console.error('Error exchanging public token.', err);
-            res.status(500).json({ error: err.message });
+export const refreshToken = async (data: any, context: CallableContext) => {
+    try {
+        await initFirebase();
+
+        const { itemId } = data;
+        const item = await readItemDao.byItemId(itemId);
+        if (item.userId !== context.auth?.uid) {
+            throw denied('Item does not match user id');
         }
-    });
+
+        const response = await client.createPublicToken(item.accessToken);
+        return { publicToken: response.public_token };
+    } catch (err) {
+        console.error('Error exchanging public token.', err);
+        throw error('Error exchanging public token.');
+    }
 };
 
-export const updateAccounts = async (
-    req: functions.https.Request,
-    res: functions.Response
-) => {
-    return allowCORS(req, res, async () => {
-        try {
-            const { itemId } = req.body;
-            const item = await readItemDao.byId(itemId);
-            const user = await userDao.byId(item.userId);
-            await refreshAccount(user, item);
+export const updateAccounts = async (data: any, context: CallableContext) => {
+    try {
+        await initFirebase();
 
-            res.json({ error: false });
-        } catch (err) {
-            console.error('Error updating accounts.', err);
-            res.status(500).json({ error: err.message });
+        const { itemId } = data;
+        const item = await readItemDao.byId(itemId);
+        if (item.userId !== context.auth?.uid) {
+            throw denied('Item user id does not match auth');
         }
-    });
+
+        await refreshAccounts(item);
+        return { error: false };
+    } catch (err) {
+        console.error('Error updating accounts.', err);
+        throw error('Error updating accounts', err);
+    }
 };
 
-const refreshAccount = async (user: User, item: Item) => {
+const refreshAccounts = async (itemOrId: string | Item): Promise<void> => {
+    let item: Item;
+    if (typeof itemOrId === 'string') {
+        item = await readItemDao.byId(itemOrId);
+    } else {
+        item = itemOrId;
+    }
+
+    const user = await userDao.byId(item.userId);
+
     const acctDao = new AccountDao(user, new AdminDao<Account>(Account));
     const accts = await acctDao.byItemId(item.id);
     const account_ids = accts.map(acct => acct.accountId);
 
-    await loadPlaidTransactionsByAccount(item, user, account_ids);
-    await loadPlaidAccountDetails(item, user, account_ids);
-    await checkItemWebhook(item);
+    await Promise.all([
+        loadPlaidTransactionsByAccount(item, user, account_ids),
+        loadPlaidAccountDetails(item, user, account_ids),
+        checkItemWebhook(item)
+    ]);
 };
 
 const checkItemWebhook = async (item: Item) => {
@@ -203,71 +240,58 @@ const loadPlaidTransactionsByAccount = async (
     }
 };
 
-export const removeAccount = async (
-    req: functions.https.Request,
-    res: functions.Response
-) => {
+export const removeAccount = async (data: any, context: CallableContext) => {
     try {
-        const { accountId } = req.body;
-        const readAccountDao = new AccountDao(
-            new User(),
-            new AdminDao<Account>(Account)
-        );
-        const acct = await readAccountDao.byAccountId(accountId);
+        const uid = context.auth?.uid;
+        if (!uid) {
+            throw authError('Not authenticated');
+        }
 
-        console.log(
-            `Loaded account: ${acct.accountId}. Account item: ${acct.itemId}`
-        );
+        await initFirebase();
 
+        const user = await userDao.byId(uid);
+        const { accountId } = data;
+        const acctDao = new AccountDao(user, new AdminDao<Account>(Account));
+        const acct = await acctDao.byAccountId(accountId);
         const item = await readItemDao.byId(acct.itemId);
 
         console.log(`Removing transactions for account: ${acct.accountId}.`);
 
-        const readTxnDao = new TransactionDao(
-            new User(),
+        const txnDao = new TransactionDao(
+            user,
             new AdminDao<Transaction>(Transaction)
         );
-        const txns = await readTxnDao.byAccountId(acct.id);
-        txns.forEach(async txn => {
-            await readTxnDao.delete(txn);
-        });
+        const txns = await txnDao.byAccountId(acct.id);
+        await Promise.all(txns.map(t => txnDao.delete(t)));
 
-        const readCtgDao = new CategoryDao(
-            new User(),
-            new AdminDao<Category>(Category)
-        );
-        const category = await readCtgDao.byPaymentAccountId(acct.id);
+        const ctgDao = new CategoryDao(user, new AdminDao<Category>(Category));
+        const category = await ctgDao.byPaymentAccountId(acct.id);
         if (category) {
-            await readCtgDao.delete(category);
+            await ctgDao.delete(category);
         }
-        await readAccountDao.delete(acct);
+        await acctDao.delete(acct);
 
-        const accts = await readAccountDao.byItemId(item.id);
-
+        const accts = await acctDao.byItemId(item.id);
         if (accts.length === 0) {
             console.log(`Removing item: ${item.itemId}.`);
-            await client.removeItem(item.accessToken);
-            await readItemDao.delete(item);
+            await Promise.all([
+                client.removeItem(item.accessToken),
+                readItemDao.delete(item)
+            ]);
         }
 
-        res.json({ error: false });
+        return { error: false };
     } catch (err) {
-        console.error('Error destroying account.', err);
-        res.status(500).json({ error: err.message });
+        console.error('Error deleting account.', err);
+        throw error('Error deleting account', err);
     }
 };
 
-async function getAccounts(
-    req: functions.https.Request,
-    item: Item
-): Promise<void> {
-    const user = await userDao.byId(item.userId);
+async function getAccounts(user: User, item: Item): Promise<void> {
     try {
         const validTypes = ['depository', 'credit'];
-
         const response = await client.getAccounts(item.accessToken);
-
-        response.accounts.forEach(async account => {
+        for (const account of response.accounts) {
             if (validTypes.includes(account.type || '')) {
                 console.log('Saving account', account);
                 const newAcct = await savePlaidAccountAndInstitution(
@@ -282,7 +306,7 @@ async function getAccounts(
                     await createCreditCardCategory(user, newAcct);
                 }
             }
-        });
+        }
     } catch (err) {
         if (err.error_code === 'ITEM_LOGIN_REQUIRED') {
             console.error(`Login required for item: ${item.itemId}`);
@@ -362,34 +386,27 @@ async function handleTransactionWebhook(
     payload: TransactionWebhook
 ): Promise<void> {
     console.log('Processing transaction webhook', payload);
-    const item = await readItemDao.byItemId(payload.item_id);
-    const user = await userDao.byId(item.userId);
-
     if (
         payload.webhook_code === 'HISTORICAL_UPDATE' ||
         payload.webhook_code === 'INITIAL_UPDATE'
     ) {
         console.log('Skipping historical/initial update');
     } else if (payload.webhook_code === 'DEFAULT_UPDATE') {
-        console.log(
-            `Loading transactions: ${payload.webhook_code} for item ${payload.item_id}`
-        );
-        const accountDao = new AccountDao(user, new AdminDao<Account>(Account));
-        const accts = await accountDao.byItemId(item.id);
-        for (const acct of accts) {
-            await refreshAccount(acct, item);
-        }
+        console.log(`${payload.webhook_code} for item ${payload.item_id}`);
+        await refreshAccounts(payload.item_id);
     } else if (payload.webhook_code === 'TRANSACTIONS_REMOVED') {
         console.log('Removing transactions');
+        const item = await readItemDao.byItemId(payload.item_id);
+        const user = await userDao.byId(item.userId);
         const transactionDao = new TransactionDao(
             user,
             new AdminDao<Transaction>(Transaction)
         );
-        payload.removed_transactions.forEach(async txnId => {
+        for (const txnId of payload.removed_transactions) {
             const txn = await transactionDao.byTransactionId(txnId);
             console.log(`Deleting transaction: ${txn.transactionId}`);
             await transactionDao.delete(txn);
-        });
+        }
     }
 }
 
@@ -407,15 +424,14 @@ async function handleItemWebhook(payload: ItemWebhook) {
 
 async function savePlaidItem(
     token: plaid.TokenResponse,
-    req: functions.https.Request,
     user: User
 ): Promise<Item> {
-    console.log('Saving Plaid Item', { token, userId: req.body.userId });
+    console.log('Saving Plaid Item', { token, userId: user.id });
     const itemDao = new ItemDao(new AdminDao<Item>(Item));
     const item = await itemDao.getOrCreate(token.item_id);
     item.accessToken = token.access_token;
     item.itemId = token.item_id;
-    item.userId = req.body.userId;
+    item.userId = user.id;
 
     return await itemDao.commit(item);
 }

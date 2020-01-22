@@ -1,22 +1,21 @@
-import * as admin from 'firebase-admin';
 import * as functions from 'firebase-functions';
 
-admin.initializeApp();
-
-import { transactionTrigger } from './triggers';
 import {
     webhook,
+    webhookHandler,
     getAccessToken,
     refreshToken,
     updateAccounts,
     removeAccount
 } from './plaid';
 
-exports.transactionTrigger = functions.firestore
-    .document('Users/{userId}/Transactions/{txnId}')
-    .onUpdate(transactionTrigger);
+const topic = functions.config().pubsub.topic;
+
+exports.webhookHandler = functions.pubsub
+    .topic(topic)
+    .onPublish(webhookHandler);
 exports.webhook = functions.https.onRequest(webhook);
-exports.getAccessToken = functions.https.onRequest(getAccessToken);
-exports.refreshToken = functions.https.onRequest(refreshToken);
-exports.updateAccounts = functions.https.onRequest(updateAccounts);
-exports.removeAccount = functions.https.onRequest(removeAccount);
+exports.getAccessToken = functions.https.onCall(getAccessToken);
+exports.refreshToken = functions.https.onCall(refreshToken);
+exports.updateAccounts = functions.https.onCall(updateAccounts);
+exports.removeAccount = functions.https.onCall(removeAccount);

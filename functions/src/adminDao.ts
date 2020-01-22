@@ -3,7 +3,14 @@ import Model from '../../src/models/Model';
 import { classToObject, objectToClass } from '../../src/models/Metadata';
 import { Subscriber, Dao, Order, Where } from '../../src/dao/Dao';
 
-const db = admin.firestore();
+let _db: FirebaseFirestore.Firestore;
+function db() {
+    if (!_db) {
+        _db = admin.firestore();
+    }
+
+    return _db;
+}
 
 export default class AdminDao<T extends Model> implements Dao<T> {
     private collectionName!: string;
@@ -135,7 +142,7 @@ export default class AdminDao<T extends Model> implements Dao<T> {
     }
 
     protected collection(): FirebaseFirestore.CollectionReference {
-        return db.collection(this.collectionName);
+        return db().collection(this.collectionName);
     }
 
     protected docsToClassArray(snapshot: FirebaseFirestore.QuerySnapshot): T[] {

@@ -9,16 +9,14 @@ import {
 import { omit, values } from 'lodash';
 import store from './index';
 import Account from '@/models/Account';
-import User from '@/models/User';
 import TransactionModule from './TransactionModule';
 import AccountDao from '@/dao/AccountDao';
 import UserStore from './UserStore';
+import { updateAccounts } from '../api';
 
 interface AccountsById {
     [key: string]: Account;
 }
-
-const API_BASE = process.env.VUE_APP_API_BASE_URL;
 
 const dao = new AccountDao(UserStore.loadUser());
 
@@ -39,7 +37,7 @@ class AccountModule extends VuexModule {
 
         if (!this.selectedAccount) {
             if (accounts.length > 0) {
-                this.selectAccount(accounts[0].accountId);
+                this.selectAccount(accounts[0].id);
             } else {
                 this.selectAccount('');
             }
@@ -55,16 +53,16 @@ class AccountModule extends VuexModule {
     public add(account: Account) {
         this.accountsById = {
             ...this.accountsById,
-            [account.accountId]: account
+            [account.id]: account
         };
         if (!this.selectedAccountId) {
-            this.selectedAccountId = account.accountId;
+            this.selectedAccountId = account.id;
         }
     }
 
     @Mutation
     public remove(account: Account) {
-        this.accountsById = omit(this.accountsById, account.accountId);
+        this.accountsById = omit(this.accountsById, account.id);
     }
 
     get accounts(): Account[] {
@@ -82,22 +80,14 @@ class AccountModule extends VuexModule {
 
     @Action
     public async updateAccount(itemId: string) {
-        await fetch(API_BASE + '/updateAccounts', {
-            method: 'post',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ itemId })
-        });
+        await updateAccounts(itemId);
     }
 
     @Action
     public async removeAccount(accountId: string) {
-        const resp = await fetch(API_BASE + '/removeAccount', {
-            method: 'post',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ accountId })
-        });
+        await this.removeAccount(accountId);
         if (this.accounts.length > 0) {
-            this.selectAccount(this.accounts[0].accountId);
+            this.selectAccount(this.accounts[0].id);
         } else {
             this.selectAccount('');
         }

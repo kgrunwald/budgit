@@ -41,10 +41,12 @@ const app = firebase.initializeApp({
 });
 
 initializeFirestore(app);
+initializeApi(app);
 
 import App from '@/app/App.vue';
 import router from '@/app/router';
 import store from '@/app/store';
+import { initializeApi } from './app/api';
 
 library.add(
     faPlusCircle,

@@ -34,7 +34,7 @@ import TransactionModule from '../store/TransactionModule';
 })
 export default class Accounts extends Vue {
     public handleAccountClick(account: AccountModel) {
-        AccountModule.selectAccount(account.accountId);
+        AccountModule.selectAccount(account.id);
     }
 
     get selectedAccountId() {

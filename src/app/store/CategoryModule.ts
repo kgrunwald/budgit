@@ -8,7 +8,6 @@ import {
 import { values, omit, filter } from 'lodash';
 import store from './index';
 import Category from '@/models/Category';
-import User from '@/models/User';
 import CategoryGroup from '@/models/CategoryGroup';
 import CategoryDao from '@/dao/CategoryDao';
 import UserStore from './UserStore';

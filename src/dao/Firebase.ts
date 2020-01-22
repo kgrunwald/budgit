@@ -1,4 +1,5 @@
 import * as firebase from 'firebase/app';
+import { EventEmitter } from 'events';
 import 'firebase/firestore';
 import Model from '../models/Model';
 import { classToObject, objectToClass } from '../models/Metadata';
@@ -18,10 +19,13 @@ export function db() {
     return firestore;
 }
 
-export default class FirebaseDao<T extends Model> implements Dao<T> {
+export default class FirebaseDao<T extends Model> extends EventEmitter
+    implements Dao<T> {
     private collectionName!: string;
 
-    constructor(private clazz: new () => T) {}
+    constructor(private clazz: new () => T) {
+        super();
+    }
 
     public async commit(obj: T): Promise<T> {
         if (obj.id) {
@@ -46,18 +50,9 @@ export default class FirebaseDao<T extends Model> implements Dao<T> {
                         switch (change.type) {
                             case 'added':
                             case 'modified':
-                                console.log(
-                                    `[${this.collectionName}] Doc Update`,
-                                    x,
-                                    change.doc
-                                );
                                 s.add(x);
                                 break;
                             case 'removed':
-                                console.log(
-                                    `[${this.collectionName}] Doc Removed`,
-                                    x
-                                );
                                 s.remove(x);
                         }
                     });

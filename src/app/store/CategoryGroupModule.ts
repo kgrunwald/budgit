@@ -8,11 +8,9 @@ import {
 import { values, omit, remove, find } from 'lodash';
 import store from './index';
 import CategoryGroup from '@/models/CategoryGroup';
-import User from '@/models/User';
 import Category from '@/models/Category';
 import CategoryDao from '@/dao/CategoryDao';
 import CategoryGroupDao from '@/dao/CategoryGroupDao';
-import UserModule from './UserModule';
 import UserStore from './UserStore';
 
 interface CategoryGroupsById {
