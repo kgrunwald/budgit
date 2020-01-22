@@ -21,12 +21,7 @@ export default class TransactionTrigger {
         oldCategory?: Category,
         newCategory?: Category
     ): Promise<Transaction> {
-        const oldId = oldCategory && oldCategory.id;
-        const newId = newCategory && newCategory.id;
-        if (oldId !== newId) {
-            await this.runTrigger(txn, acct, oldCategory, newCategory);
-        }
-
+        await this.runTrigger(txn, acct, oldCategory, newCategory);
         return txn;
     }
 
@@ -48,6 +43,12 @@ export default class TransactionTrigger {
 
             const txnDoc = txnCollection.doc(txn.id);
             dbTxn.set(txnDoc, classToObject(txn));
+
+            const oldId = oldCategory && oldCategory.id;
+            const newId = newCategory && newCategory.id;
+            if (oldId !== newId) {
+                return;
+            }
 
             if (oldCategory) {
                 await this.setCategoryActivity(
