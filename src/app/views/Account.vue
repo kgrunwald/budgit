@@ -528,9 +528,9 @@ export default class Account extends Vue {
             }
         );
         if (res) {
-            trans.forEach(async tran => {
-                await TransactionModule.delete(tran);
-            });
+            for (const tran of trans) {
+                TransactionModule.delete(tran);
+            }
             this.selected = {};
         }
     }

@@ -19,7 +19,17 @@ export default class Category implements Model {
     @field public budget!: Budget;
     @field public activity!: Budget;
     @field public name!: string;
-    @field public goal!: number;
+
+    private _goal!: number;
+
+    @field
+    get goal(): number {
+        return this._goal;
+    }
+
+    set goal(goal: number) {
+        this._goal = moneyAsFloat(goal);
+    }
 
     get isPayment(): boolean {
         return !!this.paymentAccountId;

@@ -32,9 +32,9 @@ class CategoryGroupModule extends VuexModule {
         dao.subscribe(this);
 
         const groups = await dao.all();
-        groups.forEach((group: CategoryGroup) => {
+        for (const group of groups) {
             this.add(group);
-        });
+        }
 
         this.loadSpecialGroups();
     }

@@ -40,9 +40,9 @@ class TransactionModule extends VuexModule {
     @Action
     public async loadTransactions(account: Account) {
         const txns = await dao.recentByAccount(account);
-        txns.forEach((txn: Transaction) => {
+        for (const txn of txns) {
             this.add(txn);
-        });
+        }
     }
 
     @Mutation

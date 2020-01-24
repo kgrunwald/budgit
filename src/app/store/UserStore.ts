@@ -21,7 +21,6 @@ export default class UserStore {
             UserStore.user = user;
             return user;
         }
-        // throw new Error('No current user found');
         return new User();
     }
 }

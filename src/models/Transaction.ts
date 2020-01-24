@@ -6,7 +6,6 @@ export default class Transaction implements Model {
     @field public id!: string;
     @field public transactionId!: string;
     @field public merchant!: string;
-    @field public amount!: number;
     @field public currency!: string;
     @field public categoryId?: string;
     @field public accountId!: string;
@@ -15,6 +14,16 @@ export default class Transaction implements Model {
     public categoryName?: string;
 
     private _date!: Date;
+    private _amt!: number;
+
+    @field
+    get amount(): number {
+        return this._amt;
+    }
+
+    set amount(amt: number) {
+        this._amt = moneyAsFloat(amt);
+    }
 
     get formattedAmount(): string {
         return formatMoney(moneyAsFloat(this.amount));

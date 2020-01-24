@@ -50,6 +50,7 @@ const DATE_FORMAT = 'yyyy-MM-dd';
 
 let readItemDao: ItemDao;
 let userDao: UserDao;
+let app: any;
 
 const projectId = functions.config().pubsub.project_id;
 const topic = functions.config().pubsub.topic;
@@ -64,7 +65,18 @@ export const webhook = async (
     res.json({ status: 'ok' });
 };
 
+async function initFirebase() {
+    if (!app) {
+        const admin = await import('firebase-admin');
+        app = admin.initializeApp();
+    }
+
+    readItemDao = readItemDao || new ItemDao(new AdminDao<Item>(Item));
+    userDao = userDao || new UserDao(new AdminDao<User>(User));
+}
+
 export const webhookHandler = async (msg: functions.pubsub.Message) => {
+    await initFirebase();
     const body = msg.json;
     const type = body.webhook_type;
     if (type === 'TRANSACTIONS') {
@@ -86,14 +98,6 @@ function denied(message: string, e?: Error): functions.https.HttpsError {
 
 function authError(message: string, e?: Error): functions.https.HttpsError {
     return new functions.https.HttpsError('unauthenticated', message, e);
-}
-
-async function initFirebase() {
-    const admin = await import('firebase-admin');
-    admin.initializeApp();
-
-    readItemDao = new ItemDao(new AdminDao<Item>(Item));
-    userDao = new UserDao(new AdminDao<User>(User));
 }
 
 export const getAccessToken = async (data: any, context: CallableContext) => {
@@ -155,14 +159,7 @@ export const updateAccounts = async (data: any, context: CallableContext) => {
     }
 };
 
-const refreshAccounts = async (itemOrId: string | Item): Promise<void> => {
-    let item: Item;
-    if (typeof itemOrId === 'string') {
-        item = await readItemDao.byId(itemOrId);
-    } else {
-        item = itemOrId;
-    }
-
+const refreshAccounts = async (item: Item): Promise<void> => {
     const user = await userDao.byId(item.userId);
 
     const acctDao = new AccountDao(user, new AdminDao<Account>(Account));
@@ -188,14 +185,8 @@ const loadPlaidAccountDetails = async (
     user: User,
     account_ids: string[]
 ) => {
-    const plaidRes = await client.getBalance(item.accessToken, { account_ids });
-    for (const plaidAccount of plaidRes.accounts) {
-        try {
-            await savePlaidAccount(plaidAccount, user);
-        } catch (e) {
-            console.error('Error saving account details:', e);
-        }
-    }
+    const res = await client.getBalance(item.accessToken, { account_ids });
+    await Promise.all(res.accounts.map(a => savePlaidAccount(a, user)));
 };
 
 const loadPlaidTransactionsByAccount = async (
@@ -211,31 +202,19 @@ const loadPlaidTransactionsByAccount = async (
         : item.createdDate;
     const start = format(startDate, DATE_FORMAT);
     const end = format(addDays(new Date(), 1), DATE_FORMAT);
-    const plaidRes = await client.getTransactions(
-        item.accessToken,
-        start,
-        end,
-        {
-            count: 500,
-            offset,
-            account_ids
-        }
-    );
+    const res = await client.getTransactions(item.accessToken, start, end, {
+        count: 500,
+        offset,
+        account_ids
+    });
 
-    for (const txn of plaidRes.transactions) {
-        try {
-            await savePlaidTransaction(txn, user);
-        } catch (e) {
-            console.log('Error when saving txn:', e);
-        }
-    }
-
-    if (plaidRes.total_transactions > 0) {
+    await Promise.all(res.transactions.map(t => savePlaidTransaction(t, user)));
+    if (res.total_transactions > 0) {
         await loadPlaidTransactionsByAccount(
             item,
             user,
             account_ids,
-            offset + plaidRes.total_transactions
+            offset + res.total_transactions
         );
     }
 };
@@ -375,11 +354,13 @@ async function markItemTokenExpired(user: User, item: Item): Promise<void> {
     console.log(`Marking all accounts for item ${item.itemId} as expired`);
     const accountDao = new AccountDao(user, new AdminDao<Account>(Account));
     const accts = await accountDao.byItemId(item.id);
-    accts.forEach(async acct => {
-        console.log(`Marking account ${acct.accountId} expired.`);
-        acct.expired = true;
-        await accountDao.commit(acct);
-    });
+    await Promise.all(
+        accts.map(acct => {
+            console.log(`Marking account ${acct.accountId} expired.`);
+            acct.expired = true;
+            return accountDao.commit(acct);
+        })
+    );
 }
 
 async function handleTransactionWebhook(
@@ -393,7 +374,8 @@ async function handleTransactionWebhook(
         console.log('Skipping historical/initial update');
     } else if (payload.webhook_code === 'DEFAULT_UPDATE') {
         console.log(`${payload.webhook_code} for item ${payload.item_id}`);
-        await refreshAccounts(payload.item_id);
+        const item = await readItemDao.byItemId(payload.item_id);
+        await refreshAccounts(item);
     } else if (payload.webhook_code === 'TRANSACTIONS_REMOVED') {
         console.log('Removing transactions');
         const item = await readItemDao.byItemId(payload.item_id);
@@ -402,11 +384,17 @@ async function handleTransactionWebhook(
             user,
             new AdminDao<Transaction>(Transaction)
         );
-        for (const txnId of payload.removed_transactions) {
-            const txn = await transactionDao.byTransactionId(txnId);
-            console.log(`Deleting transaction: ${txn.transactionId}`);
-            await transactionDao.delete(txn);
-        }
+        await Promise.all(
+            payload.removed_transactions.map(async t => {
+                try {
+                    const txn = await transactionDao.byTransactionId(t);
+                    console.log(`Deleting transaction: ${txn.transactionId}`);
+                    await transactionDao.delete(txn);
+                } catch (e) {
+                    console.log('skipping remove txn...');
+                }
+            })
+        );
     }
 }
 
@@ -452,8 +440,10 @@ async function savePlaidTransaction(
         new AdminDao<Transaction>(Transaction)
     );
     const accountDao = new AccountDao(user, new AdminDao<Account>(Account));
-    const txn = await transactionDao.getOrCreate(plaidTxn.transaction_id);
-    const account = await accountDao.byAccountId(plaidTxn.account_id);
+    const [txn, account] = await Promise.all([
+        transactionDao.getOrCreate(plaidTxn.transaction_id),
+        accountDao.byAccountId(plaidTxn.account_id)
+    ]);
 
     txn.transactionId = plaidTxn.transaction_id;
     txn.merchant = plaidTxn.name || '';

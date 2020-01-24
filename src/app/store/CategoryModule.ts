@@ -27,9 +27,9 @@ class CategoryModule extends VuexModule {
         dao.subscribe(this);
 
         const categories = await dao.all();
-        categories.forEach((category: Category) => {
+        for (const category of categories) {
             this.add(category);
-        });
+        }
     }
 
     @Mutation

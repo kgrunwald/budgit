@@ -1,4 +1,4 @@
-import { setDate, addMonths } from 'date-fns';
+import { setDate } from 'date-fns';
 import Transaction from '../models/Transaction';
 import Category from '../models/Category';
 import CategoryDao from './CategoryDao';
@@ -6,7 +6,6 @@ import Account from '../models/Account';
 import User from '../models/User';
 import { db } from './Firebase';
 import { classToObject } from '@/models/Metadata';
-import UserStore from '@/app/store/UserStore';
 
 export default class TransactionTrigger {
     private categoryDao: CategoryDao;
@@ -21,55 +20,49 @@ export default class TransactionTrigger {
         oldCategory?: Category,
         newCategory?: Category
     ): Promise<Transaction> {
-        await this.runTrigger(txn, acct, oldCategory, newCategory);
-        return txn;
+        return await db().runTransaction(async dbTxn =>
+            this.runTrigger(dbTxn, txn, acct, oldCategory, newCategory)
+        );
     }
 
     public async runTrigger(
+        dbTxn: firebase.firestore.Transaction,
         txn: Transaction,
         acct: Account,
         oldCategory?: Category,
         newCategory?: Category
-    ): Promise<void> {
-        return db().runTransaction(async dbTxn => {
-            // Save the Transaction to the DB
-            const txnCollection = db().collection(
-                `Users/${this.user.id}/Transactions`
-            );
+    ): Promise<Transaction> {
+        // Save the Transaction to the DB
+        const txnCollection = db().collection(
+            `Users/${this.user.id}/Transactions`
+        );
 
-            if (!txn.id) {
-                txn.id = this.newId();
-            }
+        if (!txn.id) {
+            txn.id = this.newId();
+        }
 
-            const txnDoc = txnCollection.doc(txn.id);
-            dbTxn.set(txnDoc, classToObject(txn));
+        if (newCategory) {
+            txn.categoryId = newCategory.id;
+        }
 
-            const oldId = oldCategory && oldCategory.id;
-            const newId = newCategory && newCategory.id;
-            if (oldId !== newId) {
-                return;
-            }
+        const txnDoc = txnCollection.doc(txn.id);
+        dbTxn.set(txnDoc, classToObject(txn));
 
-            if (oldCategory) {
-                await this.setCategoryActivity(
-                    dbTxn,
-                    txn,
-                    acct,
-                    oldCategory,
-                    -1
-                );
-            }
+        const oldId = oldCategory && oldCategory.id;
+        const newId = newCategory && newCategory.id;
+        if (oldId === newId) {
+            return txn;
+        }
 
-            if (newCategory) {
-                await this.setCategoryActivity(
-                    dbTxn,
-                    txn,
-                    acct,
-                    newCategory,
-                    1
-                );
-            }
-        });
+        if (oldCategory) {
+            await this.setCategoryActivity(dbTxn, txn, acct, oldCategory, -1);
+        }
+
+        if (newCategory) {
+            await this.setCategoryActivity(dbTxn, txn, acct, newCategory, 1);
+        }
+
+        return txn;
     }
 
     private async setCategoryActivity(
@@ -119,8 +112,6 @@ export default class TransactionTrigger {
                 paymentCtg.getActivity(month)
             );
             dbTxn.set(paymentRef, classToObject(paymentCtg));
-        } else {
-            console.log('No account, or not a credit account', acct);
         }
     }
 

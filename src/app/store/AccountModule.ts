@@ -43,10 +43,10 @@ class AccountModule extends VuexModule {
             }
         }
 
-        accounts.forEach((account: Account) => {
+        for (const account of accounts) {
             this.add(account);
             TransactionModule.loadTransactions(account);
-        });
+        }
     }
 
     @Mutation
