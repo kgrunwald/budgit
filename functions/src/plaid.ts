@@ -21,7 +21,7 @@ const CLIENT_ID = functions.config().plaid.client_id;
 const PLAID_SECRET = functions.config().plaid.secret;
 const PUBLIC_KEY = functions.config().plaid.public_key;
 const PLAID_ENV = functions.config().plaid.env;
-const WEBHOOK_URL = 'https://us-central1-jk-budgit.cloudfunctions.net/webhook';
+const MAX_TXN_COUNT = 500;
 
 const client = new plaid.Client(
     CLIENT_ID,
@@ -48,7 +48,7 @@ interface ItemWebhook extends Webhook {
 
 const DATE_FORMAT = 'yyyy-MM-dd';
 
-let readItemDao: ItemDao;
+let itemDao: ItemDao;
 let userDao: UserDao;
 let app: any;
 
@@ -71,7 +71,7 @@ async function initFirebase() {
         app = admin.initializeApp();
     }
 
-    readItemDao = readItemDao || new ItemDao(new AdminDao<Item>(Item));
+    itemDao = itemDao || new ItemDao(new AdminDao<Item>(Item));
     userDao = userDao || new UserDao(new AdminDao<User>(User));
 }
 
@@ -128,7 +128,7 @@ export const refreshToken = async (data: any, context: CallableContext) => {
         await initFirebase();
 
         const { itemId } = data;
-        const item = await readItemDao.byItemId(itemId);
+        const item = await itemDao.byItemId(itemId);
         if (item.userId !== context.auth?.uid) {
             throw denied('Item does not match user id');
         }
@@ -146,7 +146,7 @@ export const updateAccounts = async (data: any, context: CallableContext) => {
         await initFirebase();
 
         const { itemId } = data;
-        const item = await readItemDao.byId(itemId);
+        const item = await itemDao.byId(itemId);
         if (item.userId !== context.auth?.uid) {
             throw denied('Item user id does not match auth');
         }
@@ -159,7 +159,10 @@ export const updateAccounts = async (data: any, context: CallableContext) => {
     }
 };
 
-const refreshAccounts = async (item: Item): Promise<void> => {
+const refreshAccounts = async (
+    item: Item,
+    newTxnCount: number = MAX_TXN_COUNT
+): Promise<void> => {
     const user = await userDao.byId(item.userId);
 
     const acctDao = new AccountDao(user, new AdminDao<Account>(Account));
@@ -167,17 +170,9 @@ const refreshAccounts = async (item: Item): Promise<void> => {
     const account_ids = accts.map(acct => acct.accountId);
 
     await Promise.all([
-        loadPlaidTransactionsByAccount(item, user, account_ids),
-        loadPlaidAccountDetails(item, user, account_ids),
-        checkItemWebhook(item)
+        loadPlaidTransactionsByItem(item, user, account_ids, newTxnCount),
+        loadPlaidAccountDetails(item, user, account_ids)
     ]);
-};
-
-const checkItemWebhook = async (item: Item) => {
-    const res = await client.getItem(item.accessToken);
-    if (res.item.webhook !== WEBHOOK_URL) {
-        await client.updateItemWebhook(item.accessToken, WEBHOOK_URL);
-    }
 };
 
 const loadPlaidAccountDetails = async (
@@ -189,10 +184,11 @@ const loadPlaidAccountDetails = async (
     await Promise.all(res.accounts.map(a => savePlaidAccount(a, user)));
 };
 
-const loadPlaidTransactionsByAccount = async (
+const loadPlaidTransactionsByItem = async (
     item: Item,
     user: User,
     account_ids: string[],
+    count: number = 500,
     offset: number = 0
 ) => {
     const thirtyDays = subDays(new Date(), 30);
@@ -203,18 +199,20 @@ const loadPlaidTransactionsByAccount = async (
     const start = format(startDate, DATE_FORMAT);
     const end = format(addDays(new Date(), 1), DATE_FORMAT);
     const res = await client.getTransactions(item.accessToken, start, end, {
-        count: 500,
+        count,
         offset,
         account_ids
     });
 
     await Promise.all(res.transactions.map(t => savePlaidTransaction(t, user)));
-    if (res.total_transactions > 0) {
-        await loadPlaidTransactionsByAccount(
+
+    if (res.total_transactions === MAX_TXN_COUNT) {
+        await loadPlaidTransactionsByItem(
             item,
             user,
             account_ids,
-            offset + res.total_transactions
+            count,
+            offset + count
         );
     }
 };
@@ -232,7 +230,7 @@ export const removeAccount = async (data: any, context: CallableContext) => {
         const { accountId } = data;
         const acctDao = new AccountDao(user, new AdminDao<Account>(Account));
         const acct = await acctDao.byAccountId(accountId);
-        const item = await readItemDao.byId(acct.itemId);
+        const item = await itemDao.byId(acct.itemId);
 
         console.log(`Removing transactions for account: ${acct.accountId}.`);
 
@@ -255,7 +253,7 @@ export const removeAccount = async (data: any, context: CallableContext) => {
             console.log(`Removing item: ${item.itemId}.`);
             await Promise.all([
                 client.removeItem(item.accessToken),
-                readItemDao.delete(item)
+                itemDao.delete(item)
             ]);
         }
 
@@ -374,11 +372,11 @@ async function handleTransactionWebhook(
         console.log('Skipping historical/initial update');
     } else if (payload.webhook_code === 'DEFAULT_UPDATE') {
         console.log(`${payload.webhook_code} for item ${payload.item_id}`);
-        const item = await readItemDao.byItemId(payload.item_id);
+        const item = await itemDao.byItemId(payload.item_id);
         await refreshAccounts(item);
     } else if (payload.webhook_code === 'TRANSACTIONS_REMOVED') {
         console.log('Removing transactions');
-        const item = await readItemDao.byItemId(payload.item_id);
+        const item = await itemDao.byItemId(payload.item_id);
         const user = await userDao.byId(item.userId);
         const transactionDao = new TransactionDao(
             user,
@@ -404,7 +402,7 @@ async function handleItemWebhook(payload: ItemWebhook) {
         payload.error.error_code === 'ITEM_LOGIN_REQUIRED'
     ) {
         console.log(`Login required for ${payload.item_id}`);
-        const item = await readItemDao.byItemId(payload.item_id);
+        const item = await itemDao.byItemId(payload.item_id);
         const user = await userDao.byId(item.userId);
         await markItemTokenExpired(user, item);
     }
@@ -415,7 +413,6 @@ async function savePlaidItem(
     user: User
 ): Promise<Item> {
     console.log('Saving Plaid Item', { token, userId: user.id });
-    const itemDao = new ItemDao(new AdminDao<Item>(Item));
     const item = await itemDao.getOrCreate(token.item_id);
     item.accessToken = token.access_token;
     item.itemId = token.item_id;
@@ -464,9 +461,7 @@ async function savePlaidAccount(account: plaid.Account, user: User) {
     acct.accountId = account.account_id;
     acct.availableBalance =
         creditMultiplier * (account.balances.available || 0);
-    acct.currentBalance =
-        creditMultiplier *
-        (account.balances.current || account.balances.available || 0);
+    acct.currentBalance = creditMultiplier * (account.balances.current || 0);
     acct.name = acct.name || account.name || '<no name>';
     acct.subType = account.subtype || '';
     acct.type = account.type || '';

@@ -49,6 +49,14 @@ class CategoryModule extends VuexModule {
         return values(this.categoriesById);
     }
 
+    get filteredCategories() {
+        return (filterStr: string): Category[] => {
+            return filter(this.categories, ctg =>
+                ctg.name.toUpperCase().includes(filterStr.toUpperCase())
+            );
+        };
+    }
+
     get byId() {
         return (id: string): Category => {
             return this.categoriesById[id];

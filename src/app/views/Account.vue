@@ -154,6 +154,7 @@
         small
         tbody-tr-class="account-row-class"
         v-model="sortedTransactions"
+        primary-key="transactionId"
         :items="transactions"
         :fields="fields"
         :sort-by.sync="sortBy"
@@ -214,37 +215,14 @@
           </div>
         </template>
         <template v-slot:cell(categoryName)="data">
-          <div
-            class="view-category"
-            @click="editCategory(data.item.id)"
-            v-if="transactionCategoryEdit !== data.item.id"
-          >
-            <span v-html="data.item.categoryName || '<i>None</i>'"></span>
-          </div>
-          <div v-show="transactionCategoryEdit === data.item.id">
-            <b-dropdown
-              :ref="'dd-' + data.item.id"
-              class="category-dropdown"
-              :text="data.item.categoryName"
-              split
-              split-variant="outline-primary"
-              variant="primary"
-              @hide="uneditCategory(data.item.id)"
-              @shown="focusCategorySearch(data.item.id)"
-            >
-              <b-dropdown-form>
-                <b-form-input :ref="'input-' + data.item.id" v-model="filter" />
-              </b-dropdown-form>
-              <div class="category-dropdown-container">
-                <b-dropdown-item
-                  v-for="category in categories"
-                  :key="category.id"
-                  @click="setCategory(data.item, category)"
-                  @blur="uneditCategory(data.item.id)"
-                >{{ category.name}}</b-dropdown-item>
-              </div>
-            </b-dropdown>
-          </div>
+            <v-select 
+                :options="categories" 
+                label="name" 
+                @input="setCategory"
+                :clearable="false"
+                :value="transactionCategory(data.item)"
+                :reduce="ctg => ({ id: ctg.id, txn: data.item })"
+            />
         </template>
         <template v-slot:cell(formattedAmount)="data">
           <div :class="data.item.amount > 0 ? '' : 'negative'">{{ data.item.formattedAmount }}</div>
@@ -270,6 +248,7 @@ import {
 import uuid from 'uuid/v4';
 import { format } from 'date-fns';
 import { BFormInput, BDropdown } from 'bootstrap-vue';
+import vSelect from 'vue-select';
 import CategoryModule from '@/app/store/CategoryModule';
 import TransactionModule from '@/app/store/TransactionModule';
 import Transaction from '@/models/Transaction';
@@ -278,11 +257,13 @@ import AccountAction from './AccountAction.vue';
 import Category from '../../models/Category';
 import AccountModule from '../store/AccountModule';
 import CategoryDropdown from './CategoryDropdown.vue';
+import 'vue-select/dist/vue-select.css';
 
 @Component({
     components: {
         AccountAction,
-        CategoryDropdown
+        CategoryDropdown,
+        vSelect
     },
     props: {
         account: AccountModel
@@ -307,7 +288,6 @@ export default class Account extends Vue {
     public accountNameEdit: boolean = false;
     public transactionCategoryEdit: string = '';
     public transactionMerchantEdit: string = '';
-    public filter: string = '';
     public AccountModule = AccountModule;
     public newTransaction: { [key: string]: any } = {};
     public newTransactionCategoryName: string = 'Select Category';
@@ -383,25 +363,12 @@ export default class Account extends Vue {
         this.accountNameEdit = false;
     }
 
-    public editCategory(transactionId: string) {
-        this.transactionCategoryEdit = transactionId;
-        (this.$refs['dd-' + transactionId] as BDropdown).show();
-    }
-
     public focusCategorySearch(transactionId: string) {
         (this.$refs['input-' + transactionId] as BFormInput).focus();
     }
 
     public editMerchant(transactionId: string) {
         this.transactionMerchantEdit = transactionId;
-    }
-
-    public uneditCategory(transactionId: string) {
-        // @ts-ignore
-        this.filter = '';
-        if (this.transactionCategoryEdit === transactionId) {
-            this.transactionCategoryEdit = '';
-        }
     }
 
     public uneditMerchant() {
@@ -428,15 +395,14 @@ export default class Account extends Vue {
     }
 
     get transactions(): Transaction[] {
-        let txns = TransactionModule.txnsByAcct[this.$props.account.id] || [];
-        txns.map(txn => {
-            if (txn.categoryId) {
-                const ctg = CategoryModule.categoriesById[txn.categoryId];
-                txn.categoryName = ctg && ctg.name;
-            }
-            return txn;
-        });
-        return txns;
+        return TransactionModule.txnsByAcct[this.$props.account.id] || [];
+    }
+
+    public transactionCategory(txn: Transaction): string | undefined {
+        if (txn.categoryId) {
+            const ctg = CategoryModule.categoriesById[txn.categoryId];
+            return (ctg && ctg.name) || undefined;
+        }
     }
 
     public async acknowledge(txn: Transaction) {
@@ -445,15 +411,14 @@ export default class Account extends Vue {
     }
 
     get categories(): Category[] {
-        return filter(CategoryModule.categories, ctg =>
-            ctg.name.toUpperCase().includes(this.filter.toUpperCase())
-        );
+        return CategoryModule.categories;
     }
 
-    public async setCategory(txn: Transaction, category: Category) {
-        txn.categoryId = category.id;
+    public async setCategory(args: any) {
+        console.log(args);
+        const txn: Transaction = args.txn;
+        txn.categoryId = args.id;
         await TransactionModule.update(txn);
-        this.uneditCategory(txn.transactionId);
         this.acknowledge(txn);
     }
 

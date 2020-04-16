@@ -41,23 +41,25 @@ export default class FirebaseDao<T extends Model> extends EventEmitter
     }
 
     public subscribe(s: Subscriber<T>): void {
-        this.collection().onSnapshot(
-            (snapshot: firebase.firestore.QuerySnapshot) => {
-                snapshot
-                    .docChanges()
-                    .forEach((change: firebase.firestore.DocumentChange) => {
-                        const x: T = this.docToClass(change.doc);
-                        switch (change.type) {
-                            case 'added':
-                            case 'modified':
-                                s.add(x);
-                                break;
-                            case 'removed':
-                                s.remove(x);
-                        }
-                    });
-            }
-        );
+        this.subscribeQuery(s, this.collection());
+    }
+
+    public subscribeQuery(s: Subscriber<T>, q: firebase.firestore.Query): void {
+        q.onSnapshot((snapshot: firebase.firestore.QuerySnapshot) => {
+            snapshot
+                .docChanges()
+                .forEach((change: firebase.firestore.DocumentChange) => {
+                    const x: T = this.docToClass(change.doc);
+                    switch (change.type) {
+                        case 'added':
+                        case 'modified':
+                            s.add(x);
+                            break;
+                        case 'removed':
+                            s.remove(x);
+                    }
+                });
+        });
     }
 
     public async delete(obj: T): Promise<void> {
@@ -118,21 +120,30 @@ export default class FirebaseDao<T extends Model> extends EventEmitter
         order?: Order,
         limit?: number
     ): Promise<T[]> {
+        const q = this.buildQuery(wheres, order, limit);
+        const res = await q.get();
+        return this.docsToClassArray(res);
+    }
+
+    public buildQuery(
+        wheres: Where[],
+        order?: Order,
+        limit?: number
+    ): firebase.firestore.Query {
         let q = this.collection() as firebase.firestore.Query;
         for (const where of wheres) {
             q = q.where(where.key, where.operator, where.value);
         }
 
         if (order) {
-            q.orderBy(order.field, order.order);
+            q = q.orderBy(order.field, order.order);
         }
 
         if (limit) {
-            q.limit(limit);
+            q = q.limit(limit);
         }
 
-        const res = await q.get();
-        return this.docsToClassArray(res);
+        return q;
     }
 
     public setCollectionName(name: string): void {

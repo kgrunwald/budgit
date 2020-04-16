@@ -8,6 +8,7 @@ export default class Item implements Model {
     @field public userId!: string;
 
     private _date: Date = new Date();
+    private _lastUpdate!: Date;
 
     @field
     get createdDate(): Date {
@@ -19,6 +20,19 @@ export default class Item implements Model {
             this._date = date.toDate();
         } else {
             this._date = date || new Date();
+        }
+    }
+
+    @field
+    get lastUpdateTime(): Date {
+        return this._lastUpdate;
+    }
+
+    set lastUpdateTime(date: Date) {
+        if (this.isTimestamp(date)) {
+            this._lastUpdate = date.toDate();
+        } else {
+            this._lastUpdate = date || new Date();
         }
     }
 
