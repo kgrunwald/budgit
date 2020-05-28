@@ -1,10 +1,9 @@
-import { subDays, setHours, setMinutes, getUnixTime } from 'date-fns';
+import { subDays, setHours, setMinutes } from 'date-fns';
 import { Dao, DaoBase, Subscriber } from './Dao';
 import Account from '../models/Account';
 import User from '../models/User';
 import Transaction from '../models/Transaction';
 import FirebaseDao from './Firebase';
-import * as firebase from 'firebase/app';
 
 class TransactionDao extends DaoBase<Transaction> {
     private _dao: Dao<Transaction>;

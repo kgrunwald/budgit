@@ -42,7 +42,7 @@
                 <font-awesome-icon icon="cloud-download-alt" />
                 <div class="action-title">Import</div>
               </b-button>
-              <AccountAction :accountId="account.accountId" v-if="account.expired">
+              <AccountAction :itemId="account.itemId" :accountId="account.accountId" v-if="account.expired">
                 <template slot="action" slot-scope="props">
                   <!-- <font-awesome-icon icon="sync" @click="props.onClick" /> -->
                   <b-button pill class="action" variant="outline-danger" @click="props.onClick">

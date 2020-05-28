@@ -80,7 +80,7 @@ class AccountModule extends VuexModule {
 
     @Action
     public async updateAccount(itemId: string) {
-        await updateAccounts(itemId);
+        return await updateAccounts(itemId);
     }
 
     @Action

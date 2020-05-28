@@ -128,7 +128,7 @@ export const refreshToken = async (data: any, context: CallableContext) => {
         await initFirebase();
 
         const { itemId } = data;
-        const item = await itemDao.byItemId(itemId);
+        const item = await itemDao.byId(itemId);
         if (item.userId !== context.auth?.uid) {
             throw denied('Item does not match user id');
         }
@@ -152,6 +152,7 @@ export const updateAccounts = async (data: any, context: CallableContext) => {
         }
 
         await refreshAccounts(item);
+
         return { error: false };
     } catch (err) {
         console.error('Error updating accounts.', err);
@@ -284,6 +285,11 @@ async function getAccounts(user: User, item: Item): Promise<void> {
                 }
             }
         }
+
+        await client.updateItemWebhook(
+            item.accessToken,
+            'https://us-central1-jk-budgit.cloudfunctions.net/webhook'
+        );
     } catch (err) {
         if (err.error_code === 'ITEM_LOGIN_REQUIRED') {
             console.error(`Login required for item: ${item.itemId}`);
@@ -456,7 +462,7 @@ async function savePlaidTransaction(
 
 async function savePlaidAccount(account: plaid.Account, user: User) {
     const accountDao = new AccountDao(user, new AdminDao<Account>(Account));
-    const acct = await accountDao.byAccountId(account.account_id);
+    const acct = await accountDao.getOrCreate(account.account_id);
     const creditMultiplier = account.type === 'credit' ? -1 : 1;
     acct.accountId = account.account_id;
     acct.availableBalance =

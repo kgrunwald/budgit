@@ -42,7 +42,7 @@ export default class AccountAction extends Vue {
     private token: string = '';
 
     public async triggerPlaidLink(triggerFunc: (token: string) => void) {
-        if (this.$props.accountId || this.$props.itemId) {
+        if (this.$props.itemId) {
             const res = await refreshToken(this.$props.itemId);
             this.token = res.data.publicToken;
         }
